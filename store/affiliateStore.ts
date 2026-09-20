@@ -7,6 +7,7 @@ export interface Affiliate {
   email: string;
   phone: string;
   socialHandle?: string;
+  membershipTier?: 'Basic' | 'Bronze' | 'Pro';
   code: string;
   joinedAt: string;
   totalEarnings: number;

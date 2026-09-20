@@ -23,7 +23,7 @@ const navLinks = [
   { name: 'Hot Deals', href: '/products?category=deals' },
   { name: 'Shoes', href: '/products?category=shoes' },
   { name: 'Bags', href: '/products?category=bags' },
-  { name: '💰 Earn with Us', href: '/affiliate/register' },
+  { name: '💰 Earn with Us', href: '/affiliate' },
 ];
 
 export function Navbar() {

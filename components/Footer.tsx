@@ -198,6 +198,11 @@ export function Footer() {
             </h4>
             <ul className="mt-4 space-y-2.5 text-sm text-gray-400">
               <li>
+                <Link href="/affiliate" className="text-[#FFD700] font-bold transition hover:underline">
+                  💰 Affiliate Program
+                </Link>
+              </li>
+              <li>
                 <Link href="/login" className="transition hover:text-[#FFD700]">
                   Buyer Login
                 </Link>
