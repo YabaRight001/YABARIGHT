@@ -66,6 +66,11 @@ export interface Product {
   originalPrice?: number;
   images: string[];
   size?: string;
+  sizes?: ('Small' | 'Medium' | 'Large' | 'XL' | 'XXL' | 'XXXL' | string)[];
+  gender?: 'Male' | 'Female' | 'Unisex';
+  neckSize?: string;
+  waistSize?: string;
+  bodyTypeFit?: ('Small' | 'Medium' | 'Large' | 'XL' | 'XXL' | 'XXXL')[];
   condition: ProductCondition;
   material?: string;
   color?: string;
@@ -85,6 +90,7 @@ export interface CartItem {
   userId: string;
   productId: string;
   quantity: number;
+  selectedSize?: string;
   product?: Product;
   createdAt: Date;
   updatedAt: Date;

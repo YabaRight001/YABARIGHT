@@ -13,7 +13,8 @@ import {
   X, 
   User, 
   Sparkles,
-  ArrowRight
+  ArrowRight,
+  Shield
 } from 'lucide-react';
 
 const navLinks = [
@@ -78,7 +79,7 @@ export function Navbar() {
         </div>
 
         {/* Center: Desktop Navigation Links */}
-        <nav className="hidden items-center gap-7 lg:flex">
+        <nav className="hidden items-center gap-6 xl:gap-7 lg:flex">
           {navLinks.map((link) => (
             <Link
               key={link.name}
@@ -90,8 +91,8 @@ export function Navbar() {
           ))}
         </nav>
 
-        {/* Right: Search, Wishlist, Cart & Account */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        {/* Right: Search, Wishlist, Cart & Admin / Account */}
+        <div className="flex items-center gap-2 sm:gap-2.5">
           {/* Quick Search Toggle / Input */}
           <div className="relative">
             {searchOpen ? (
@@ -143,7 +144,7 @@ export function Navbar() {
           {/* Cart Link */}
           <Link
             href="/cart"
-            className="relative flex items-center gap-2 rounded-full bg-[#FFD700] px-4 py-2 text-xs font-black uppercase tracking-wider text-black transition hover:bg-[#ffcc00] hover:scale-105"
+            className="relative flex items-center gap-2 rounded-full bg-[#FFD700] px-3.5 sm:px-4 py-2 text-xs font-black uppercase tracking-wider text-black transition hover:bg-[#ffcc00] hover:scale-105 shadow-sm"
             aria-label="Shopping Cart"
           >
             <ShoppingBag className="h-4 w-4" />
@@ -155,13 +156,23 @@ export function Navbar() {
             )}
           </Link>
 
-          {/* Login / Seller CTA */}
+          {/* User Login CTA */}
           <Link
             href="/login"
-            className="hidden items-center gap-1.5 rounded-full border border-white/20 px-3.5 py-1.5 text-xs font-bold text-white/90 transition hover:border-[#FFD700] hover:text-[#FFD700] sm:inline-flex"
+            className="hidden items-center gap-1.5 rounded-full border border-white/20 px-3 py-1.5 text-xs font-bold text-white/90 transition hover:border-[#FFD700] hover:text-[#FFD700] sm:inline-flex"
           >
             <User className="h-3.5 w-3.5" />
             <span>Login</span>
+          </Link>
+
+          {/* Prominent Admin Access Button */}
+          <Link
+            href="/admin"
+            className="inline-flex items-center gap-1.5 rounded-full border border-[#FFD700]/50 bg-[#1a1a1a] hover:bg-[#252525] px-3 py-1.5 text-xs font-black uppercase tracking-wider text-[#FFD700] transition hover:border-[#FFD700] hover:scale-105 shadow-sm"
+            title="Access Admin Dashboard"
+          >
+            <Shield className="h-3.5 w-3.5 text-[#FFD700]" />
+            <span>Admin</span>
           </Link>
         </div>
       </div>
@@ -205,19 +216,28 @@ export function Navbar() {
             ))}
           </div>
 
-          <div className="mt-6 border-t border-white/10 pt-5">
-            <div className="flex flex-col gap-3">
+          <div className="mt-6 border-t border-white/10 pt-5 space-y-3">
+            <Link
+              href="/admin"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center justify-center gap-2 rounded-xl bg-[#1c1c1c] border border-[#FFD700]/50 py-3 text-sm font-black uppercase tracking-wider text-[#FFD700] transition hover:bg-[#252525]"
+            >
+              <Shield className="h-4 w-4" />
+              <span>🛡️ Admin Portal</span>
+            </Link>
+
+            <div className="flex flex-col gap-2.5">
               <Link
                 href="/login"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-center rounded-xl border border-white/15 py-3 text-sm font-bold text-white transition hover:bg-white/5"
+                className="flex items-center justify-center rounded-xl border border-white/15 py-2.5 text-sm font-bold text-white transition hover:bg-white/5"
               >
                 Login to Account
               </Link>
               <Link
                 href="/register"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-center rounded-xl bg-[#FFD700] py-3 text-sm font-black text-black transition hover:bg-[#ffcc00]"
+                className="flex items-center justify-center rounded-xl bg-[#FFD700] py-2.5 text-sm font-black text-black transition hover:bg-[#ffcc00]"
               >
                 Become a Seller
               </Link>

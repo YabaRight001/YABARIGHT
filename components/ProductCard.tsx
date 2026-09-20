@@ -5,7 +5,8 @@ import { Product, ProductCondition } from '@/types';
 import { useCartStore } from '@/store/cartStore';
 import { useWishlistStore } from '@/store/wishlistStore';
 import { useToastStore } from '@/store/toastStore';
-import { Heart, ShoppingBag, Star } from 'lucide-react';
+import { useAdminStore } from '@/store/adminStore';
+import { Heart, ShoppingBag, Star, CheckCircle2 } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
@@ -59,6 +60,7 @@ export function ProductCard({ product }: ProductCardProps) {
   };
 
   const conditionStyle = getConditionBadge(product.condition);
+  const isVerified = useAdminStore((s) => s.isSellerVerified(product.sellerId));
 
   return (
     <article className="group relative flex flex-col overflow-hidden rounded-[1.5rem] border border-black/10 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#FFD700]/40 hover:shadow-xl">
@@ -72,6 +74,12 @@ export function ProductCard({ product }: ProductCardProps) {
 
         {/* Top Floating Badges */}
         <div className="absolute left-3 top-3 flex flex-col gap-1.5 z-10">
+          {isVerified && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-white shadow-md">
+              <CheckCircle2 className="h-3 w-3" />
+              Verified Vendor
+            </span>
+          )}
           {product.trending && (
             <span className="inline-block rounded-full bg-[#111111] px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-[#FFD700] shadow-sm">
               Trending 🔥
