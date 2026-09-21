@@ -99,7 +99,7 @@ export default function AdminLoginPage() {
             <span>Official Admin Access</span>
           </div>
           <p className="text-[11px] text-gray-300 mb-3">
-            Click below to instantly log in as <span className="text-[#FFD700] font-bold">yabatightofficial@gmail.com</span>.
+            Click below to instantly log in as <span className="text-[#FFD700] font-bold">the admin</span>.
           </p>
           <button
             type="button"
@@ -132,8 +132,7 @@ export default function AdminLoginPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="yabatightofficial@gmail.com"
-                  required
+                  placeholder="you@example.com"
                   className="w-full rounded-xl border border-white/10 bg-black/60 pl-10 pr-4 py-3 text-sm text-white placeholder-gray-600 focus:border-[#FFD700] focus:outline-none focus:ring-1 focus:ring-[#FFD700]"
                 />
               </div>
@@ -149,7 +148,7 @@ export default function AdminLoginPage() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="admin1234"
+                  placeholder="Enter your password"
                   required
                   className="w-full rounded-xl border border-white/10 bg-black/60 pl-10 pr-4 py-3 text-sm text-white placeholder-gray-600 focus:border-[#FFD700] focus:outline-none focus:ring-1 focus:ring-[#FFD700]"
                 />
