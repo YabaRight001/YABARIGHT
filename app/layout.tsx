@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import '@/styles/globals.css';
+import { WhatsAppChat } from '@/components/WhatsAppChat';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://yabaright.com'),
@@ -33,6 +34,7 @@ export default function RootLayout({
         <div className="flex flex-col min-h-screen">
           {children}
         </div>
+        <WhatsAppChat />
       </body>
     </html>
   );

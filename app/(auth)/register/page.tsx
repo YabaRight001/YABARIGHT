@@ -176,7 +176,7 @@ function RegisterForm() {
               value={formData.name}
               onChange={handleChange}
               required
-              placeholder={role === 'SELLER' ? 'e.g. Lagos Vintage Thrift' : 'e.g. Michael King'}
+              placeholder={role === 'SELLER' ? 'e.g. Lagos Vintage Thrift' : 'e.g. John Doe'}
               className="w-full rounded-xl border border-gray-200 bg-[#fbf8f2] px-4 py-3 pl-10 text-xs text-gray-900 outline-none transition focus:border-[#FFD700] focus:ring-2 focus:ring-[#FFD700]/20"
             />
             <User className="absolute left-3.5 top-3.5 h-4 w-4 text-gray-400" />
