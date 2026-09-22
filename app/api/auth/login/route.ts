@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { comparePassword, generateToken } from '@/lib/auth';
-
-// Mock database - replace with actual database calls
-const users: any[] = [];
+import { generateToken } from '@/lib/auth';
+import { verifyUserCredentials, findUserByEmail } from '@/lib/mockUsers';
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,20 +15,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Find user (mock)
-    const user = users.find((u) => u.email === email);
+    const user = await verifyUserCredentials(email, password);
     if (!user) {
       return NextResponse.json(
-        { message: 'Invalid email or password' },
-        { status: 401 }
-      );
-    }
-
-    // Compare passwords
-    const passwordMatch = await comparePassword(password, user.password);
-    if (!passwordMatch) {
-      return NextResponse.json(
-        { message: 'Invalid email or password' },
+        { message: 'Invalid email or password. Please check your details.' },
         { status: 401 }
       );
     }
@@ -40,6 +28,8 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(
       {
+        success: true,
+        message: 'Logged in successfully',
         user: {
           id: user.id,
           name: user.name,
@@ -53,7 +43,7 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error('Login error:', error);
     return NextResponse.json(
-      { message: 'Login failed' },
+      { message: 'Login failed. Please try again later.' },
       { status: 500 }
     );
   }

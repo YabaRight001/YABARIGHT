@@ -4,12 +4,14 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
+import { useAdminAuthStore } from '@/store/adminAuthStore';
 import { useToastStore } from '@/store/toastStore';
 import { Eye, EyeOff, Lock, Mail, ArrowRight } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
   const { login, isLoading, error, clearError } = useAuthStore();
+  const { loginAdmin } = useAdminAuthStore();
   const showToast = useToastStore((state) => state.showToast);
 
   const [showPassword, setShowPassword] = useState(false);
@@ -31,9 +33,27 @@ export default function LoginPage() {
     clearError();
 
     try {
-      await login(formData.email, formData.password);
-      showToast('Welcome back! Logged in successfully.', 'success');
-      router.push('/products');
+      const loggedInUser = await login(formData.email, formData.password);
+      showToast(`Welcome back, ${loggedInUser.name}!`, 'success');
+
+      if (loggedInUser.role === 'ADMIN') {
+        loginAdmin(
+          {
+            id: loggedInUser.id,
+            name: loggedInUser.name,
+            email: loggedInUser.email,
+            role: 'ADMIN',
+            avatar: loggedInUser.avatar || '',
+            loginTime: new Date().toISOString(),
+          },
+          `adm_tok_${Date.now()}`
+        );
+        router.push('/admin');
+      } else if (loggedInUser.role === 'SELLER') {
+        router.push('/dashboard');
+      } else {
+        router.push('/products');
+      }
     } catch (err) {
       // Error is handled by the store
     }

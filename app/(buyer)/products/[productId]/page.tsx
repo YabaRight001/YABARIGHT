@@ -11,6 +11,7 @@ import { useAffiliateStore } from '@/store/affiliateStore';
 import { useAdminStore } from '@/store/adminStore';
 import { ProductCard } from '@/components/ProductCard';
 import { BodyTypeVisualizer } from '@/components/BodyTypeVisualizer';
+import { ProductConditionGuideModal } from '@/components/ProductConditionGuideModal';
 import { 
   ArrowLeft, 
   Heart, 
@@ -18,11 +19,9 @@ import {
   Star, 
   ShieldCheck, 
   Truck, 
-  RotateCcw, 
   Sparkles,
   Share2,
   Check,
-  ShieldAlert,
   CheckCircle2,
   Award,
   Store,
@@ -58,6 +57,7 @@ export default function ProductDetailPage({
   const [quantity, setQuantity] = useState(1);
   const [copied, setCopied] = useState(false);
   const [showBodyGuide, setShowBodyGuide] = useState(false);
+  const [showConditionGuide, setShowConditionGuide] = useState(false);
 
   // Capture affiliate ref from URL and persist it
   useEffect(() => {
@@ -417,42 +417,29 @@ export default function ProductDetailPage({
               </div>
               <div className="flex items-center gap-3">
                 <ShieldCheck className="h-4 w-4 text-[#c88d00] flex-shrink-0" />
-                <span>Quality-checked thrift grade with 100% money protection</span>
+                <span>Quality-checked thrift grade with authentic escrow checkout</span>
               </div>
               <div className="flex items-center gap-3">
-                <RotateCcw className="h-4 w-4 text-[#c88d00] flex-shrink-0" />
-                <span>7-Day Return & replacement guarantee</span>
+                <Award className="h-4 w-4 text-[#c88d00] flex-shrink-0" />
+                <span>Standardized 5-Star condition grading on all fashion items</span>
               </div>
             </div>
 
-            {/* ── SAFETY & INSPECTION CAVEAT BOX ── */}
-            <div className="mt-5 rounded-2xl border-2 border-amber-300 bg-gradient-to-br from-amber-50 to-[#fffdf5] p-5 shadow-sm">
-              <div className="flex items-center gap-2 text-amber-950 font-black text-xs uppercase tracking-wider">
-                <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-amber-400 text-black">
-                  <ShieldAlert className="h-3.5 w-3.5" />
-                </div>
-                <span>YABARIGHT Buyer Safety & Inspection Caveat</span>
+            {/* ── PRODUCT CONDITION & TERMS NOTICE ── */}
+            <div className="mt-5 rounded-2xl border border-amber-300 bg-gradient-to-br from-amber-50 to-[#fffdf5] p-4 text-xs shadow-xs">
+              <div className="flex items-center gap-2 text-amber-950 font-bold">
+                <Sparkles className="h-4 w-4 text-[#c88d00] flex-shrink-0" />
+                <span>
+                  Product condition ratings apply. Terms and conditions apply.{' '}
+                  <button
+                    type="button"
+                    onClick={() => setShowConditionGuide(true)}
+                    className="font-black text-[#c88d00] underline hover:text-black transition ml-1"
+                  >
+                    Read more here →
+                  </button>
+                </span>
               </div>
-              <ul className="mt-3 space-y-2 text-xs text-amber-950/90 leading-relaxed">
-                <li className="flex items-start gap-2">
-                  <span className="text-amber-600 font-bold">•</span>
-                  <span>
-                    <strong>Escrow Security:</strong> Never make offline or direct money transfers to private seller accounts. All payments must go through YabaRight secure checkout.
-                  </span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-amber-600 font-bold">•</span>
-                  <span>
-                    <strong>Inspect on Delivery:</strong> Inspect the item condition, size, and material upon courier delivery before final receipt confirmation.
-                  </span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-amber-600 font-bold">•</span>
-                  <span>
-                    <strong>100% Refund Protection:</strong> If an item is counterfeit, damaged, or misdescribed, YabaRight guarantees a full immediate refund.
-                  </span>
-                </li>
-              </ul>
             </div>
 
             {/* Vendor Profile Card (Jiji Verified style) */}
@@ -513,6 +500,12 @@ export default function ProductDetailPage({
           </div>
         </section>
       )}
+
+      {/* Product Condition Guide Modal Popup */}
+      <ProductConditionGuideModal
+        isOpen={showConditionGuide}
+        onClose={() => setShowConditionGuide(false)}
+      />
     </div>
   );
 }

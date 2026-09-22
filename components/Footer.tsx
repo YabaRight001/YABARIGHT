@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { 
   ShieldCheck, 
   Truck, 
-  RotateCcw, 
+  Award, 
   CreditCard, 
   CheckCircle2, 
   Send 
@@ -51,11 +51,11 @@ export function Footer() {
 
             <div className="flex items-center gap-4 rounded-2xl border border-white/5 bg-white/[0.03] p-5">
               <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-[#FFD700]/15 text-[#FFD700]">
-                <RotateCcw className="h-6 w-6" />
+                <Award className="h-6 w-6" />
               </div>
               <div>
-                <p className="text-sm font-bold text-white">7-Day Easy Returns</p>
-                <p className="text-xs text-gray-400">Hassle-free exchange guarantee</p>
+                <p className="text-sm font-bold text-white">5-Star Condition Grading</p>
+                <p className="text-xs text-gray-400">Clear & honest quality ratings</p>
               </div>
             </div>
 

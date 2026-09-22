@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { User, AuthResponse } from '@/types';
+import { User, AuthResponse, UserRole } from '@/types';
 import api from '@/lib/api';
 
 interface AuthStore {
@@ -10,8 +10,8 @@ interface AuthStore {
   isAuthenticated: boolean;
 
   // Actions
-  login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<User>;
+  register: (name: string, email: string, password: string, role?: string) => Promise<User>;
   logout: () => void;
   updateProfile: (data: Partial<User>) => Promise<void>;
   clearError: () => void;
@@ -34,8 +34,10 @@ export const useAuthStore = create<AuthStore>((set) => ({
       });
       const { user, token } = response.data;
       
-      localStorage.setItem('authToken', token);
-      localStorage.setItem('user', JSON.stringify(user));
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('authToken', token);
+        localStorage.setItem('user', JSON.stringify(user));
+      }
 
       set({
         user,
@@ -43,29 +45,34 @@ export const useAuthStore = create<AuthStore>((set) => ({
         isAuthenticated: true,
         isLoading: false,
       });
+
+      return user;
     } catch (error: any) {
       const errorMessage =
-        error.response?.data?.message || 'Login failed';
+        error.response?.data?.message || 'Login failed. Please check your credentials.';
       set({
         error: errorMessage,
         isLoading: false,
       });
-      throw error;
+      throw new Error(errorMessage);
     }
   },
 
-  register: async (name: string, email: string, password: string) => {
+  register: async (name: string, email: string, password: string, role?: string) => {
     set({ isLoading: true, error: null });
     try {
       const response = await api.post<AuthResponse>('/auth/register', {
         name,
         email,
         password,
+        role: role || 'BUYER',
       });
       const { user, token } = response.data;
 
-      localStorage.setItem('authToken', token);
-      localStorage.setItem('user', JSON.stringify(user));
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('authToken', token);
+        localStorage.setItem('user', JSON.stringify(user));
+      }
 
       set({
         user,
@@ -73,20 +80,24 @@ export const useAuthStore = create<AuthStore>((set) => ({
         isAuthenticated: true,
         isLoading: false,
       });
+
+      return user;
     } catch (error: any) {
       const errorMessage =
-        error.response?.data?.message || 'Registration failed';
+        error.response?.data?.message || 'Registration failed. Please try again.';
       set({
         error: errorMessage,
         isLoading: false,
       });
-      throw error;
+      throw new Error(errorMessage);
     }
   },
 
   logout: () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('user');
+    }
     set({
       user: null,
       token: null,
@@ -98,7 +109,9 @@ export const useAuthStore = create<AuthStore>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await api.put<User>('/auth/profile', data);
-      localStorage.setItem('user', JSON.stringify(response.data));
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('user', JSON.stringify(response.data));
+      }
       set({
         user: response.data,
         isLoading: false,

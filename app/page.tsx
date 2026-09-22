@@ -12,7 +12,7 @@ import {
   Truck, 
   ShieldCheck, 
   BadgePercent, 
-  RotateCcw, 
+  Award, 
   Sparkles,
   Users,
   Store,
@@ -392,11 +392,11 @@ export default function Home() {
 
               <div className="flex flex-col items-center rounded-[1.5rem] border border-black/5 bg-[#fbf8f2] p-6 text-center shadow-sm">
                 <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FFD700]/20 text-[#c88d00]">
-                  <RotateCcw className="h-7 w-7" />
+                  <Award className="h-7 w-7" />
                 </div>
-                <h3 className="text-base font-black text-[#111111]">7-Day Return Guarantee</h3>
+                <h3 className="text-base font-black text-[#111111]">5-Star Condition Grading</h3>
                 <p className="mt-2 text-xs leading-relaxed text-gray-600">
-                  Hassle-free return or replacement if the item received does not match its description.
+                  Accurate, honest condition ratings so you know the exact state of every thrift fashion piece.
                 </p>
               </div>
             </div>

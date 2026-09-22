@@ -4,16 +4,18 @@ import { Suspense, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
+import { useAdminAuthStore } from '@/store/adminAuthStore';
 import { useToastStore } from '@/store/toastStore';
-import { Eye, EyeOff, Lock, Mail, User, ArrowRight, ShoppingBag, Store } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail, User, ArrowRight, ShoppingBag, Store, Shield } from 'lucide-react';
 
 function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { register, isLoading, error, clearError } = useAuthStore();
+  const { loginAdmin } = useAdminAuthStore();
   const showToast = useToastStore((state) => state.showToast);
 
-  const [role, setRole] = useState<'buyer' | 'seller'>('buyer');
+  const [role, setRole] = useState<'BUYER' | 'SELLER' | 'ADMIN'>('BUYER');
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -24,9 +26,12 @@ function RegisterForm() {
   const [validationError, setValidationError] = useState('');
 
   useEffect(() => {
-    const roleParam = searchParams.get('role') as 'buyer' | 'seller' | null;
+    const roleParam = searchParams.get('role');
     if (roleParam) {
-      setRole(roleParam);
+      const upper = roleParam.toUpperCase();
+      if (upper === 'SELLER') setRole('SELLER');
+      else if (upper === 'ADMIN') setRole('ADMIN');
+      else setRole('BUYER');
     }
   }, [searchParams]);
 
@@ -48,12 +53,46 @@ function RegisterForm() {
       return;
     }
 
+    if (formData.password.length < 4) {
+      setValidationError('Password must be at least 4 characters');
+      return;
+    }
+
     try {
-      await register(formData.name, formData.email, formData.password);
-      showToast('Account created successfully! Welcome to YabaRight.', 'success');
-      router.push(role === 'seller' ? '/dashboard' : '/products');
-    } catch (err) {
-      // Error is handled by the store
+      const registeredUser = await register(
+        formData.name,
+        formData.email,
+        formData.password,
+        role
+      );
+
+      // If registered as admin, also authenticate into admin store
+      if (role === 'ADMIN') {
+        loginAdmin(
+          {
+            id: registeredUser.id,
+            name: registeredUser.name,
+            email: registeredUser.email,
+            role: 'ADMIN',
+            avatar: registeredUser.avatar || '',
+            loginTime: new Date().toISOString(),
+          },
+          `adm_tok_${Date.now()}`
+        );
+      }
+
+      showToast(`Welcome to YabaRight, ${formData.name}! Account created. 🎉`, 'success');
+
+      // Direct to respective destination
+      if (role === 'ADMIN') {
+        router.push('/admin');
+      } else if (role === 'SELLER') {
+        router.push('/dashboard');
+      } else {
+        router.push('/products');
+      }
+    } catch (err: any) {
+      // Error is set in store
     }
   };
 
@@ -67,7 +106,7 @@ function RegisterForm() {
           Create Your Account
         </h2>
         <p className="mt-1 text-xs text-gray-500">
-          Buy thrift fashion at unbeatable prices or start selling your own closet.
+          Join YabaRight as a buyer, seller, or staff administrator.
         </p>
       </div>
 
@@ -77,36 +116,49 @@ function RegisterForm() {
         </div>
       )}
 
-      {/* Account Type Selector */}
+      {/* Account Role Selector */}
       <div className="mb-5">
         <label className="mb-2 block text-xs font-bold text-gray-700">
-          I want to:
+          Account Type:
         </label>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-2 sm:gap-3">
           <button
             type="button"
-            onClick={() => setRole('buyer')}
-            className={`flex items-center justify-center gap-2 rounded-2xl border py-3 text-xs font-black uppercase tracking-wider transition ${
-              role === 'buyer'
+            onClick={() => setRole('BUYER')}
+            className={`flex flex-col sm:flex-row items-center justify-center gap-1.5 rounded-2xl border py-2.5 px-2 text-[11px] sm:text-xs font-black uppercase tracking-wider transition ${
+              role === 'BUYER'
                 ? 'border-[#111111] bg-[#111111] text-[#FFD700] shadow-sm'
                 : 'border-gray-200 bg-[#fbf8f2] text-gray-700 hover:border-gray-300'
             }`}
           >
             <ShoppingBag className="h-4 w-4" />
-            <span>Shop Thrift</span>
+            <span>Buyer</span>
           </button>
 
           <button
             type="button"
-            onClick={() => setRole('seller')}
-            className={`flex items-center justify-center gap-2 rounded-2xl border py-3 text-xs font-black uppercase tracking-wider transition ${
-              role === 'seller'
+            onClick={() => setRole('SELLER')}
+            className={`flex flex-col sm:flex-row items-center justify-center gap-1.5 rounded-2xl border py-2.5 px-2 text-[11px] sm:text-xs font-black uppercase tracking-wider transition ${
+              role === 'SELLER'
                 ? 'border-[#111111] bg-[#111111] text-[#FFD700] shadow-sm'
                 : 'border-gray-200 bg-[#fbf8f2] text-gray-700 hover:border-gray-300'
             }`}
           >
             <Store className="h-4 w-4" />
-            <span>Sell Fits</span>
+            <span>Seller</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setRole('ADMIN')}
+            className={`flex flex-col sm:flex-row items-center justify-center gap-1.5 rounded-2xl border py-2.5 px-2 text-[11px] sm:text-xs font-black uppercase tracking-wider transition ${
+              role === 'ADMIN'
+                ? 'border-[#111111] bg-[#111111] text-[#FFD700] shadow-sm'
+                : 'border-gray-200 bg-[#fbf8f2] text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            <Shield className="h-4 w-4" />
+            <span>Admin</span>
           </button>
         </div>
       </div>
@@ -114,7 +166,7 @@ function RegisterForm() {
       <div className="space-y-4 text-xs">
         <div>
           <label htmlFor="name" className="mb-1.5 block font-bold text-gray-700">
-            Full Name or Brand Name
+            {role === 'SELLER' ? 'Store / Brand Name' : role === 'ADMIN' ? 'Admin Full Name' : 'Full Name'}
           </label>
           <div className="relative">
             <input
@@ -124,7 +176,7 @@ function RegisterForm() {
               value={formData.name}
               onChange={handleChange}
               required
-              placeholder="e.g. Zainab Bakare"
+              placeholder={role === 'SELLER' ? 'e.g. Lagos Vintage Thrift' : 'e.g. Michael King'}
               className="w-full rounded-xl border border-gray-200 bg-[#fbf8f2] px-4 py-3 pl-10 text-xs text-gray-900 outline-none transition focus:border-[#FFD700] focus:ring-2 focus:ring-[#FFD700]/20"
             />
             <User className="absolute left-3.5 top-3.5 h-4 w-4 text-gray-400" />
@@ -201,7 +253,7 @@ function RegisterForm() {
         disabled={isLoading}
         className="mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-[#111111] py-3.5 text-xs font-black uppercase tracking-wider text-[#FFD700] transition hover:bg-black hover:scale-[1.01] active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 shadow-md"
       >
-        <span>{isLoading ? 'Creating Account...' : 'Create My Account'}</span>
+        <span>{isLoading ? 'Creating Account...' : `Register as ${role}`}</span>
         <ArrowRight className="h-4 w-4" />
       </button>
 

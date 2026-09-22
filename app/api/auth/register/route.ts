@@ -1,56 +1,56 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { hashPassword, generateToken } from '@/lib/auth';
-
-// Mock database - replace with actual database calls
-const users: any[] = [];
+import { generateToken } from '@/lib/auth';
+import { createNewUser, findUserByEmail } from '@/lib/mockUsers';
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, email, password } = body;
+    const { name, email, password, role } = body;
 
     // Validation
     if (!name || !email || !password) {
       return NextResponse.json(
-        { message: 'Missing required fields' },
+        { message: 'Full name, email, and password are required' },
+        { status: 400 }
+      );
+    }
+
+    if (password.length < 4) {
+      return NextResponse.json(
+        { message: 'Password must be at least 4 characters long' },
         { status: 400 }
       );
     }
 
     // Check if user exists
-    const userExists = users.find((u) => u.email === email);
+    const userExists = findUserByEmail(email);
     if (userExists) {
       return NextResponse.json(
-        { message: 'Email already registered' },
+        { message: 'This email is already registered. Please log in.' },
         { status: 409 }
       );
     }
 
-    // Hash password
-    const hashedPassword = await hashPassword(password);
+    // Determine normalized role (BUYER, SELLER, or ADMIN)
+    const validRole = ['BUYER', 'SELLER', 'ADMIN'].includes(String(role).toUpperCase())
+      ? (String(role).toUpperCase() as 'BUYER' | 'SELLER' | 'ADMIN')
+      : 'BUYER';
 
-    // Create user (mock)
-    const user = {
-      id: Math.random().toString(36).substr(2, 9),
-      name,
-      email,
-      password: hashedPassword,
-      role: 'BUYER',
-      createdAt: new Date(),
-    };
-
-    users.push(user);
+    // Create user
+    const newUser = await createNewUser(name, email, password, validRole);
 
     // Generate token
-    const token = generateToken(user.id, user.email);
+    const token = generateToken(newUser.id, newUser.email);
 
     return NextResponse.json(
       {
+        success: true,
+        message: 'Account created successfully',
         user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
+          id: newUser.id,
+          name: newUser.name,
+          email: newUser.email,
+          role: newUser.role,
         },
         token,
       },
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error('Registration error:', error);
     return NextResponse.json(
-      { message: 'Registration failed' },
+      { message: error.message || 'Registration failed. Please try again.' },
       { status: 500 }
     );
   }
