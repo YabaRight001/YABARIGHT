@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useCartStore } from '@/store/cartStore';
 import { useWishlistStore } from '@/store/wishlistStore';
 import { 
@@ -14,7 +14,10 @@ import {
   User, 
   Sparkles,
   ArrowRight,
-  Shield
+  Shield,
+  Store,
+  DollarSign,
+  ChevronDown
 } from 'lucide-react';
 
 const navLinks = [
@@ -34,7 +37,21 @@ export function Navbar() {
   
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
+  const accountMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close account menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (accountMenuRef.current && !accountMenuRef.current.contains(event.target as Node)) {
+        setAccountMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,7 +108,7 @@ export function Navbar() {
           ))}
         </nav>
 
-        {/* Right: Search, Wishlist, Cart & Admin / Account */}
+        {/* Right: Search, Wishlist, Cart & Account Dropdown Menu */}
         <div className="flex items-center gap-2 sm:gap-2.5">
           {/* Quick Search Toggle / Input */}
           <div className="relative">
@@ -156,24 +173,70 @@ export function Navbar() {
             )}
           </Link>
 
-          {/* User Login CTA */}
-          <Link
-            href="/login"
-            className="hidden items-center gap-1.5 rounded-full border border-white/20 px-3 py-1.5 text-xs font-bold text-white/90 transition hover:border-[#FFD700] hover:text-[#FFD700] sm:inline-flex"
-          >
-            <User className="h-3.5 w-3.5" />
-            <span>Login</span>
-          </Link>
+          {/* Account & Portals Dropdown Menu */}
+          <div className="relative" ref={accountMenuRef}>
+            <button
+              type="button"
+              onClick={() => setAccountMenuOpen(!accountMenuOpen)}
+              className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/5 px-3 py-1.5 text-xs font-bold text-white/90 transition hover:border-[#FFD700] hover:text-[#FFD700] hover:bg-white/10"
+              aria-expanded={accountMenuOpen}
+              aria-label="Account menu"
+            >
+              <User className="h-3.5 w-3.5" />
+              <span>Menu</span>
+              <ChevronDown className={`h-3 w-3 transition-transform ${accountMenuOpen ? 'rotate-180 text-[#FFD700]' : ''}`} />
+            </button>
 
-          {/* Prominent Admin Access Button */}
-          <Link
-            href="/admin"
-            className="inline-flex items-center gap-1.5 rounded-full border border-[#FFD700]/50 bg-[#1a1a1a] hover:bg-[#252525] px-3 py-1.5 text-xs font-black uppercase tracking-wider text-[#FFD700] transition hover:border-[#FFD700] hover:scale-105 shadow-sm"
-            title="Access Admin Dashboard"
-          >
-            <Shield className="h-3.5 w-3.5 text-[#FFD700]" />
-            <span>Admin</span>
-          </Link>
+            {/* Desktop Dropdown Content */}
+            {accountMenuOpen && (
+              <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-white/10 bg-[#141414] p-2 text-white shadow-2xl backdrop-blur-xl z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                <div className="px-3 py-2 border-b border-white/10">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Account & Portals</p>
+                </div>
+
+                <div className="space-y-1 py-1 text-xs">
+                  <Link
+                    href="/login"
+                    onClick={() => setAccountMenuOpen(false)}
+                    className="flex items-center gap-2.5 rounded-xl px-3 py-2 font-bold text-gray-200 hover:bg-white/10 hover:text-[#FFD700] transition"
+                  >
+                    <User className="h-3.5 w-3.5 text-gray-400" />
+                    <span>Buyer Login</span>
+                  </Link>
+
+                  <Link
+                    href="/register"
+                    onClick={() => setAccountMenuOpen(false)}
+                    className="flex items-center gap-2.5 rounded-xl px-3 py-2 font-bold text-gray-200 hover:bg-white/10 hover:text-[#FFD700] transition"
+                  >
+                    <Store className="h-3.5 w-3.5 text-gray-400" />
+                    <span>Become a Seller</span>
+                  </Link>
+
+                  <Link
+                    href="/affiliate"
+                    onClick={() => setAccountMenuOpen(false)}
+                    className="flex items-center gap-2.5 rounded-xl px-3 py-2 font-bold text-gray-200 hover:bg-white/10 hover:text-[#FFD700] transition"
+                  >
+                    <DollarSign className="h-3.5 w-3.5 text-[#FFD700]" />
+                    <span>Affiliate Program</span>
+                  </Link>
+                </div>
+
+                {/* Subtle Admin Link inside the menu */}
+                <div className="border-t border-white/10 pt-1 mt-1">
+                  <Link
+                    href="/admin/login"
+                    onClick={() => setAccountMenuOpen(false)}
+                    className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-bold text-gray-400 hover:bg-[#FFD700]/10 hover:text-[#FFD700] transition"
+                  >
+                    <Shield className="h-3.5 w-3.5 text-gray-400" />
+                    <span>Admin Portal</span>
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -216,16 +279,7 @@ export function Navbar() {
             ))}
           </div>
 
-          <div className="mt-6 border-t border-white/10 pt-5 space-y-3">
-            <Link
-              href="/admin"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center justify-center gap-2 rounded-xl bg-[#1c1c1c] border border-[#FFD700]/50 py-3 text-sm font-black uppercase tracking-wider text-[#FFD700] transition hover:bg-[#252525]"
-            >
-              <Shield className="h-4 w-4" />
-              <span>🛡️ Admin Portal</span>
-            </Link>
-
+          <div className="mt-6 border-t border-white/10 pt-5">
             <div className="flex flex-col gap-2.5">
               <Link
                 href="/login"
@@ -240,6 +294,15 @@ export function Navbar() {
                 className="flex items-center justify-center rounded-xl bg-[#FFD700] py-2.5 text-sm font-black text-black transition hover:bg-[#ffcc00]"
               >
                 Become a Seller
+              </Link>
+              {/* Discreet Admin Portal Link in Mobile Menu */}
+              <Link
+                href="/admin/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/5 py-2 text-xs font-semibold text-gray-400 hover:text-white transition"
+              >
+                <Shield className="h-3.5 w-3.5 text-gray-400" />
+                <span>Admin Portal</span>
               </Link>
             </div>
           </div>

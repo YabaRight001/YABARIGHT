@@ -218,11 +218,6 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/admin" className="text-gray-400 hover:text-[#FFD700] transition flex items-center gap-1">
-                  <span>🛡️ Admin Portal</span>
-                </Link>
-              </li>
-              <li>
                 <Link href="/cart" className="transition hover:text-[#FFD700]">
                   My Bag
                 </Link>

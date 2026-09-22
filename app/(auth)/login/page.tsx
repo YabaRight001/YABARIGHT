@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { useToastStore } from '@/store/toastStore';
-import { Eye, EyeOff, Lock, Mail, ArrowRight, Shield } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail, ArrowRight } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -126,17 +126,6 @@ export default function LoginPage() {
           Create one free
         </Link>
       </p>
-
-      {/* Admin Portal Gateway */}
-      <div className="mt-6 pt-5 border-t border-gray-100 text-center">
-        <Link
-          href="/admin/login"
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-700 hover:text-black bg-gray-50 hover:bg-gray-100 border border-gray-200 px-3.5 py-2 rounded-xl transition"
-        >
-          <Shield className="h-3.5 w-3.5 text-[#c88d00]" />
-          <span>Platform Staff? <strong>Admin Login →</strong></span>
-        </Link>
-      </div>
     </form>
   );
 }
