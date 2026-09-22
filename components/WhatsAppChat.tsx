@@ -5,7 +5,7 @@ import { MessageCircle, X } from 'lucide-react';
 
 export function WhatsAppChat() {
   const [showTooltip, setShowTooltip] = useState(true);
-  const whatsappUrl = 'https://wa.me/+2348063081972';
+  const whatsappUrl = 'https://wa.me/+2349060755247';
 
   return (
     <div className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-50 flex items-center gap-2.5">
