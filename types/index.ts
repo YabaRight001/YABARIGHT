@@ -38,6 +38,8 @@ export interface User {
   avatar?: string;
   bio?: string;
   role: UserRole;
+  isEmailVerified?: boolean;
+  verificationCode?: string;
   createdAt: Date;
   updatedAt: Date;
 }

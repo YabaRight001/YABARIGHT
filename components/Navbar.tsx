@@ -68,7 +68,7 @@ export function Navbar() {
       <div className="bg-gradient-to-r from-[#FFD700] via-[#ffcc00] to-[#e8941f] px-4 py-1.5 text-center text-[11px] font-black uppercase tracking-wider text-black sm:text-xs">
         <span className="inline-flex items-center gap-1.5">
           <Sparkles className="h-3.5 w-3.5 text-black" />
-          <span>Pay Less, Look Rich — Authentic Thrift & Fresh Fits Across Nigeria</span>
+          <span>EVERYTHING YOU NEED. BETTER DEALS. ONE PLACE.</span>
           <span className="hidden md:inline">• Nationwide Delivery within 2-4 Days</span>
         </span>
       </div>

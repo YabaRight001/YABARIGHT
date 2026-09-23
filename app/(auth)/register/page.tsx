@@ -7,18 +7,22 @@ import { useAuthStore } from '@/store/authStore';
 import { useAdminAuthStore } from '@/store/adminAuthStore';
 import { useAdminStore } from '@/store/adminStore';
 import { useToastStore } from '@/store/toastStore';
+import { EmailVerificationModal } from '@/components/EmailVerificationModal';
 import { Eye, EyeOff, Lock, Mail, User, ArrowRight, ShoppingBag, Store, Shield, DollarSign } from 'lucide-react';
 
 function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { register, isLoading, error, clearError } = useAuthStore();
+  const { register, setPendingVerification, isLoading, error, clearError } = useAuthStore();
   const { loginAdmin } = useAdminAuthStore();
   const addUser = useAdminStore((s) => s.addUser);
   const showToast = useToastStore((state) => state.showToast);
 
   const [role, setRole] = useState<'BUYER' | 'SELLER' | 'ADMIN' | 'AFFILIATE'>('BUYER');
   const [showPassword, setShowPassword] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [registeredData, setRegisteredData] = useState<{ id: string; name: string; email: string; role: 'BUYER' | 'SELLER' | 'ADMIN' | 'AFFILIATE' } | null>(null);
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -82,37 +86,58 @@ function RegisterForm() {
         ordersCount: 0,
       });
 
-      // If registered as admin, also authenticate into admin store
-      if (role === 'ADMIN') {
-        loginAdmin(
-          {
-            id: registeredUser.id,
-            name: registeredUser.name,
-            email: registeredUser.email,
-            role: 'ADMIN',
-            avatar: registeredUser.avatar || '',
-            loginTime: new Date().toISOString(),
-          },
-          `adm_tok_${Date.now()}`
-        );
-      }
-
-      showToast(`Welcome to YabaRight, ${formData.name}! Account created. 🎉`, 'success');
-
-      // Direct to respective destination
-      if (role === 'ADMIN') {
-        router.push('/admin');
-      } else if (role === 'SELLER') {
-        router.push('/dashboard');
-      } else if (role === 'AFFILIATE') {
-        router.push('/affiliate');
-      } else {
-        router.push('/products');
-      }
+      // Prepare email verification state
+      const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+      setPendingVerification(formData.email, generatedOtp);
+      setRegisteredData({
+        id: registeredUser.id,
+        name: registeredUser.name,
+        email: registeredUser.email,
+        role,
+      });
+      setIsVerifying(true);
+      showToast(`Account created! Please verify your email with code ${generatedOtp}`, 'info');
     } catch (err: any) {
       // Error is set in store
     }
   };
+
+  const handleVerificationComplete = () => {
+    if (!registeredData) return;
+
+    if (registeredData.role === 'ADMIN') {
+      loginAdmin(
+        {
+          id: registeredData.id,
+          name: registeredData.name,
+          email: registeredData.email,
+          role: 'ADMIN',
+          avatar: '',
+          loginTime: new Date().toISOString(),
+        },
+        `adm_tok_${Date.now()}`
+      );
+      router.push('/admin');
+    } else if (registeredData.role === 'SELLER') {
+      router.push('/dashboard');
+    } else if (registeredData.role === 'AFFILIATE') {
+      router.push('/affiliate');
+    } else {
+      router.push('/products');
+    }
+  };
+
+  if (isVerifying && registeredData) {
+    return (
+      <EmailVerificationModal
+        email={registeredData.email}
+        userName={registeredData.name}
+        userRole={registeredData.role}
+        onVerified={handleVerificationComplete}
+        onCancel={() => setIsVerifying(false)}
+      />
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="rounded-[2rem] border border-black/10 bg-white p-6 sm:p-8 shadow-sm">

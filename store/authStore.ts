@@ -8,22 +8,29 @@ interface AuthStore {
   isLoading: boolean;
   error: string | null;
   isAuthenticated: boolean;
+  pendingVerificationEmail: string | null;
+  verificationCode: string | null;
 
   // Actions
   login: (email: string, password: string) => Promise<User>;
   register: (name: string, email: string, password: string, role?: string) => Promise<User>;
+  verifyEmail: (email: string, code: string) => Promise<boolean>;
+  resendVerificationCode: (email: string) => Promise<string>;
+  setPendingVerification: (email: string, code?: string) => void;
   logout: () => void;
   updateProfile: (data: Partial<User>) => Promise<void>;
   clearError: () => void;
   setUser: (user: User) => void;
 }
 
-export const useAuthStore = create<AuthStore>((set) => ({
+export const useAuthStore = create<AuthStore>((set, get) => ({
   user: null,
   token: null,
   isLoading: false,
   error: null,
   isAuthenticated: false,
+  pendingVerificationEmail: null,
+  verificationCode: null,
 
   login: async (email: string, password: string) => {
     set({ isLoading: true, error: null });
@@ -157,6 +164,69 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
       return fallbackUser;
     }
+  },
+
+  setPendingVerification: (email: string, code?: string) => {
+    const generated = code || Math.floor(100000 + Math.random() * 900000).toString();
+    set({ pendingVerificationEmail: email, verificationCode: generated });
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(`verify_otp_${email.toLowerCase()}`, generated);
+    }
+  },
+
+  resendVerificationCode: async (email: string) => {
+    const newCode = Math.floor(100000 + Math.random() * 900000).toString();
+    set({ verificationCode: newCode, pendingVerificationEmail: email });
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(`verify_otp_${email.toLowerCase()}`, newCode);
+    }
+    return newCode;
+  },
+
+  verifyEmail: async (email: string, code: string) => {
+    set({ isLoading: true, error: null });
+    const normalizedEmail = email.trim().toLowerCase();
+    
+    // Check code against stored OTP or master test code (123456)
+    let valid = code.trim() === '123456';
+    if (!valid && typeof window !== 'undefined') {
+      const storedOtp = localStorage.getItem(`verify_otp_${normalizedEmail}`);
+      if (storedOtp && storedOtp === code.trim()) {
+        valid = true;
+      }
+    }
+    if (!valid && get().verificationCode && get().verificationCode === code.trim()) {
+      valid = true;
+    }
+
+    if (!valid) {
+      set({ isLoading: false, error: 'Invalid verification code. Please check and try again.' });
+      throw new Error('Invalid verification code.');
+    }
+
+    // Mark verified in local state & registry
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(`verified_${normalizedEmail}`, 'true');
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        try {
+          const parsed = JSON.parse(storedUser);
+          if (parsed.email?.toLowerCase() === normalizedEmail) {
+            parsed.isEmailVerified = true;
+            localStorage.setItem('user', JSON.stringify(parsed));
+          }
+        } catch {}
+      }
+    }
+
+    set((state) => ({
+      isLoading: false,
+      pendingVerificationEmail: null,
+      verificationCode: null,
+      user: state.user ? { ...state.user, isEmailVerified: true } : null,
+    }));
+
+    return true;
   },
 
   logout: () => {

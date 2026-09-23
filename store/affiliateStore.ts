@@ -8,6 +8,9 @@ export interface Affiliate {
   phone: string;
   socialHandle?: string;
   membershipTier?: 'Basic' | 'Bronze' | 'Pro';
+  membershipFee?: number;
+  isPaid?: boolean;
+  paymentRef?: string;
   code: string;
   joinedAt: string;
   totalEarnings: number;

@@ -6,7 +6,8 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { useAdminAuthStore } from '@/store/adminAuthStore';
 import { useToastStore } from '@/store/toastStore';
-import { Eye, EyeOff, Lock, Mail, ArrowRight } from 'lucide-react';
+import { EmailVerificationModal } from '@/components/EmailVerificationModal';
+import { Eye, EyeOff, Lock, Mail, ArrowRight, ShieldCheck } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -15,6 +16,9 @@ export default function LoginPage() {
   const showToast = useToastStore((state) => state.showToast);
 
   const [showPassword, setShowPassword] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [unverifiedUser, setUnverifiedUser] = useState<{ name: string; email: string; role: string } | null>(null);
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -28,38 +32,74 @@ export default function LoginPage() {
     }));
   };
 
+  const handleRouteUser = (user: { id: string; name: string; email: string; role: string }) => {
+    if (user.role === 'ADMIN') {
+      loginAdmin(
+        {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: 'ADMIN',
+          avatar: '',
+          loginTime: new Date().toISOString(),
+        },
+        `adm_tok_${Date.now()}`
+      );
+      router.push('/admin');
+    } else if (user.role === 'SELLER') {
+      router.push('/dashboard');
+    } else if (user.role === 'AFFILIATE') {
+      router.push('/affiliate');
+    } else {
+      router.push('/products');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     clearError();
 
     try {
       const loggedInUser = await login(formData.email, formData.password);
-      showToast(`Welcome back, ${loggedInUser.name}!`, 'success');
+      
+      // Check if email verified
+      const isVerified = typeof window !== 'undefined' 
+        ? localStorage.getItem(`verified_${loggedInUser.email.toLowerCase()}`) === 'true' || loggedInUser.isEmailVerified
+        : true;
 
-      if (loggedInUser.role === 'ADMIN') {
-        loginAdmin(
-          {
-            id: loggedInUser.id,
-            name: loggedInUser.name,
-            email: loggedInUser.email,
-            role: 'ADMIN',
-            avatar: loggedInUser.avatar || '',
-            loginTime: new Date().toISOString(),
-          },
-          `adm_tok_${Date.now()}`
-        );
-        router.push('/admin');
-      } else if (loggedInUser.role === 'SELLER') {
-        router.push('/dashboard');
-      } else if (loggedInUser.role === 'AFFILIATE') {
-        router.push('/affiliate');
-      } else {
-        router.push('/products');
+      if (!isVerified) {
+        setUnverifiedUser({
+          name: loggedInUser.name,
+          email: loggedInUser.email,
+          role: loggedInUser.role,
+        });
+        setIsVerifying(true);
+        showToast('Please verify your email address to continue.', 'info');
+        return;
       }
+
+      showToast(`Welcome back, ${loggedInUser.name}! 👋`, 'success');
+      handleRouteUser(loggedInUser);
     } catch (err) {
       // Error is handled by the store
     }
   };
+
+  if (isVerifying && unverifiedUser) {
+    return (
+      <EmailVerificationModal
+        email={unverifiedUser.email}
+        userName={unverifiedUser.name}
+        userRole={unverifiedUser.role}
+        onVerified={() => {
+          setIsVerifying(false);
+          showToast('Email verified! You are now logged in.', 'success');
+          handleRouteUser({ id: `usr_${Date.now()}`, name: unverifiedUser.name, email: unverifiedUser.email, role: unverifiedUser.role });
+        }}
+        onCancel={() => setIsVerifying(false)}
+      />
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="rounded-[2rem] border border-black/10 bg-white p-6 sm:p-8 shadow-sm">
