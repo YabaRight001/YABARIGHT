@@ -1,8 +1,8 @@
-// Enums
 export enum UserRole {
   BUYER = 'BUYER',
   SELLER = 'SELLER',
   ADMIN = 'ADMIN',
+  AFFILIATE = 'AFFILIATE',
 }
 
 export enum ProductCondition {

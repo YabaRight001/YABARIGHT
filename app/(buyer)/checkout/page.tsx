@@ -9,13 +9,16 @@ import { useUserStore } from '@/store/userStore';
 import { useAffiliateStore } from '@/store/affiliateStore';
 import {
   CheckCircle2, CreditCard, Building2, ShieldCheck,
-  ArrowLeft, ArrowRight, PackageCheck, Copy, Check, Users
+  ArrowLeft, ArrowRight, PackageCheck, Copy, Check, Users,
+  Zap, Smartphone
 } from 'lucide-react';
 
 declare global {
   interface Window {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    PaystackPop: any;
+    PaystackPop?: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    MonnifySDK?: any;
   }
 }
 
@@ -41,9 +44,10 @@ export default function CheckoutPage() {
 
   const [submitted, setSubmitted] = useState(false);
   const [orderRef, setOrderRef] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<'card' | 'bank_transfer'>('card');
+  const [paymentMethod, setPaymentMethod] = useState<'monnify' | 'card' | 'bank_transfer'>('monnify');
   const [bankCopied, setBankCopied] = useState<string | null>(null);
   const [paystackReady, setPaystackReady] = useState(false);
+  const [monnifyReady, setMonnifyReady] = useState(false);
   const [processing, setProcessing] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -104,12 +108,60 @@ export default function CheckoutPage() {
     setSubmitted(true);
   };
 
+  // 1. Monnify Payment Handler (app.monnify.com)
+  const handleMonnifyPayment = (e: React.FormEvent) => {
+    e.preventDefault();
+    const ref = `YBR-MNF-${Math.floor(100000 + Math.random() * 900000)}`;
+    const monnifyApiKey = process.env.NEXT_PUBLIC_MONNIFY_API_KEY;
+    const monnifyContractCode = process.env.NEXT_PUBLIC_MONNIFY_CONTRACT_CODE;
+
+    if (monnifyReady && window.MonnifySDK && monnifyApiKey && monnifyContractCode) {
+      window.MonnifySDK.initialize({
+        amount: finalTotal,
+        currency: 'NGN',
+        reference: ref,
+        customerFullName: formData.fullName,
+        customerEmail: formData.email,
+        customerMobileNumber: formData.phone,
+        apiKey: monnifyApiKey,
+        contractCode: monnifyContractCode,
+        paymentDescription: `YabaRight Order ${ref}`,
+        isTestMode: process.env.NEXT_PUBLIC_MONNIFY_ENV !== 'production',
+        paymentMethods: ['CARD', 'ACCOUNT_TRANSFER'],
+        onComplete: (response: any) => {
+          if (
+            response?.paymentStatus === 'PAID' || 
+            response?.status === 'SUCCESS' ||
+            response?.authorizedAmount >= finalTotal
+          ) {
+            confirmOrder(ref, 'monnify');
+            showToast('Monnify payment confirmed! Order placed successfully. 🎉', 'success');
+          } else {
+            showToast('Payment was not completed. Please try again.', 'error');
+          }
+        },
+        onClose: () => {
+          showToast('Monnify payment window closed.', 'info');
+        },
+      });
+    } else {
+      // Simulation fallback for dev mode or when keys are being tested
+      setProcessing(true);
+      setTimeout(() => {
+        setProcessing(false);
+        confirmOrder(ref, 'monnify');
+        showToast('Monnify payment confirmed! 🎉', 'success');
+      }, 1800);
+    }
+  };
+
+  // 2. Paystack Card Payment Handler
   const handleCardPayment = (e: React.FormEvent) => {
     e.preventDefault();
-    const ref = `YBR-${Math.floor(100000 + Math.random() * 900000)}`;
+    const ref = `YBR-PST-${Math.floor(100000 + Math.random() * 900000)}`;
 
     if (!paystackReady || !window.PaystackPop || !process.env.NEXT_PUBLIC_PAYSTACK_KEY) {
-      // Simulation fallback (dev mode without Paystack key)
+      // Simulation fallback
       setProcessing(true);
       setTimeout(() => {
         setProcessing(false);
@@ -141,9 +193,10 @@ export default function CheckoutPage() {
     handler.openIframe();
   };
 
+  // 3. Bank Transfer Handler
   const handleBankTransfer = (e: React.FormEvent) => {
     e.preventDefault();
-    const ref = `YBR-${Math.floor(100000 + Math.random() * 900000)}`;
+    const ref = `YBR-BNK-${Math.floor(100000 + Math.random() * 900000)}`;
     confirmOrder(ref, 'bank_transfer');
     showToast('Order placed! Please complete your bank transfer.', 'success');
   };
@@ -182,6 +235,12 @@ export default function CheckoutPage() {
             <div className="flex justify-between text-gray-500">
               <span>Shipping to:</span>
               <span className="font-semibold text-gray-900">{formData.city}, {formData.state}</span>
+            </div>
+            <div className="flex justify-between text-gray-500">
+              <span>Payment Gateway:</span>
+              <span className="font-bold text-gray-900 uppercase">
+                {paymentMethod === 'monnify' ? 'Monnify (app.monnify.com)' : paymentMethod === 'card' ? 'Paystack' : 'Direct Transfer'}
+              </span>
             </div>
             <div className="flex justify-between text-gray-500">
               <span>Total {paymentMethod === 'bank_transfer' ? 'to Transfer' : 'Paid'}:</span>
@@ -240,8 +299,8 @@ export default function CheckoutPage() {
     return (
       <div className="container-custom py-16 text-center">
         <div className="mx-auto max-w-md rounded-[2rem] border border-black/10 bg-white p-8 shadow-sm">
-          <h2 className="text-xl font-black text-gray-900">Your bag is empty</h2>
-          <p className="mt-2 text-xs text-gray-500">Add some thrift gems to your bag before checking out.</p>
+          <h2 className="text-xl font-black text-gray-900">Your cart is empty</h2>
+          <p className="mt-2 text-xs text-gray-500">Add some thrift gems to your cart before checking out.</p>
           <Link href="/products" className="mt-5 inline-flex items-center gap-2 rounded-full bg-[#FFD700] px-6 py-2.5 text-xs font-black uppercase tracking-wider text-black hover:bg-[#ffcc00]">
             <span>Browse Catalog</span><ArrowRight className="h-4 w-4" />
           </Link>
@@ -294,10 +353,19 @@ export default function CheckoutPage() {
 
   return (
     <>
+      {/* Monnify SDK */}
+      <Script
+        src="https://sdk.monnify.com/plugin/monnify.js"
+        strategy="lazyOnload"
+        onLoad={() => setMonnifyReady(true)}
+      />
+      {/* Paystack Inline SDK */}
       <Script
         src="https://js.paystack.co/v1/inline.js"
+        strategy="lazyOnload"
         onLoad={() => setPaystackReady(true)}
       />
+
       <div className="container-custom py-6 sm:py-10">
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">
@@ -306,7 +374,7 @@ export default function CheckoutPage() {
             <h1 className="mt-1 text-2xl sm:text-4xl font-black text-gray-950">Complete Your Order</h1>
           </div>
           <Link href="/cart" className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-600 hover:text-black">
-            <ArrowLeft className="h-4 w-4" /><span>Edit Bag</span>
+            <ArrowLeft className="h-4 w-4" /><span>Edit Cart</span>
           </Link>
         </div>
 
@@ -350,6 +418,32 @@ export default function CheckoutPage() {
               </div>
 
               <div className="space-y-3">
+                {/* Monnify - Primary Gateway */}
+                <label
+                  onClick={() => setPaymentMethod('monnify')}
+                  className={`flex items-center justify-between rounded-2xl border p-4 cursor-pointer transition ${
+                    paymentMethod === 'monnify' ? 'border-[#c88d00] bg-amber-50/70 shadow-xs' : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#111111] text-[#FFD700]">
+                      <Zap className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs font-black text-gray-900">Pay with Monnify</p>
+                        <span className="rounded-full bg-[#FFD700] px-2 py-0.5 text-[9px] font-black text-black uppercase tracking-wider">
+                          Recommended
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-gray-600">
+                        Instant Bank Transfer, Debit Cards & USSD (app.monnify.com)
+                      </p>
+                    </div>
+                  </div>
+                  <input type="radio" name="payment" checked={paymentMethod === 'monnify'} onChange={() => setPaymentMethod('monnify')} className="accent-[#c88d00]" />
+                </label>
+
                 {/* Card / Paystack */}
                 <label
                   onClick={() => setPaymentMethod('card')}
@@ -362,14 +456,14 @@ export default function CheckoutPage() {
                       <CreditCard className="h-5 w-5" />
                     </div>
                     <div>
-                      <p className="text-xs font-black text-gray-900">Pay Online (Card / Paystack)</p>
-                      <p className="text-[11px] text-gray-500">Debit card, credit card — instant confirmation</p>
+                      <p className="text-xs font-black text-gray-900">Pay Online (Paystack)</p>
+                      <p className="text-[11px] text-gray-500">Mastercard, Visa, Verve cards</p>
                     </div>
                   </div>
                   <input type="radio" name="payment" checked={paymentMethod === 'card'} onChange={() => setPaymentMethod('card')} className="accent-[#c88d00]" />
                 </label>
 
-                {/* Bank Transfer */}
+                {/* Direct Bank Transfer */}
                 <label
                   onClick={() => setPaymentMethod('bank_transfer')}
                   className={`flex items-center justify-between rounded-2xl border p-4 cursor-pointer transition ${
@@ -382,7 +476,7 @@ export default function CheckoutPage() {
                     </div>
                     <div>
                       <p className="text-xs font-black text-gray-900">Direct Bank Transfer</p>
-                      <p className="text-[11px] text-gray-500">Transfer to our Access Bank account</p>
+                      <p className="text-[11px] text-gray-500">Manual transfer to our Access Bank account</p>
                     </div>
                   </div>
                   <input type="radio" name="payment" checked={paymentMethod === 'bank_transfer'} onChange={() => setPaymentMethod('bank_transfer')} className="accent-[#c88d00]" />
@@ -416,7 +510,13 @@ export default function CheckoutPage() {
             </div>
 
             {/* Submit */}
-            <form onSubmit={paymentMethod === 'card' ? handleCardPayment : handleBankTransfer}>
+            <form onSubmit={
+              paymentMethod === 'monnify'
+                ? handleMonnifyPayment
+                : paymentMethod === 'card'
+                ? handleCardPayment
+                : handleBankTransfer
+            }>
               {/* Hidden inputs to trigger form validation on delivery section */}
               <input type="hidden" value={formData.fullName} required />
               <button
@@ -426,15 +526,17 @@ export default function CheckoutPage() {
               >
                 {processing ? (
                   <span>Processing payment…</span>
+                ) : paymentMethod === 'monnify' ? (
+                  <><Zap className="h-4 w-4" /> Pay ₦{finalTotal.toLocaleString()} with Monnify</>
                 ) : paymentMethod === 'card' ? (
-                  <><CreditCard className="h-4 w-4" /> Pay ₦{finalTotal.toLocaleString()} Now</>
+                  <><CreditCard className="h-4 w-4" /> Pay ₦{finalTotal.toLocaleString()} with Card</>
                 ) : (
                   <><CheckCircle2 className="h-4 w-4" /> Place Order — Pay via Transfer</>
                 )}
               </button>
               {(!formData.fullName || !formData.email || !formData.phone || !formData.address || !formData.city) && (
                 <p className="mt-2 text-center text-[11px] text-red-500 font-bold">
-                  Please fill in all required fields above before proceeding.
+                  Please fill in all required delivery fields above before proceeding.
                 </p>
               )}
             </form>
@@ -484,7 +586,7 @@ export default function CheckoutPage() {
 
               <div className="mt-6 rounded-xl bg-[#fbf8f2] p-3 text-[11px] text-gray-500 space-y-1.5">
                 <div className="flex items-center gap-2"><ShieldCheck className="h-3.5 w-3.5 text-emerald-600" /><span>YABARIGHT Buyer Protection included</span></div>
-                <div className="flex items-center gap-2"><CreditCard className="h-3.5 w-3.5 text-[#c88d00]" /><span>256-bit SSL encrypted payment</span></div>
+                <div className="flex items-center gap-2"><CreditCard className="h-3.5 w-3.5 text-[#c88d00]" /><span>256-bit SSL encrypted Monnify checkout</span></div>
               </div>
             </div>
           </aside>

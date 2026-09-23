@@ -55,7 +55,7 @@ export function ProductConditionGuideModal({ isOpen, onClose }: ProductCondition
                 ))}
               </div>
               <span className="text-xs font-black uppercase tracking-wider text-[#FFD700]">
-                5 STAR — SUPER CLEAN
+                5 STAR — GREAT CONDITION
               </span>
             </div>
             <p className="text-xs text-gray-300">
@@ -73,7 +73,7 @@ export function ProductConditionGuideModal({ isOpen, onClose }: ProductCondition
                 <Star className="h-4 w-4 text-gray-600" />
               </div>
               <span className="text-xs font-black uppercase tracking-wider text-white">
-                4 STAR — CLEAN
+                4 STAR — GOOD CONDITION
               </span>
             </div>
             <p className="text-xs text-gray-300">
@@ -112,7 +112,7 @@ export function ProductConditionGuideModal({ isOpen, onClose }: ProductCondition
                 <Star className="h-4 w-4 text-gray-600" />
               </div>
               <span className="text-xs font-black uppercase tracking-wider text-gray-300">
-                2 STAR — OK
+                2 STAR — OKAY
               </span>
             </div>
             <p className="text-xs text-gray-300">

@@ -6,7 +6,7 @@ export interface StoredUser {
   email: string;
   passwordHash?: string;
   plainPassword?: string; // fallback
-  role: 'BUYER' | 'SELLER' | 'ADMIN';
+  role: 'BUYER' | 'SELLER' | 'ADMIN' | 'AFFILIATE';
   phone?: string;
   createdAt: string;
 }
@@ -19,6 +19,7 @@ const defaultUsers: StoredUser[] = [
     email: 'yabatightofficial@gmail.com',
     plainPassword: 'admin1234',
     role: 'ADMIN',
+    phone: '0806 308 1972',
     createdAt: new Date().toISOString(),
   },
   {
@@ -27,6 +28,7 @@ const defaultUsers: StoredUser[] = [
     email: 'admin@yabaright.ng',
     plainPassword: 'admin123',
     role: 'ADMIN',
+    phone: '0801 000 0001',
     createdAt: new Date().toISOString(),
   },
   {
@@ -35,6 +37,7 @@ const defaultUsers: StoredUser[] = [
     email: 'seller@yabaright.ng',
     plainPassword: 'seller123',
     role: 'SELLER',
+    phone: '0802 000 0002',
     createdAt: new Date().toISOString(),
   },
   {
@@ -43,6 +46,16 @@ const defaultUsers: StoredUser[] = [
     email: 'buyer@yabaright.ng',
     plainPassword: 'buyer123',
     role: 'BUYER',
+    phone: '0803 000 0003',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'usr-affiliate-01',
+    name: 'Tunde Afolabi',
+    email: 'affiliate@yabaright.ng',
+    plainPassword: 'affiliate123',
+    role: 'AFFILIATE',
+    phone: '0804 000 0004',
     createdAt: new Date().toISOString(),
   },
 ];
@@ -63,7 +76,8 @@ export async function createNewUser(
   name: string,
   email: string,
   password: string,
-  role: 'BUYER' | 'SELLER' | 'ADMIN' = 'BUYER'
+  role: 'BUYER' | 'SELLER' | 'ADMIN' | 'AFFILIATE' = 'BUYER',
+  phone?: string
 ): Promise<StoredUser> {
   const existing = findUserByEmail(email);
   if (existing) {
@@ -78,6 +92,7 @@ export async function createNewUser(
     passwordHash: hashedPassword,
     plainPassword: password,
     role,
+    phone: phone || '',
     createdAt: new Date().toISOString(),
   };
 

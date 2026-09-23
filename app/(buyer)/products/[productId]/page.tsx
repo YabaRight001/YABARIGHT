@@ -397,7 +397,7 @@ export default function ProductDetailPage({
                 className="flex-1 flex items-center justify-center gap-2 rounded-full bg-[#111111] py-3.5 text-xs font-black uppercase tracking-wider text-white transition hover:bg-black hover:scale-[1.02] active:scale-95 shadow-md"
               >
                 <ShoppingBag className="h-4 w-4 text-[#FFD700]" />
-                <span>Add to Bag ({selectedSize})</span>
+                <span>Add to Cart ({selectedSize})</span>
               </button>
 
               <button

@@ -41,7 +41,7 @@ export default function WishlistPage() {
               className="inline-flex items-center gap-2 rounded-full bg-[#111111] px-5 py-2.5 text-xs font-black uppercase tracking-wider text-[#FFD700] hover:bg-black transition shadow-sm"
             >
               <ShoppingBag className="h-4 w-4" />
-              <span>Move All to Bag</span>
+              <span>Move All to Cart</span>
             </button>
             <button
               type="button"

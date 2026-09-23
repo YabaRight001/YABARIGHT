@@ -25,7 +25,7 @@ export interface PlatformUser {
   name: string;
   email: string;
   phone: string;
-  role: 'BUYER' | 'SELLER' | 'ADMIN';
+  role: 'BUYER' | 'SELLER' | 'ADMIN' | 'AFFILIATE';
   status: 'active' | 'flagged' | 'banned';
   joinedAt: string;
   ordersCount: number;
@@ -47,6 +47,7 @@ interface AdminState {
   deleteVendor: (vendorId: string) => void;
 
   // User Moderation Actions
+  addUser: (user: Partial<PlatformUser> & { id: string; name: string; email: string; role: 'BUYER' | 'SELLER' | 'ADMIN' | 'AFFILIATE' }) => void;
   deleteUser: (userId: string) => void;
   setUserStatus: (userId: string, status: 'active' | 'flagged' | 'banned') => void;
 
@@ -229,6 +230,30 @@ export const useAdminStore = create<AdminState>()(
       },
 
       // User Moderation
+      addUser: (userData) => {
+        set((state) => {
+          const existing = state.users.find((u) => u.email.toLowerCase() === userData.email.toLowerCase());
+          if (existing) {
+            return {
+              users: state.users.map((u) =>
+                u.email.toLowerCase() === userData.email.toLowerCase() ? { ...u, ...userData } : u
+              ),
+            };
+          }
+          const newUser: PlatformUser = {
+            id: userData.id,
+            name: userData.name,
+            email: userData.email,
+            phone: userData.phone || '0800 000 0000',
+            role: userData.role,
+            status: userData.status || 'active',
+            joinedAt: userData.joinedAt || new Date().toISOString().split('T')[0],
+            ordersCount: userData.ordersCount || 0,
+          };
+          return { users: [newUser, ...state.users] };
+        });
+      },
+
       deleteUser: (userId: string) => {
         set((state) => ({
           users: state.users.filter((u) => u.id !== userId),

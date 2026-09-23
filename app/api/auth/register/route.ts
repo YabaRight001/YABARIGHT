@@ -31,9 +31,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Determine normalized role (BUYER, SELLER, or ADMIN)
-    const validRole = ['BUYER', 'SELLER', 'ADMIN'].includes(String(role).toUpperCase())
-      ? (String(role).toUpperCase() as 'BUYER' | 'SELLER' | 'ADMIN')
+    // Determine normalized role (BUYER, SELLER, ADMIN, or AFFILIATE)
+    const normalizedRole = String(role || 'BUYER').toUpperCase();
+    const validRole = ['BUYER', 'SELLER', 'ADMIN', 'AFFILIATE'].includes(normalizedRole)
+      ? (normalizedRole as 'BUYER' | 'SELLER' | 'ADMIN' | 'AFFILIATE')
       : 'BUYER';
 
     // Create user

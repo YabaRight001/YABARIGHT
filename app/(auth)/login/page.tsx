@@ -51,6 +51,8 @@ export default function LoginPage() {
         router.push('/admin');
       } else if (loggedInUser.role === 'SELLER') {
         router.push('/dashboard');
+      } else if (loggedInUser.role === 'AFFILIATE') {
+        router.push('/affiliate');
       } else {
         router.push('/products');
       }
@@ -69,7 +71,7 @@ export default function LoginPage() {
           Login to YabaRight
         </h2>
         <p className="mt-1 text-xs text-gray-500">
-          Access your bag, saved thrift items, and track orders.
+          Access your cart, saved thrift items, and track orders.
         </p>
       </div>
 

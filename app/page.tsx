@@ -442,6 +442,99 @@ export default function Home() {
           </div>
         </section>
 
+        {/* About Us (WHO WE ARE!) Section */}
+        <section id="about-us" className="border-t border-black/5 bg-gradient-to-b from-[#fffaf0] via-[#fbf5e6] to-[#fffaf0] py-16 sm:py-20">
+          <div className="container-custom max-w-4xl">
+            <div className="relative overflow-hidden rounded-[2.5rem] border border-[#FFD700]/40 bg-[#0e0e0e] p-8 sm:p-12 md:p-16 text-white shadow-2xl">
+              {/* Background Glow Accents */}
+              <div className="pointer-events-none absolute -left-20 -top-20 h-64 w-64 rounded-full bg-[#FFD700]/10 blur-3xl" />
+              <div className="pointer-events-none absolute -bottom-20 -right-20 h-64 w-64 rounded-full bg-[#e8941f]/10 blur-3xl" />
+
+              <div className="relative z-10 text-center sm:text-left">
+                <div className="inline-flex items-center gap-2 rounded-full border border-[#FFD700]/30 bg-[#FFD700]/10 px-4 py-1.5 text-xs font-black uppercase tracking-widest text-[#FFD700] mb-6">
+                  <span>About Us</span>
+                </div>
+
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-white uppercase">
+                  YABARIGHT <br className="hidden sm:inline" />
+                  <span className="text-[#FFD700]">WHO WE ARE!</span>
+                </h2>
+
+                <div className="mt-8 space-y-6 text-sm sm:text-base leading-relaxed text-gray-300 font-medium">
+                  <p className="text-base sm:text-lg text-white font-semibold italic">
+                    There comes a time when a father has to choose…
+                  </p>
+
+                  <div className="rounded-2xl border-l-4 border-[#FFD700] bg-white/5 p-4 sm:p-5 text-gray-200">
+                    <p className="text-lg sm:text-xl font-bold text-[#FFD700]">
+                      “Do I look good and take care of myself, or do I pay my children’s school fees?”
+                    </p>
+                  </div>
+
+                  <p>
+                    A time when a man begins sacrificing his youth, his confidence, his appearance, and the little things that once made him feel alive — all because he has a family to provide for.
+                  </p>
+
+                  <div className="pt-2">
+                    <p className="text-xs font-black uppercase tracking-widest text-[#FFD700]">
+                      But here’s the truth:
+                    </p>
+                    <p className="mt-1 text-base sm:text-lg font-bold text-white">
+                      A man shouldn’t have to lose himself just to take care of the people he loves.
+                    </p>
+                  </div>
+
+                  <p>
+                    The moment you stop caring about yourself, stop looking good, stop having that confidence and swag… something inside you begins to fade.
+                  </p>
+
+                  <p className="text-white font-bold">
+                    And we don’t believe that should be your story.
+                  </p>
+
+                  <p className="text-lg font-bold text-[#FFD700]">
+                    That’s the emotion behind Yabaright. ❤️
+                  </p>
+
+                  <p>
+                    <strong className="text-white">Yabaright.ng</strong> is built around the idea that you can look good, live better, and still create an extra source of income.
+                  </p>
+
+                  <p>
+                    Through our affiliate program, you have an opportunity to earn from products people already need and buy every day — while still living a life you’re proud of.
+                  </p>
+
+                  <div className="pt-4 border-t border-white/10 text-center sm:text-left">
+                    <p className="text-lg sm:text-xl font-black text-white">
+                      Look good. Earn more. Live better.
+                    </p>
+                    <p className="text-sm font-bold text-[#FFD700] mt-1">
+                      This is what we stand for. ❤️
+                    </p>
+                  </div>
+                </div>
+
+                {/* CTAs */}
+                <div className="mt-10 flex flex-wrap items-center gap-4">
+                  <Link
+                    href="/products"
+                    className="inline-flex items-center gap-2 rounded-full bg-[#FFD700] px-7 py-3.5 text-xs font-black uppercase tracking-wider text-black transition hover:bg-[#ffcc00] hover:scale-105 shadow-lg"
+                  >
+                    <span>Shop Fashion Fits</span>
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                  <Link
+                    href="/affiliate"
+                    className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-7 py-3.5 text-xs font-black uppercase tracking-wider text-white transition hover:bg-white/20 hover:text-[#FFD700]"
+                  >
+                    <span>Join Affiliate & Earn</span>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Seller CTA Banner */}
         <section className="container-custom pb-14">
           <div className="overflow-hidden rounded-[2.25rem] bg-gradient-to-r from-[#FFD700] via-[#ffcc00] to-[#e8941f] p-8 md:p-12 shadow-lg">

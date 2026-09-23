@@ -34,7 +34,7 @@ export function ProductCard({ product }: ProductCardProps) {
     e.preventDefault();
     e.stopPropagation();
     addItem(product, 1);
-    showToast(`Added "${product.name}" to bag!`, 'success');
+    showToast(`Added "${product.name}" to cart!`, 'success');
   };
 
   // Calculate discount percentage if original price is present
@@ -114,7 +114,7 @@ export function ProductCard({ product }: ProductCardProps) {
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#0b0b0b]/90 py-2.5 text-xs font-black text-white backdrop-blur-sm transition hover:bg-black"
           >
             <ShoppingBag className="h-4 w-4 text-[#FFD700]" />
-            <span>Quick Add to Bag</span>
+            <span>Quick Add to Cart</span>
           </button>
         </div>
       </Link>

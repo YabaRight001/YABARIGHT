@@ -350,15 +350,15 @@ export default function AdminProductsPage() {
                   </div>
 
                   <div>
-                    <label className="mb-1 block text-xs font-bold text-gray-300">Condition *</label>
+                    <label className="mb-1 block text-xs font-bold text-gray-300">Type *</label>
                     <select
                       value={form.condition}
                       onChange={(e) => setForm({ ...form, condition: e.target.value as ProductCondition })}
                       className="w-full rounded-xl border border-white/10 bg-[#1c1c1c] px-4 py-2.5 text-xs text-white outline-none focus:border-[#FFD700]"
                     >
                       <option value={ProductCondition.NEW} className="bg-[#1c1c1c]">Brand New</option>
-                      <option value={ProductCondition.LIKE_NEW} className="bg-[#1c1c1c]">Like New / Grade A</option>
-                      <option value={ProductCondition.GOOD} className="bg-[#1c1c1c]">Good Condition</option>
+                      <option value={ProductCondition.LIKE_NEW} className="bg-[#1c1c1c]">Pre-Owned</option>
+                      <option value={ProductCondition.GOOD} className="bg-[#1c1c1c]">Custom Made</option>
                     </select>
                   </div>
 

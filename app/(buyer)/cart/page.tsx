@@ -45,7 +45,7 @@ export default function CartPage() {
 
   const handleRemove = (productId: string, name?: string) => {
     removeItem(productId);
-    showToast(`Removed ${name || 'item'} from bag`, 'info');
+    showToast(`Removed ${name || 'item'} from cart`, 'info');
   };
 
   const shippingCost = items.length === 0 ? 0 : total >= FREE_SHIPPING_THRESHOLD ? 0 : 2500;
@@ -60,10 +60,10 @@ export default function CartPage() {
       <div className="mb-6 flex items-baseline justify-between border-b border-black/5 pb-4">
         <div>
           <span className="text-xs font-black uppercase tracking-[0.2em] text-[#c88d00]">
-            Review & Bag
+            Review & Cart
           </span>
           <h1 className="mt-1 text-2xl sm:text-4xl font-black text-gray-950">
-            Shopping Bag ({itemCount})
+            Shopping Cart ({itemCount})
           </h1>
         </div>
         {items.length > 0 && (
@@ -72,7 +72,7 @@ export default function CartPage() {
             onClick={clearCart}
             className="text-xs font-bold text-gray-500 hover:text-red-600 transition"
           >
-            Clear Entire Bag
+            Clear Entire Cart
           </button>
         )}
       </div>
@@ -82,7 +82,7 @@ export default function CartPage() {
           <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-amber-50 text-[#c88d00] mb-4">
             <ShoppingBag className="h-10 w-10" />
           </div>
-          <h2 className="text-2xl font-black text-gray-900">Your bag is currently empty</h2>
+          <h2 className="text-2xl font-black text-gray-900">Your cart is currently empty</h2>
           <p className="mt-2 max-w-sm text-xs text-gray-500">
             Looks like you haven&apos;t added any thrift finds yet. Discover fresh designer pieces and budget steals right now.
           </p>

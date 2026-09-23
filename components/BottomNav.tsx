@@ -22,7 +22,7 @@ export function BottomNav() {
       badge: wishlistCount 
     },
     { 
-      label: 'Bag', 
+      label: 'Cart', 
       href: '/cart', 
       icon: ShoppingBag, 
       match: pathname === '/cart' || pathname === '/checkout',

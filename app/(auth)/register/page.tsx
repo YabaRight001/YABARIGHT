@@ -5,21 +5,24 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { useAdminAuthStore } from '@/store/adminAuthStore';
+import { useAdminStore } from '@/store/adminStore';
 import { useToastStore } from '@/store/toastStore';
-import { Eye, EyeOff, Lock, Mail, User, ArrowRight, ShoppingBag, Store, Shield } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail, User, ArrowRight, ShoppingBag, Store, Shield, DollarSign } from 'lucide-react';
 
 function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { register, isLoading, error, clearError } = useAuthStore();
   const { loginAdmin } = useAdminAuthStore();
+  const addUser = useAdminStore((s) => s.addUser);
   const showToast = useToastStore((state) => state.showToast);
 
-  const [role, setRole] = useState<'BUYER' | 'SELLER' | 'ADMIN'>('BUYER');
+  const [role, setRole] = useState<'BUYER' | 'SELLER' | 'ADMIN' | 'AFFILIATE'>('BUYER');
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phone: '',
     password: '',
     confirmPassword: '',
   });
@@ -31,6 +34,7 @@ function RegisterForm() {
       const upper = roleParam.toUpperCase();
       if (upper === 'SELLER') setRole('SELLER');
       else if (upper === 'ADMIN') setRole('ADMIN');
+      else if (upper === 'AFFILIATE') setRole('AFFILIATE');
       else setRole('BUYER');
     }
   }, [searchParams]);
@@ -66,6 +70,18 @@ function RegisterForm() {
         role
       );
 
+      // Persist to admin moderation store so newly registered users are visible across admin dashboard
+      addUser({
+        id: registeredUser.id,
+        name: registeredUser.name,
+        email: registeredUser.email,
+        phone: formData.phone || '0800 000 0000',
+        role,
+        status: 'active',
+        joinedAt: new Date().toISOString().split('T')[0],
+        ordersCount: 0,
+      });
+
       // If registered as admin, also authenticate into admin store
       if (role === 'ADMIN') {
         loginAdmin(
@@ -88,6 +104,8 @@ function RegisterForm() {
         router.push('/admin');
       } else if (role === 'SELLER') {
         router.push('/dashboard');
+      } else if (role === 'AFFILIATE') {
+        router.push('/affiliate');
       } else {
         router.push('/products');
       }
@@ -106,7 +124,7 @@ function RegisterForm() {
           Create Your Account
         </h2>
         <p className="mt-1 text-xs text-gray-500">
-          Join YabaRight as a buyer, seller, or staff administrator.
+          Join YabaRight as a buyer, seller, affiliate partner, or administrator.
         </p>
       </div>
 
@@ -121,7 +139,7 @@ function RegisterForm() {
         <label className="mb-2 block text-xs font-bold text-gray-700">
           Account Type:
         </label>
-        <div className="grid grid-cols-3 gap-2 sm:gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5">
           <button
             type="button"
             onClick={() => setRole('BUYER')}
@@ -146,6 +164,19 @@ function RegisterForm() {
           >
             <Store className="h-4 w-4" />
             <span>Seller</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setRole('AFFILIATE')}
+            className={`flex flex-col sm:flex-row items-center justify-center gap-1.5 rounded-2xl border py-2.5 px-2 text-[11px] sm:text-xs font-black uppercase tracking-wider transition ${
+              role === 'AFFILIATE'
+                ? 'border-[#111111] bg-[#111111] text-[#FFD700] shadow-sm'
+                : 'border-gray-200 bg-[#fbf8f2] text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            <DollarSign className="h-4 w-4" />
+            <span>Affiliate</span>
           </button>
 
           <button

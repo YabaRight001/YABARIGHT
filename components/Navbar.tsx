@@ -27,7 +27,7 @@ const navLinks = [
   { name: 'Hot Deals', href: '/products?category=deals' },
   { name: 'Shoes', href: '/products?category=shoes' },
   { name: 'Bags', href: '/products?category=bags' },
-  { name: '💰 Earn with Us', href: '/affiliate' },
+  { name: '💰 AFFILIATE', href: '/affiliate' },
 ];
 
 export function Navbar() {
@@ -90,7 +90,7 @@ export function Navbar() {
             <img
               src="/logo.png"
               alt="YabaRight Logo"
-              className="h-14 w-auto object-contain sm:h-16"
+              className="h-14 w-auto object-contain sm:h-16 "
             />
           </Link>
         </div>
@@ -165,7 +165,7 @@ export function Navbar() {
             aria-label="Shopping Cart"
           >
             <ShoppingBag className="h-4 w-4" />
-            <span className="hidden sm:inline">Bag</span>
+            <span className="hidden sm:inline">Cart</span>
             {itemCount > 0 && (
               <span className="flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-black px-1 text-[10px] font-black text-[#FFD700]">
                 {itemCount}
