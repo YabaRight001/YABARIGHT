@@ -313,7 +313,7 @@ export default function CheckoutPage() {
     <div className="grid gap-4 sm:grid-cols-2">
       <div className="sm:col-span-2">
         <label className="mb-1.5 block text-xs font-bold text-gray-700">Full Name *</label>
-        <input type="text" required placeholder="e.g. Zainab Bakare"
+        <input type="text" required placeholder="e.g. John Doe"
           value={formData.fullName} onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
           className="w-full rounded-xl border border-gray-200 bg-[#fbf8f2] px-4 py-2.5 text-xs text-gray-900 outline-none focus:border-[#FFD700]" />
       </div>
