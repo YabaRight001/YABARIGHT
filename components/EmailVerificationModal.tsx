@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Mail, CheckCircle2, ArrowRight, RefreshCw, Sparkles, X, ShieldCheck } from 'lucide-react';
+import { Mail, ArrowRight, RefreshCw, X, ShieldCheck, Inbox } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useToastStore } from '@/store/toastStore';
+import api from '@/lib/api';
 
 interface EmailVerificationProps {
   email: string;
@@ -20,28 +21,34 @@ export function EmailVerificationModal({
   onVerified,
   onCancel,
 }: EmailVerificationProps) {
-  const { verifyEmail, resendVerificationCode, verificationCode, isLoading, error, clearError } = useAuthStore();
+  const { verifyEmail, isLoading, error, clearError } = useAuthStore();
   const showToast = useToastStore((s) => s.showToast);
 
   const [digits, setDigits] = useState(['', '', '', '', '', '']);
-  const [resendCooldown, setResendCooldown] = useState(30);
-  const [currentOtp, setCurrentOtp] = useState<string>('');
+  const [resendCooldown, setResendCooldown] = useState(45);
+  const [sendingEmail, setSendingEmail] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
+  // Automatically trigger real email sending when the modal opens
   useEffect(() => {
     clearError();
-    // Retrieve OTP or generate demo OTP
-    let otp = verificationCode;
-    if (!otp && typeof window !== 'undefined') {
-      otp = localStorage.getItem(`verify_otp_${email.toLowerCase()}`);
-    }
-    if (!otp) {
-      otp = Math.floor(100000 + Math.random() * 900000).toString();
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(`verify_otp_${email.toLowerCase()}`, otp);
+
+    async function triggerEmail() {
+      try {
+        setSendingEmail(true);
+        await api.post('/auth/send-verification', {
+          email: email.trim().toLowerCase(),
+          name: userName,
+        });
+        showToast(`Verification code sent to ${email}. Check your inbox! ✉️`, 'success');
+      } catch (err: any) {
+        console.error('Email dispatch error:', err);
+      } finally {
+        setSendingEmail(false);
       }
     }
-    setCurrentOtp(otp);
+
+    triggerEmail();
 
     // Countdown timer
     const interval = setInterval(() => {
@@ -49,7 +56,7 @@ export function EmailVerificationModal({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [email, verificationCode, clearError]);
+  }, [email, userName, clearError, showToast]);
 
   const handleDigitChange = (index: number, value: string) => {
     if (!/^\d*$/.test(value)) return;
@@ -78,21 +85,20 @@ export function EmailVerificationModal({
     }
   };
 
-  const handleAutofill = () => {
-    const codeToUse = currentOtp || '123456';
-    setDigits(codeToUse.split(''));
-    showToast(`Code ${codeToUse} auto-filled!`, 'info');
-  };
-
   const handleResend = async () => {
-    if (resendCooldown > 0) return;
+    if (resendCooldown > 0 || sendingEmail) return;
     try {
-      const newOtp = await resendVerificationCode(email);
-      setCurrentOtp(newOtp);
-      setResendCooldown(30);
-      showToast(`A new 6-digit code (${newOtp}) has been sent to ${email}`, 'success');
+      setSendingEmail(true);
+      await api.post('/auth/send-verification', {
+        email: email.trim().toLowerCase(),
+        name: userName,
+      });
+      setResendCooldown(45);
+      showToast(`A fresh verification code has been dispatched to ${email}`, 'success');
     } catch {
-      showToast('Failed to resend code', 'error');
+      showToast('Failed to resend code. Please try again shortly.', 'error');
+    } finally {
+      setSendingEmail(false);
     }
   };
 
@@ -100,21 +106,29 @@ export function EmailVerificationModal({
     e.preventDefault();
     const fullCode = digits.join('');
     if (fullCode.length < 6) {
-      showToast('Please enter the full 6-digit verification code.', 'error');
+      showToast('Please enter the complete 6-digit verification code from your email.', 'error');
       return;
     }
 
     try {
+      // Verify via API endpoint
+      await api.post('/auth/verify-email', {
+        email: email.trim().toLowerCase(),
+        code: fullCode,
+      });
+
+      // Also mark in auth store
       await verifyEmail(email, fullCode);
       showToast(`Email verified successfully! Welcome, ${userName}. 🎉`, 'success');
       onVerified();
-    } catch {
-      // Error handled by store
+    } catch (err: any) {
+      const msg = err.response?.data?.message || err.message || 'Invalid verification code. Please check your inbox.';
+      showToast(msg, 'error');
     }
   };
 
   return (
-    <div className="rounded-[2.5rem] border border-black/10 bg-white p-6 sm:p-10 shadow-xl max-w-lg mx-auto relative animate-in fade-in zoom-in-95 duration-200">
+    <div className="rounded-[2.5rem] border border-black/10 bg-white p-6 sm:p-10 shadow-2xl max-w-lg mx-auto relative animate-in fade-in zoom-in-95 duration-200">
       {onCancel && (
         <button
           type="button"
@@ -131,35 +145,26 @@ export function EmailVerificationModal({
           <Mail className="h-8 w-8 text-[#c88d00]" />
         </div>
         <span className="text-[11px] font-black uppercase tracking-[0.2em] text-[#c88d00]">
-          Account Activation
+          Email Verification Required
         </span>
         <h2 className="mt-1 text-2xl sm:text-3xl font-black text-gray-950">
-          Verify Your Email
+          Check Your Inbox
         </h2>
         <p className="mt-2 text-xs sm:text-sm text-gray-600 max-w-sm mx-auto leading-relaxed">
           We&apos;ve sent a 6-digit verification code to: <br />
-          <strong className="text-gray-900 font-bold">{email}</strong>
+          <strong className="text-gray-950 font-bold">{email}</strong>
         </p>
       </div>
 
-      {/* Demo Test Code Banner */}
-      <div className="mt-5 flex items-center justify-between rounded-2xl border border-amber-200 bg-amber-50/80 p-3.5 text-xs text-amber-900">
-        <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-[#c88d00] flex-shrink-0" />
-          <div>
-            <p className="font-bold text-gray-900">
-              Demo Code: <span className="font-mono text-sm font-black text-[#c88d00]">{currentOtp || '123456'}</span>
-            </p>
-            <p className="text-[10px] text-gray-500">For testing: use this code or 123456</p>
-          </div>
+      {/* Real Email Helper Note */}
+      <div className="mt-5 rounded-2xl border border-blue-100 bg-blue-50/70 p-3.5 text-xs text-blue-900 flex items-start gap-2.5">
+        <Inbox className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
+        <div className="leading-relaxed">
+          <p className="font-bold text-blue-950">Open your email app</p>
+          <p className="text-[11px] text-blue-800">
+            Enter the 6-digit code sent to your email, or click the direct verification link inside the email. Check spam/junk if not in inbox.
+          </p>
         </div>
-        <button
-          type="button"
-          onClick={handleAutofill}
-          className="rounded-xl bg-[#111111] px-3 py-1.5 text-[11px] font-black uppercase tracking-wider text-[#FFD700] hover:bg-black transition"
-        >
-          Auto-fill
-        </button>
       </div>
 
       {error && (
@@ -176,6 +181,7 @@ export function EmailVerificationModal({
               key={idx}
               ref={(el) => { inputRefs.current[idx] = el; }}
               type="text"
+              inputMode="numeric"
               maxLength={1}
               value={digit}
               onChange={(e) => handleDigitChange(idx, e.target.value)}
@@ -190,7 +196,7 @@ export function EmailVerificationModal({
           disabled={isLoading || digits.join('').length < 6}
           className="flex w-full items-center justify-center gap-2 rounded-full bg-[#111111] py-4 text-xs font-black uppercase tracking-wider text-[#FFD700] transition hover:bg-black hover:scale-[1.01] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
         >
-          <span>{isLoading ? 'Verifying...' : `Activate ${userRole} Account`}</span>
+          <span>{isLoading ? 'Verifying Code...' : `Verify & Continue as ${userRole}`}</span>
           <ArrowRight className="h-4 w-4" />
         </button>
       </form>
@@ -198,20 +204,20 @@ export function EmailVerificationModal({
       {/* Resend & Support */}
       <div className="mt-6 flex flex-col items-center gap-2 text-center text-xs text-gray-500">
         <p>
-          Didn&apos;t receive the email?{' '}
+          Didn&apos;t receive the code?{' '}
           <button
             type="button"
-            disabled={resendCooldown > 0}
+            disabled={resendCooldown > 0 || sendingEmail}
             onClick={handleResend}
             className="font-black text-[#c88d00] hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {resendCooldown > 0 ? `Resend Code in ${resendCooldown}s` : 'Resend Code Now'}
+            {sendingEmail ? 'Sending...' : resendCooldown > 0 ? `Resend Code in ${resendCooldown}s` : 'Resend Code Now'}
           </button>
         </p>
 
         <div className="flex items-center gap-1.5 text-[11px] text-gray-400 pt-2">
           <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
-          <span>YabaRight Secure Email Authentication</span>
+          <span>YabaRight Secure Email Verification</span>
         </div>
       </div>
     </div>
