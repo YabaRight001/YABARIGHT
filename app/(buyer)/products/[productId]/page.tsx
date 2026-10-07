@@ -39,8 +39,15 @@ export default function ProductDetailPage({
   const adminProducts = useAdminStore((state) => state.products);
   const vendors = useAdminStore((state) => state.vendors);
   
-  // Find product from adminStore or fallback
-  const product = adminProducts.find((p) => p.id === params.productId) || getProductById(params.productId);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Use live products from adminStore once mounted
+  const allProducts = mounted && adminProducts !== undefined ? adminProducts : sampleProducts;
+  const product = allProducts.find((p) => p.id === params.productId);
+
   const isOfficial = product?.sellerId === 'admin-official';
   const vendor = vendors.find((v) => v.id === product?.sellerId);
   const isVerified = isOfficial || (vendor?.isVerified ?? false);
@@ -125,13 +132,35 @@ export default function ProductDetailPage({
   };
 
   // Available sizes list
+  if (!product) {
+    return (
+      <div className="container-custom py-16 text-center">
+        <div className="mx-auto max-w-md rounded-3xl border border-black/10 bg-white p-8 shadow-sm">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 text-amber-600">
+            <Info className="h-7 w-7" />
+          </div>
+          <h2 className="text-xl font-black text-gray-950">Item Not Found</h2>
+          <p className="mt-2 text-xs sm:text-sm text-gray-500">
+            This product may have been removed, sold, or is no longer available in the catalog.
+          </p>
+          <Link
+            href="/products"
+            className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#FFD700] px-6 py-2.5 text-xs font-black uppercase text-black hover:bg-[#ffcc00] transition"
+          >
+            <span>Back to Marketplace</span>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   const availableSizes =
     product.sizes && product.sizes.length > 0
       ? product.sizes
       : ['Small', 'Medium', 'Large', 'XL', 'XXL', 'XXXL'];
 
-  // Related products
-  const relatedProducts = sampleProducts
+  // Related products from live allProducts
+  const relatedProducts = allProducts
     .filter((p) => p.id !== product.id && (p.category === product.category || p.trending))
     .slice(0, 4);
 

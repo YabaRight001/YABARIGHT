@@ -1,7 +1,9 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { sampleProducts } from '@/lib/mockProducts';
+import { useAdminStore } from '@/store/adminStore';
 import { useWishlistStore } from '@/store/wishlistStore';
 import { useCartStore } from '@/store/cartStore';
 import { useToastStore } from '@/store/toastStore';
@@ -12,8 +14,15 @@ export default function WishlistPage() {
   const { items, clearWishlist } = useWishlistStore();
   const addItem = useCartStore((state) => state.addItem);
   const showToast = useToastStore((state) => state.showToast);
+  const adminProducts = useAdminStore((state) => state.products);
 
-  const wishlistProducts = sampleProducts.filter((product) => items.includes(product.id));
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const allProducts = mounted && adminProducts !== undefined ? adminProducts : sampleProducts;
+  const wishlistProducts = (allProducts || []).filter((product) => items.includes(product.id));
 
   const handleMoveAllToCart = () => {
     wishlistProducts.forEach((p) => addItem(p, 1));

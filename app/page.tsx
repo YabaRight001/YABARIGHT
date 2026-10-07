@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { sampleProducts } from '@/lib/mockProducts';
+import { useAdminStore } from '@/store/adminStore';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { BottomNav } from '@/components/BottomNav';
@@ -130,8 +131,16 @@ export default function Home() {
     }
   }, []);
 
-  // Curated Featured Drop products (8 items)
-  const featuredDropProducts = sampleProducts.slice(0, 8);
+  const adminProducts = useAdminStore((state) => state.products);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Curated Featured Drop products from live adminStore (falls back to sampleProducts before mount)
+  const displayProducts = mounted && adminProducts ? adminProducts : sampleProducts;
+  const featuredDropProducts = displayProducts.slice(0, 8);
 
   return (
     <div className="flex min-h-screen flex-col bg-[#fffaf0] text-[#111111]">
@@ -273,11 +282,23 @@ export default function Home() {
             </div>
 
             {/* Product Cards Grid (4 cols on desktop, 2 cols on mobile) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-              {featuredDropProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
+            {featuredDropProducts.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+                {featuredDropProducts.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-dashed border-black/15 bg-white/60 p-12 text-center">
+                <p className="text-sm font-bold text-gray-500">No products available in this drop right now.</p>
+                <Link
+                  href="/products"
+                  className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#FFD700] px-6 py-2.5 text-xs font-black uppercase text-black hover:bg-[#ffcc00] transition"
+                >
+                  Browse Full Catalog
+                </Link>
+              </div>
+            )}
 
             {/* Bottom Section Link */}
             <div className="mt-10 sm:mt-12 text-center">

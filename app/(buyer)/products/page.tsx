@@ -48,6 +48,7 @@ function ProductsContent() {
   } = useProductStore();
   const { setActiveRef } = useAffiliateStore();
 
+  const adminProducts = useAdminStore((s) => s.products);
   const storedCategories = useAdminStore((s) => s.categories);
   const categoriesList = ['All', ...(storedCategories && storedCategories.length > 0 ? storedCategories : DEFAULT_CATEGORIES.slice(1))];
 
@@ -66,7 +67,7 @@ function ProductsContent() {
     }
   }, [searchParams, setActiveRef]);
 
-  // Sync search parameters from URL on mount/change
+  // Sync search parameters and live products from adminStore on mount/change
   useEffect(() => {
     setLoading(true);
     setError(null);
@@ -90,7 +91,10 @@ function ProductsContent() {
 
     setSearchInput(initialSearch);
 
-    setProducts(sampleProducts);
+    // Use live products from adminStore (with fallback to sampleProducts before store hydration)
+    const productsSource = adminProducts !== undefined ? adminProducts : sampleProducts;
+    setProducts(productsSource);
+
     setFilters({
       category: matchedCategory && matchedCategory !== 'All' ? matchedCategory : '',
       search: initialSearch,
@@ -100,7 +104,7 @@ function ProductsContent() {
     });
 
     setLoading(false);
-  }, [searchParams, setError, setLoading, setProducts, setFilters]);
+  }, [adminProducts, searchParams, setError, setLoading, setProducts, setFilters, categoriesList]);
 
   // Handle category pill click
   const handleCategorySelect = (cat: string) => {
