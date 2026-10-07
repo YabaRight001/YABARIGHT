@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useAdminStore } from '@/store/adminStore';
 import { useToastStore } from '@/store/toastStore';
 import { ProductCondition } from '@/types';
@@ -8,6 +8,7 @@ import { BodyTypeVisualizer } from '@/components/BodyTypeVisualizer';
 import {
   Package,
   PlusCircle,
+  Plus,
   Trash2,
   Search,
   Filter,
@@ -19,34 +20,129 @@ import {
   Layers,
   Ruler,
   User,
+  FolderPlus,
+  Camera,
+  Image as ImageIcon,
 } from 'lucide-react';
-
-const CATEGORIES = ['Clothing', 'Shoes', 'Bags', 'Shirts', 'Suits', 'Trousers', 'Accessories'];
 
 const ALL_SIZES = ['Small', 'Medium', 'Large', 'XL', 'XXL', 'XXXL'] as const;
 const GENDERS = ['Male', 'Female', 'Unisex'] as const;
 const COMMON_NECK_SIZES = ['14.5"', '15.0"', '15.5"', '16.0"', '16.5"', '17.0"', '17.5"', '18.0"'];
 const COMMON_WAIST_SIZES = ['28"', '30"', '32"', '34"', '36"', '38"', '40"', '42"', '44"'];
 
-const DEFAULT_IMAGE_PRESETS = [
-  { label: 'Suit Blue', url: '/suit-blue-1.jpg' },
-  { label: 'Suit Grey', url: '/suit-grey-1.jpg' },
-  { label: 'Folded Shirts', url: '/folded-shirts-blue.jpg' },
-  { label: 'Casual Shirts', url: '/casual-shirts-colorful.jpg' },
-  { label: 'Leather Bag', url: '/bag-handbag.jpg' },
-  { label: 'Corporate Shoes', url: '/male-shoes-collection.jpg' },
-  { label: 'Jeans Stack', url: '/jeans-stack.jpg' },
-  { label: 'Heels Black', url: '/heels-black-pair.jpg' },
-  { label: 'Ballet Flats', url: '/female-shoe-flat.jpg' },
-];
-
 export default function AdminProductsPage() {
-  const { products, addProduct, deleteProduct } = useAdminStore();
+  const {
+    products,
+    addProduct,
+    deleteProduct,
+    categories: storedCategories,
+    addCategory,
+    deleteCategory,
+    imagePresets: storedImagePresets,
+    addImagePreset,
+    deleteImagePreset,
+  } = useAdminStore();
   const showToast = useToastStore((s) => s.showToast);
 
+  // Fallback defaults if store is initializing
+  const categories =
+    storedCategories && storedCategories.length > 0
+      ? storedCategories
+      : ['Clothing', 'Shoes', 'Bags', 'Shirts', 'Suits', 'Trousers', 'Accessories', 'Designer Items', 'Vintage', 'Traditional Wears'];
+
+  const imagePresets =
+    storedImagePresets && storedImagePresets.length > 0
+      ? storedImagePresets
+      : [
+          { id: 'pre-1', label: 'Suit Blue', url: '/suit-blue-1.jpg' },
+          { id: 'pre-2', label: 'Suit Grey', url: '/suit-grey-1.jpg' },
+          { id: 'pre-3', label: 'Folded Shirts', url: '/folded-shirts-blue.jpg' },
+          { id: 'pre-4', label: 'Casual Shirts', url: '/casual-shirts-colorful.jpg' },
+          { id: 'pre-5', label: 'Leather Bag', url: '/bag-handbag.jpg' },
+          { id: 'pre-6', label: 'Corporate Shoes', url: '/male-shoes-collection.jpg' },
+          { id: 'pre-7', label: 'Jeans Stack', url: '/jeans-stack.jpg' },
+          { id: 'pre-8', label: 'Heels Black', url: '/heels-black-pair.jpg' },
+          { id: 'pre-9', label: 'Ballet Flats', url: '/female-shoe-flat.jpg' },
+          { id: 'pre-10', label: 'Polo Shirts', url: '/polo-shirts.jpg' },
+          { id: 'pre-11', label: 'Banner Suits', url: '/banner-suit-tie.jpg' },
+        ];
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All');
+
+  // Category Management State
+  const [showCategoryManager, setShowCategoryManager] = useState(false);
+  const [inlineNewCategory, setInlineNewCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+
+  // Preset Management State
+  const [showNewPresetForm, setShowNewPresetForm] = useState(false);
+  const [newPresetLabel, setNewPresetLabel] = useState('');
+  const [newPresetUrl, setNewPresetUrl] = useState('');
+
+  const handleCreateCategory = (customName?: string) => {
+    const targetName = (customName || newCategoryName).trim();
+    if (!targetName) return;
+    addCategory(targetName);
+    setForm((prev) => ({ ...prev, category: targetName }));
+    setNewCategoryName('');
+    setInlineNewCategory(false);
+    showToast(`Added category "${targetName}"! 🎉`, 'success');
+  };
+
+  const handleDeviceFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64Url = reader.result as string;
+      const cleanLabel = file.name.replace(/\.[^/.]+$/, '').slice(0, 16);
+      setForm((prev) => ({ ...prev, imageUrl: base64Url }));
+
+      addImagePreset({
+        label: cleanLabel || 'Device Upload',
+        url: base64Url,
+      });
+
+      showToast(`Image loaded from device & saved to sample presets! 📸`, 'success');
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const handleSaveCurrentAsPreset = () => {
+    if (!form.imageUrl) {
+      showToast('Please select or enter an image URL first.', 'error');
+      return;
+    }
+    const label = prompt('Enter a short label for this sample preset:', form.name || 'Sample Image');
+    if (!label?.trim()) return;
+    addImagePreset({
+      label: label.trim(),
+      url: form.imageUrl,
+    });
+    showToast(`Saved "${label.trim()}" to sample presets! 🎉`, 'success');
+  };
+
+  const handleAddNewPresetManual = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPresetLabel.trim() || !newPresetUrl.trim()) {
+      showToast('Please enter both a label and image URL.', 'error');
+      return;
+    }
+    addImagePreset({
+      label: newPresetLabel.trim(),
+      url: newPresetUrl.trim(),
+    });
+    setForm((prev) => ({ ...prev, imageUrl: newPresetUrl.trim() }));
+    setNewPresetLabel('');
+    setNewPresetUrl('');
+    setShowNewPresetForm(false);
+    showToast(`Added new sample preset "${newPresetLabel}"! 📸`, 'success');
+  };
 
   const [form, setForm] = useState({
     name: '',
@@ -178,9 +274,9 @@ export default function AdminProductsPage() {
           <Search className="absolute left-3.5 top-3 h-4 w-4 text-gray-400" />
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
+        <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
           <span className="text-xs text-gray-400 font-bold hidden sm:inline">Category:</span>
-          {['All', ...CATEGORIES].map((cat) => (
+          {['All', ...categories].map((cat) => (
             <button
               key={cat}
               type="button"
@@ -194,6 +290,15 @@ export default function AdminProductsPage() {
               {cat}
             </button>
           ))}
+          <button
+            type="button"
+            onClick={() => setShowCategoryManager(true)}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[#FFD700]/40 bg-[#FFD700]/10 px-3 py-1.5 text-xs font-bold text-[#FFD700] hover:bg-[#FFD700] hover:text-black transition flex-shrink-0"
+            title="Manage all categories"
+          >
+            <FolderPlus className="h-3.5 w-3.5" />
+            <span>Manage Categories</span>
+          </button>
         </div>
       </div>
 
@@ -337,16 +442,52 @@ export default function AdminProductsPage() {
                   </div>
 
                   <div>
-                    <label className="mb-1 block text-xs font-bold text-gray-300">Category *</label>
-                    <select
-                      value={form.category}
-                      onChange={(e) => setForm({ ...form, category: e.target.value })}
-                      className="w-full rounded-xl border border-white/10 bg-[#1c1c1c] px-4 py-2.5 text-xs text-white outline-none focus:border-[#FFD700]"
-                    >
-                      {CATEGORIES.map((c) => (
-                        <option key={c} value={c} className="bg-[#1c1c1c]">{c}</option>
-                      ))}
-                    </select>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-xs font-bold text-gray-300">Category *</label>
+                      <button
+                        type="button"
+                        onClick={() => setInlineNewCategory(!inlineNewCategory)}
+                        className="text-[10px] font-bold text-[#FFD700] hover:underline"
+                      >
+                        {inlineNewCategory ? 'Cancel' : '+ New Category'}
+                      </button>
+                    </div>
+
+                    {inlineNewCategory ? (
+                      <div className="flex items-center gap-1.5">
+                        <input
+                          type="text"
+                          placeholder="e.g. Traditional Wears..."
+                          value={newCategoryName}
+                          onChange={(e) => setNewCategoryName(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleCreateCategory();
+                            }
+                          }}
+                          autoFocus
+                          className="flex-1 rounded-xl border border-[#FFD700]/50 bg-[#141414] px-3 py-2 text-xs text-white outline-none focus:ring-1 focus:ring-[#FFD700]"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleCreateCategory()}
+                          className="rounded-xl bg-[#FFD700] px-3 py-2 text-[10px] font-black uppercase text-black hover:bg-[#ffcc00]"
+                        >
+                          Add
+                        </button>
+                      </div>
+                    ) : (
+                      <select
+                        value={form.category}
+                        onChange={(e) => setForm({ ...form, category: e.target.value })}
+                        className="w-full rounded-xl border border-white/10 bg-[#1c1c1c] px-4 py-2.5 text-xs text-white outline-none focus:border-[#FFD700]"
+                      >
+                        {categories.map((c) => (
+                          <option key={c} value={c} className="bg-[#1c1c1c]">{c}</option>
+                        ))}
+                      </select>
+                    )}
                   </div>
 
                   <div>
@@ -511,31 +652,150 @@ export default function AdminProductsPage() {
 
               {/* 4. Images & Preset Picker */}
               <div className="space-y-3">
-                <label className="block text-xs font-bold text-gray-300">Product Image Preset or URL</label>
-                <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-                  {DEFAULT_IMAGE_PRESETS.map((preset) => (
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-bold text-gray-300">
+                    Product Image Preset or URL
+                  </label>
+                  <div className="flex items-center gap-2">
                     <button
-                      key={preset.url}
                       type="button"
-                      onClick={() => setForm({ ...form, imageUrl: preset.url })}
-                      className={`rounded-xl border p-1 text-center transition flex flex-col items-center gap-1 ${
-                        form.imageUrl === preset.url
-                          ? 'border-[#FFD700] bg-[#FFD700]/15'
-                          : 'border-white/10 hover:border-white/30'
-                      }`}
+                      onClick={() => fileInputRef.current?.click()}
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-[#FFD700] hover:text-[#ffcc00]"
                     >
-                      <img src={preset.url} alt={preset.label} className="h-10 w-10 object-cover rounded-lg" />
-                      <span className="text-[10px] text-gray-300 truncate w-full">{preset.label}</span>
+                      <Upload className="h-3 w-3" />
+                      <span>Upload from Device</span>
                     </button>
+                    <span className="text-gray-600">•</span>
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPresetForm(!showNewPresetForm)}
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-gray-300 hover:text-white"
+                    >
+                      <Plus className="h-3 w-3" />
+                      <span>Add URL Preset</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Hidden File Input for Device Upload */}
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  accept="image/*"
+                  onChange={handleDeviceFileSelect}
+                  className="hidden"
+                />
+
+                {/* Presets Grid */}
+                <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 gap-2 max-h-56 overflow-y-auto p-1.5 rounded-2xl bg-black/30 border border-white/5">
+                  {/* Upload from Device Tile */}
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="group rounded-xl border border-dashed border-[#FFD700]/40 p-2 text-center transition flex flex-col items-center justify-center gap-1 bg-[#FFD700]/5 hover:bg-[#FFD700]/15"
+                  >
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#FFD700]/20 text-[#FFD700] group-hover:scale-110 transition-transform">
+                      <Camera className="h-5 w-5" />
+                    </div>
+                    <span className="text-[10px] font-bold text-[#FFD700] leading-tight">Upload Device</span>
+                  </button>
+
+                  {imagePresets.map((preset) => (
+                    <div
+                      key={preset.id || preset.url}
+                      className={`relative group rounded-xl border p-1 text-center transition flex flex-col items-center gap-1 cursor-pointer ${
+                        form.imageUrl === preset.url
+                          ? 'border-[#FFD700] bg-[#FFD700]/15 ring-2 ring-[#FFD700]/30'
+                          : 'border-white/10 hover:border-white/30 bg-[#1c1c1c]'
+                      }`}
+                      onClick={() => setForm({ ...form, imageUrl: preset.url })}
+                    >
+                      <img src={preset.url} alt={preset.label} className="h-10 w-10 object-cover rounded-lg bg-black/40" />
+                      <span className="text-[10px] text-gray-300 truncate w-full px-1">{preset.label}</span>
+
+                      {/* Delete Preset Button */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteImagePreset(preset.id || preset.url);
+                          showToast(`Removed preset "${preset.label}"`, 'info');
+                        }}
+                        className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-600 text-white flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:scale-110"
+                        title="Delete preset"
+                      >
+                        ×
+                      </button>
+                    </div>
                   ))}
                 </div>
-                <input
-                  type="text"
-                  value={form.imageUrl}
-                  onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
-                  placeholder="Or enter image URL"
-                  className="w-full rounded-xl border border-white/10 bg-[#1c1c1c] px-4 py-2 text-xs text-white outline-none focus:border-[#FFD700]"
-                />
+
+                {/* Optional Manual Add Preset Bar */}
+                {showNewPresetForm && (
+                  <div className="rounded-xl border border-white/10 bg-[#181818] p-3 space-y-2 animate-in fade-in duration-200">
+                    <p className="text-[11px] font-bold text-[#FFD700]">Save a New Sample Image Preset</p>
+                    <div className="grid sm:grid-cols-2 gap-2">
+                      <input
+                        type="text"
+                        placeholder="Preset label (e.g. Vintage Agbada)"
+                        value={newPresetLabel}
+                        onChange={(e) => setNewPresetLabel(e.target.value)}
+                        className="rounded-lg border border-white/10 bg-[#141414] px-3 py-1.5 text-xs text-white outline-none focus:border-[#FFD700]"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Image URL (e.g. /my-image.jpg or https://...)"
+                        value={newPresetUrl}
+                        onChange={(e) => setNewPresetUrl(e.target.value)}
+                        className="rounded-lg border border-white/10 bg-[#141414] px-3 py-1.5 text-xs text-white outline-none focus:border-[#FFD700]"
+                      />
+                    </div>
+                    <div className="flex justify-end gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPresetForm(false)}
+                        className="rounded-lg px-3 py-1 text-[11px] text-gray-400 hover:text-white"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleAddNewPresetManual}
+                        className="rounded-lg bg-[#FFD700] px-3 py-1 text-[11px] font-bold text-black hover:bg-[#ffcc00]"
+                      >
+                        Save Preset
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Image URL & Current Preview */}
+                <div className="flex gap-2 items-center">
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      value={form.imageUrl}
+                      onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
+                      placeholder="Paste image URL or pick preset above"
+                      className="w-full rounded-xl border border-white/10 bg-[#1c1c1c] px-4 py-2.5 text-xs text-white outline-none focus:border-[#FFD700]"
+                    />
+                  </div>
+                  {form.imageUrl && (
+                    <button
+                      type="button"
+                      onClick={handleSaveCurrentAsPreset}
+                      className="rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 px-3 py-2.5 text-[11px] font-bold text-gray-300 hover:text-[#FFD700] transition flex-shrink-0"
+                      title="Save this URL to your presets list"
+                    >
+                      💾 Save Preset
+                    </button>
+                  )}
+                  {form.imageUrl && (
+                    <div className="h-10 w-10 rounded-xl overflow-hidden border border-[#FFD700]/40 flex-shrink-0 bg-black/40">
+                      <img src={form.imageUrl} alt="Preview" className="h-full w-full object-cover" />
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* 5. Description */}
@@ -568,6 +828,84 @@ export default function AdminProductsPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Category Manager Modal */}
+      {showCategoryManager && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="relative w-full max-w-md rounded-[2rem] border border-[#FFD700]/30 bg-[#141414] p-6 text-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
+              <div className="flex items-center gap-2">
+                <FolderPlus className="h-5 w-5 text-[#FFD700]" />
+                <h3 className="text-base font-black text-white">Manage Categories</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowCategoryManager(false)}
+                className="rounded-full bg-white/5 p-1.5 text-gray-400 hover:text-white"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Add New Category Input */}
+            <div className="flex gap-2 mb-5">
+              <input
+                type="text"
+                placeholder="New category name (e.g. Watches)..."
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleCreateCategory();
+                  }
+                }}
+                className="flex-1 rounded-xl border border-white/10 bg-[#1c1c1c] px-3 py-2 text-xs text-white outline-none focus:border-[#FFD700]"
+              />
+              <button
+                type="button"
+                onClick={() => handleCreateCategory()}
+                className="rounded-xl bg-[#FFD700] px-4 py-2 text-xs font-black uppercase text-black hover:bg-[#ffcc00] transition"
+              >
+                Add
+              </button>
+            </div>
+
+            {/* Existing Categories List */}
+            <div className="space-y-1.5 max-h-64 overflow-y-auto pr-1">
+              {categories.map((cat) => (
+                <div
+                  key={cat}
+                  className="flex items-center justify-between rounded-xl bg-white/5 px-3 py-2 border border-white/5 hover:border-white/15 transition"
+                >
+                  <span className="text-xs font-bold text-gray-200">{cat}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      deleteCategory(cat);
+                      showToast(`Deleted category "${cat}"`, 'info');
+                    }}
+                    className="p-1 text-gray-500 hover:text-red-400 transition"
+                    title={`Delete category ${cat}`}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-5 pt-3 border-t border-white/10 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowCategoryManager(false)}
+                className="rounded-full bg-white/10 hover:bg-white/20 px-5 py-2 text-xs font-bold text-white transition"
+              >
+                Done
+              </button>
+            </div>
           </div>
         </div>
       )}

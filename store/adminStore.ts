@@ -51,9 +51,52 @@ interface AdminState {
   deleteUser: (userId: string) => void;
   setUserStatus: (userId: string, status: 'active' | 'flagged' | 'banned') => void;
 
+  // Category Actions
+  categories: string[];
+  addCategory: (categoryName: string) => void;
+  deleteCategory: (categoryName: string) => void;
+
+  // Image Preset Actions
+  imagePresets: ImagePreset[];
+  addImagePreset: (preset: { label: string; url: string }) => void;
+  deleteImagePreset: (idOrUrl: string) => void;
+
   // Getters
   isSellerVerified: (sellerId: string) => boolean;
 }
+
+export interface ImagePreset {
+  id: string;
+  label: string;
+  url: string;
+}
+
+export const initialCategories: string[] = [
+  'Clothing',
+  'Shoes',
+  'Bags',
+  'Shirts',
+  'Suits',
+  'Trousers',
+  'Accessories',
+  'Designer Items',
+  'Vintage',
+  'Traditional Wears',
+];
+
+export const initialImagePresets: ImagePreset[] = [
+  { id: 'pre-1', label: 'Suit Blue', url: '/suit-blue-1.jpg' },
+  { id: 'pre-2', label: 'Suit Grey', url: '/suit-grey-1.jpg' },
+  { id: 'pre-3', label: 'Folded Shirts', url: '/folded-shirts-blue.jpg' },
+  { id: 'pre-4', label: 'Casual Shirts', url: '/casual-shirts-colorful.jpg' },
+  { id: 'pre-5', label: 'Leather Bag', url: '/bag-handbag.jpg' },
+  { id: 'pre-6', label: 'Corporate Shoes', url: '/male-shoes-collection.jpg' },
+  { id: 'pre-7', label: 'Jeans Stack', url: '/jeans-stack.jpg' },
+  { id: 'pre-8', label: 'Heels Black', url: '/heels-black-pair.jpg' },
+  { id: 'pre-9', label: 'Ballet Flats', url: '/female-shoe-flat.jpg' },
+  { id: 'pre-10', label: 'Polo Shirts', url: '/polo-shirts.jpg' },
+  { id: 'pre-11', label: 'Banner Suits', url: '/banner-suit-tie.jpg' },
+];
 
 const initialVendors: VendorProfile[] = [
   {
@@ -169,6 +212,8 @@ export const useAdminStore = create<AdminState>()(
       products: sampleProducts,
       vendors: initialVendors,
       users: initialUsers,
+      categories: initialCategories,
+      imagePresets: initialImagePresets,
 
       // Product Management
       addProduct: (data) => {
@@ -263,6 +308,48 @@ export const useAdminStore = create<AdminState>()(
       setUserStatus: (userId, status) => {
         set((state) => ({
           users: state.users.map((u) => (u.id === userId ? { ...u, status } : u)),
+        }));
+      },
+
+      // Category Management
+      addCategory: (categoryName: string) => {
+        const trimmed = categoryName.trim();
+        if (!trimmed) return;
+        set((state) => {
+          const current = state.categories && state.categories.length > 0 ? state.categories : initialCategories;
+          if (current.some((c) => c.toLowerCase() === trimmed.toLowerCase())) {
+            return state;
+          }
+          return { categories: [...current, trimmed] };
+        });
+      },
+
+      deleteCategory: (categoryName: string) => {
+        set((state) => ({
+          categories: (state.categories || initialCategories).filter(
+            (c) => c.toLowerCase() !== categoryName.toLowerCase()
+          ),
+        }));
+      },
+
+      // Image Preset Management
+      addImagePreset: (preset: { label: string; url: string }) => {
+        if (!preset.url || !preset.label) return;
+        const newPreset: ImagePreset = {
+          id: `preset-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+          label: preset.label.trim(),
+          url: preset.url.trim(),
+        };
+        set((state) => ({
+          imagePresets: [newPreset, ...(state.imagePresets || initialImagePresets)],
+        }));
+      },
+
+      deleteImagePreset: (idOrUrl: string) => {
+        set((state) => ({
+          imagePresets: (state.imagePresets || initialImagePresets).filter(
+            (p) => p.id !== idOrUrl && p.url !== idOrUrl
+          ),
         }));
       },
 

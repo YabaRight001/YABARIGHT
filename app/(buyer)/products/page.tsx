@@ -15,8 +15,9 @@ import {
   Sparkles,
   ChevronDown
 } from 'lucide-react';
+import { useAdminStore } from '@/store/adminStore';
 
-const CATEGORIES = [
+const DEFAULT_CATEGORIES = [
   'All',
   'Clothing',
   'Shoes',
@@ -47,6 +48,9 @@ function ProductsContent() {
   } = useProductStore();
   const { setActiveRef } = useAffiliateStore();
 
+  const storedCategories = useAdminStore((s) => s.categories);
+  const categoriesList = ['All', ...(storedCategories && storedCategories.length > 0 ? storedCategories : DEFAULT_CATEGORIES.slice(1))];
+
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchInput, setSearchInput] = useState('');
@@ -75,7 +79,7 @@ function ProductsContent() {
     const initialCondition = searchParams.get('condition') || '';
 
     // Match category
-    const matchedCategory = CATEGORIES.find(
+    const matchedCategory = categoriesList.find(
       (c) => c.toLowerCase() === initialCategory.toLowerCase()
     );
     if (matchedCategory) {
@@ -171,7 +175,7 @@ function ProductsContent() {
 
       {/* Category Pills Strip */}
       <div className="mb-6 flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
-        {CATEGORIES.map((cat) => {
+        {categoriesList.map((cat) => {
           const isSelected = activeCategory.toLowerCase() === cat.toLowerCase();
           return (
             <button

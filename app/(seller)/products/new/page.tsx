@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useProductStore } from '@/store/productStore';
+import { useAdminStore } from '@/store/adminStore';
 import { useToastStore } from '@/store/toastStore';
 import { ProductCondition, type Product } from '@/types';
-import { ArrowLeft, Upload, CheckCircle2, Sparkles } from 'lucide-react';
+import { ArrowLeft, Upload, CheckCircle2, Sparkles, Camera } from 'lucide-react';
 
 const initialState = {
   name: '',
@@ -24,8 +25,29 @@ export default function NewProductPage() {
   const products = useProductStore((state) => state.products);
   const setProducts = useProductStore((state) => state.setProducts);
   const showToast = useToastStore((state) => state.showToast);
+  const storedCategories = useAdminStore((state) => state.categories);
+  const storedPresets = useAdminStore((state) => state.imagePresets);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const categories =
+    storedCategories && storedCategories.length > 0
+      ? storedCategories
+      : ['Clothing', 'Bags', 'Shoes', 'Shirts', 'Suits', 'Accessories', 'Designer Items', 'Vintage', 'Traditional Wears'];
+
   const [form, setForm] = useState(initialState);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleDeviceUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setForm((prev) => ({ ...prev, image: reader.result as string }));
+      showToast('Photo loaded from your device! 📸', 'success');
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = event.target;
@@ -106,13 +128,9 @@ export default function NewProductPage() {
               onChange={handleChange} 
               className="w-full rounded-xl border border-gray-200 bg-[#fbf8f2] px-4 py-3 text-xs outline-none focus:border-[#FFD700]"
             >
-              <option>Clothing</option>
-              <option>Bags</option>
-              <option>Shoes</option>
-              <option>Shirts</option>
-              <option>Suits</option>
-              <option>Accessories</option>
-              <option>Designer Items</option>
+              {categories.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
             </select>
           </div>
 
@@ -167,15 +185,50 @@ export default function NewProductPage() {
           </div>
 
           <div className="md:col-span-2">
-            <label className="mb-1.5 block font-bold text-gray-700">Photo Image URL</label>
-            <div className="relative">
-              <input 
-                name="image" 
-                value={form.image} 
-                onChange={handleChange} 
-                className="w-full rounded-xl border border-gray-200 bg-[#fbf8f2] px-4 py-3 pl-10 text-xs outline-none focus:border-[#FFD700]" 
-              />
-              <Upload className="absolute left-3.5 top-3.5 h-4 w-4 text-gray-400" />
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block font-bold text-gray-700">Product Image (Photo or URL)</label>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="inline-flex items-center gap-1 text-[11px] font-bold text-[#c88d00] hover:text-black transition"
+              >
+                <Camera className="h-3.5 w-3.5" />
+                <span>Upload from Device</span>
+              </button>
+            </div>
+
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept="image/*"
+              onChange={handleDeviceUpload}
+              className="hidden"
+            />
+
+            <div className="flex gap-2 items-center">
+              <div className="relative flex-1">
+                <input 
+                  name="image" 
+                  value={form.image} 
+                  onChange={handleChange} 
+                  placeholder="Paste image URL or click Upload"
+                  className="w-full rounded-xl border border-gray-200 bg-[#fbf8f2] px-4 py-3 pl-10 text-xs outline-none focus:border-[#FFD700]" 
+                />
+                <Upload className="absolute left-3.5 top-3.5 h-4 w-4 text-gray-400" />
+              </div>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="rounded-xl border border-black/10 bg-black/5 hover:bg-[#FFD700] hover:text-black px-4 py-3 text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap"
+              >
+                <Camera className="h-4 w-4" />
+                <span>Choose File</span>
+              </button>
+              {form.image && (
+                <div className="h-11 w-11 rounded-xl overflow-hidden border border-black/10 flex-shrink-0 bg-white">
+                  <img src={form.image} alt="Preview" className="h-full w-full object-cover" />
+                </div>
+              )}
             </div>
           </div>
 
