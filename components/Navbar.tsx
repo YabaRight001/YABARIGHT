@@ -20,14 +20,15 @@ import {
   ChevronDown
 } from 'lucide-react';
 
-const navLinks = [
+const discoveryLinks = [
   { name: 'All Products', href: '/products' },
-  { name: 'Thrift', href: '/products?category=thrift' },
-  { name: 'New Arrivals', href: '/products?category=new' },
+  { name: 'Thrift Grade A', href: '/products?category=thrift' },
+  { name: 'New Drops', href: '/products?category=new' },
   { name: 'Hot Deals', href: '/products?category=deals' },
+  { name: 'Suits', href: '/products?category=suits' },
   { name: 'Shoes', href: '/products?category=shoes' },
   { name: 'Bags', href: '/products?category=bags' },
-  { name: '💰 AFFILIATE', href: '/affiliate' },
+  { name: 'Affiliate', href: '/affiliate', highlight: true },
 ];
 
 export function Navbar() {
@@ -41,6 +42,7 @@ export function Navbar() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const accountMenuRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Close account menu when clicking outside
   useEffect(() => {
@@ -53,6 +55,13 @@ export function Navbar() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Focus search input when opened
+  useEffect(() => {
+    if (searchOpen && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [searchOpen]);
+
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -63,248 +72,251 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-40 border-b border-[#FFD700]/25 bg-[#0b0b0b]/95 backdrop-blur-md transition-all shadow-md">
-      {/* Top Announcement Bar */}
+    <header className="sticky top-0 z-40 border-b border-[#FFD700]/20 bg-[#0b0b0b]/95 backdrop-blur-md transition-all shadow-md">
+      {/* Top Value Announcement Bar */}
       <div className="bg-gradient-to-r from-[#FFD700] via-[#ffcc00] to-[#e8941f] px-4 py-1.5 text-center text-[11px] font-black uppercase tracking-wider text-black sm:text-xs">
-        <span className="inline-flex items-center gap-1.5">
-          <Sparkles className="h-3.5 w-3.5 text-black" />
-          <span>EVERYTHING YOU NEED. BETTER DEALS. ONE PLACE.</span>
-          <span className="hidden md:inline">• Nationwide Delivery within 2-4 Days</span>
-        </span>
+        <div className="container-custom flex items-center justify-center gap-2">
+          <Sparkles className="h-3.5 w-3.5 text-black flex-shrink-0" />
+          <span className="truncate">NATIONWIDE DELIVERY 2-4 DAYS • VERIFIED THRIFT GRADE A & BRAND NEW</span>
+          <span className="hidden lg:inline text-black/60 font-semibold">• SECURE PAYMENTS</span>
+        </div>
       </div>
 
-      {/* Main Header Row */}
-      <div className="container-custom flex items-center justify-between py-3 sm:py-4">
-        {/* Left: Mobile Menu Button & Logo */}
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-white transition hover:border-[#FFD700] hover:text-[#FFD700] md:hidden"
-            aria-label="Toggle mobile menu"
-          >
-            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
-
-          <Link href="/" className="flex items-center">
-            <img
-              src="/logo.png"
-              alt="YabaRight Logo"
-              className="h-14 w-auto object-contain sm:h-16 "
-            />
-          </Link>
-        </div>
-
-        {/* Center: Desktop Navigation Links */}
-        <nav className="hidden items-center gap-6 xl:gap-7 lg:flex">
-          {navLinks.map((link) => (
-            <Link
-              key={link.name}
-              href={link.href}
-              className="text-xs font-black uppercase tracking-wider text-white/80 transition hover:text-[#FFD700]"
-            >
-              {link.name}
-            </Link>
-          ))}
-        </nav>
-
-        {/* Right: Search, Wishlist, Cart & Account Dropdown Menu */}
-        <div className="flex items-center gap-2 sm:gap-2.5">
-          {/* Quick Search Toggle / Input */}
-          <div className="relative">
-            {searchOpen ? (
-              <form onSubmit={handleSearchSubmit} className="flex items-center">
-                <input
-                  type="text"
-                  placeholder="Search shirts, shoes..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  autoFocus
-                  className="w-48 sm:w-64 rounded-full border border-[#FFD700]/50 bg-[#1a1a1a] px-4 py-1.5 text-xs text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-[#FFD700]/30"
-                />
-                <button
-                  type="button"
-                  onClick={() => setSearchOpen(false)}
-                  className="absolute right-2 text-gray-400 hover:text-white"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              </form>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setSearchOpen(true)}
-                className="flex h-10 w-10 items-center justify-center rounded-full text-white/80 transition hover:bg-white/10 hover:text-[#FFD700]"
-                aria-label="Open search"
-                title="Search products"
-              >
-                <Search className="h-5 w-5" />
-              </button>
-            )}
-          </div>
-
-          {/* Wishlist Link */}
-          <Link
-            href="/wishlist"
-            className="relative flex h-10 w-10 items-center justify-center rounded-full text-white/80 transition hover:bg-white/10 hover:text-[#FFD700]"
-            aria-label="Wishlist"
-            title="Wishlist"
-          >
-            <Heart className="h-5 w-5" />
-            {wishlistCount > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white shadow-md">
-                {wishlistCount}
-              </span>
-            )}
-          </Link>
-
-          {/* Cart Link */}
-          <Link
-            href="/cart"
-            className="relative flex items-center gap-2 rounded-full bg-[#FFD700] px-3.5 sm:px-4 py-2 text-xs font-black uppercase tracking-wider text-black transition hover:bg-[#ffcc00] hover:scale-105 shadow-sm"
-            aria-label="Shopping Cart"
-          >
-            <ShoppingBag className="h-4 w-4" />
-            <span className="hidden sm:inline">Cart</span>
-            {itemCount > 0 && (
-              <span className="flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-black px-1 text-[10px] font-black text-[#FFD700]">
-                {itemCount}
-              </span>
-            )}
-          </Link>
-
-          {/* Account & Portals Dropdown Menu */}
-          <div className="relative" ref={accountMenuRef}>
+      {/* Main Navigation Bar */}
+      <div className="container-custom">
+        <div className="flex h-16 sm:h-20 items-center justify-between gap-4">
+          
+          {/* ================= ZONE 1: BRAND AREA (Desktop & Mobile) ================= */}
+          <div className="flex items-center gap-3 flex-shrink-0">
+            {/* Mobile Menu Toggle - subtle fallback */}
             <button
               type="button"
-              onClick={() => setAccountMenuOpen(!accountMenuOpen)}
-              className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/5 px-3 py-1.5 text-xs font-bold text-white/90 transition hover:border-[#FFD700] hover:text-[#FFD700] hover:bg-white/10"
-              aria-expanded={accountMenuOpen}
-              aria-label="Account menu"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 text-white transition hover:border-[#FFD700] hover:text-[#FFD700] md:hidden"
+              aria-label="Toggle navigation drawer"
             >
-              <User className="h-3.5 w-3.5" />
-              <span>Menu</span>
-              <ChevronDown className={`h-3 w-3 transition-transform ${accountMenuOpen ? 'rotate-180 text-[#FFD700]' : ''}`} />
+              {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
             </button>
 
-            {/* Desktop Dropdown Content */}
-            {accountMenuOpen && (
-              <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-white/10 bg-[#141414] p-2 text-white shadow-2xl backdrop-blur-xl z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-                <div className="px-3 py-2 border-b border-white/10">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Account & Portals</p>
-                </div>
-
-                <div className="space-y-1 py-1 text-xs">
-                  <Link
-                    href="/login"
-                    onClick={() => setAccountMenuOpen(false)}
-                    className="flex items-center gap-2.5 rounded-xl px-3 py-2 font-bold text-gray-200 hover:bg-white/10 hover:text-[#FFD700] transition"
-                  >
-                    <User className="h-3.5 w-3.5 text-gray-400" />
-                    <span>Buyer Login</span>
-                  </Link>
-
-                  <Link
-                    href="/register"
-                    onClick={() => setAccountMenuOpen(false)}
-                    className="flex items-center gap-2.5 rounded-xl px-3 py-2 font-bold text-gray-200 hover:bg-white/10 hover:text-[#FFD700] transition"
-                  >
-                    <Store className="h-3.5 w-3.5 text-gray-400" />
-                    <span>Become a Seller</span>
-                  </Link>
-
-                  <Link
-                    href="/affiliate"
-                    onClick={() => setAccountMenuOpen(false)}
-                    className="flex items-center gap-2.5 rounded-xl px-3 py-2 font-bold text-gray-200 hover:bg-white/10 hover:text-[#FFD700] transition"
-                  >
-                    <DollarSign className="h-3.5 w-3.5 text-[#FFD700]" />
-                    <span>Affiliate Program</span>
-                  </Link>
-                </div>
-
-                {/* Subtle Admin Link inside the menu */}
-                <div className="border-t border-white/10 pt-1 mt-1">
-                  <Link
-                    href="/admin/login"
-                    onClick={() => setAccountMenuOpen(false)}
-                    className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-bold text-gray-400 hover:bg-[#FFD700]/10 hover:text-[#FFD700] transition"
-                  >
-                    <Shield className="h-3.5 w-3.5 text-gray-400" />
-                    <span>Admin Portal</span>
-                  </Link>
-                </div>
+            <Link href="/" className="flex items-center gap-2.5 group">
+              <img
+                src="/logo.png"
+                alt="YabaRight Logo"
+                className="h-11 sm:h-14 w-auto object-contain transition group-hover:scale-102"
+              />
+              <div className="hidden xl:flex flex-col">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#FFD700]">Yaba Marketplace</span>
+                <span className="text-[9px] font-semibold text-gray-400">Lagos Thrift & Fashion</span>
               </div>
-            )}
+            </Link>
+          </div>
+
+          {/* ================= ZONE 2: DISCOVERY AREA (Desktop Center) ================= */}
+          <nav className="hidden lg:flex items-center justify-center gap-5 xl:gap-7 flex-1 px-4">
+            {discoveryLinks.map((link) => (
+              <Link
+                key={link.name}
+                href={link.href}
+                className={`text-xs font-black uppercase tracking-wider transition-colors py-1 ${
+                  link.highlight
+                    ? 'text-[#FFD700] hover:text-[#ffcc00] flex items-center gap-1'
+                    : 'text-white/80 hover:text-[#FFD700]'
+                }`}
+              >
+                {link.highlight && <span className="h-1.5 w-1.5 rounded-full bg-[#FFD700]" />}
+                {link.name}
+              </Link>
+            ))}
+          </nav>
+
+          {/* ================= ZONE 3: UTILITY AREA (Right) ================= */}
+          <div className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
+            
+            {/* Search Input / Toggle */}
+            <div className="relative">
+              {searchOpen ? (
+                <form onSubmit={handleSearchSubmit} className="flex items-center animate-in fade-in zoom-in-95 duration-150">
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    placeholder="Search suits, shoes, bags..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-44 sm:w-64 rounded-full border border-[#FFD700]/50 bg-[#161616] px-4 py-1.5 text-xs text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-[#FFD700]/30"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setSearchOpen(false)}
+                    className="absolute right-2.5 text-gray-400 hover:text-white"
+                    aria-label="Close search"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </form>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setSearchOpen(true)}
+                  className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full text-white/80 transition hover:bg-white/10 hover:text-[#FFD700]"
+                  aria-label="Search catalog"
+                  title="Search products"
+                >
+                  <Search className="h-4 w-4 sm:h-5 sm:w-5" />
+                </button>
+              )}
+            </div>
+
+            {/* Wishlist Link with Live Counter (Desktop) */}
+            <Link
+              href="/wishlist"
+              className="relative hidden sm:flex h-10 w-10 items-center justify-center rounded-full text-white/80 transition hover:bg-white/10 hover:text-[#FFD700]"
+              aria-label="View Saved Wishlist"
+              title="Saved items"
+            >
+              <Heart className="h-5 w-5" />
+              {wishlistCount > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-black text-white shadow-sm">
+                  {wishlistCount}
+                </span>
+              )}
+            </Link>
+
+            {/* Cart Button Pill (Desktop & Mobile) */}
+            <Link
+              href="/cart"
+              className="relative flex items-center gap-1.5 sm:gap-2 rounded-full bg-[#FFD700] px-3 sm:px-4 py-2 text-xs font-black uppercase tracking-wider text-black transition hover:bg-[#ffcc00] hover:scale-105 shadow-sm active:scale-95"
+              aria-label="Shopping Cart"
+            >
+              <ShoppingBag className="h-4 w-4 flex-shrink-0" />
+              <span className="hidden sm:inline">Bag</span>
+              {itemCount > 0 ? (
+                <span className="flex h-4 min-w-[1.1rem] items-center justify-center rounded-full bg-black px-1 text-[9px] font-black text-[#FFD700]">
+                  {itemCount}
+                </span>
+              ) : (
+                <span className="hidden md:inline text-[10px] text-black/70 font-bold">0</span>
+              )}
+            </Link>
+
+            {/* Account & Portals Dropdown (Desktop) */}
+            <div className="relative hidden sm:block" ref={accountMenuRef}>
+              <button
+                type="button"
+                onClick={() => setAccountMenuOpen(!accountMenuOpen)}
+                className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/5 px-3 py-1.5 text-xs font-bold text-white/90 transition hover:border-[#FFD700] hover:text-[#FFD700] hover:bg-white/10"
+                aria-expanded={accountMenuOpen}
+                aria-label="Account and portals menu"
+              >
+                <User className="h-3.5 w-3.5" />
+                <span>Account</span>
+                <ChevronDown className={`h-3 w-3 transition-transform ${accountMenuOpen ? 'rotate-180 text-[#FFD700]' : ''}`} />
+              </button>
+
+              {accountMenuOpen && (
+                <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-white/10 bg-[#141414] p-2 text-white shadow-2xl backdrop-blur-xl z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                  <div className="px-3 py-2 border-b border-white/10">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-[#FFD700]">YabaRight Portals</p>
+                  </div>
+
+                  <div className="space-y-1 py-1 text-xs">
+                    <Link
+                      href="/login"
+                      onClick={() => setAccountMenuOpen(false)}
+                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 font-bold text-gray-200 hover:bg-white/10 hover:text-[#FFD700] transition"
+                    >
+                      <User className="h-3.5 w-3.5 text-gray-400" />
+                      <span>Buyer Login</span>
+                    </Link>
+
+                    <Link
+                      href="/register"
+                      onClick={() => setAccountMenuOpen(false)}
+                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 font-bold text-gray-200 hover:bg-white/10 hover:text-[#FFD700] transition"
+                    >
+                      <Store className="h-3.5 w-3.5 text-gray-400" />
+                      <span>Become a Seller</span>
+                    </Link>
+
+                    <Link
+                      href="/affiliate"
+                      onClick={() => setAccountMenuOpen(false)}
+                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 font-bold text-gray-200 hover:bg-white/10 hover:text-[#FFD700] transition"
+                    >
+                      <DollarSign className="h-3.5 w-3.5 text-[#FFD700]" />
+                      <span>Affiliate Program</span>
+                    </Link>
+                  </div>
+
+                  <div className="border-t border-white/10 pt-1 mt-1">
+                    <Link
+                      href="/admin/login"
+                      onClick={() => setAccountMenuOpen(false)}
+                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-bold text-gray-400 hover:bg-[#FFD700]/10 hover:text-[#FFD700] transition"
+                    >
+                      <Shield className="h-3.5 w-3.5 text-gray-400" />
+                      <span>Admin Portal</span>
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Mobile Drawer Menu */}
+      {/* Minimal Mobile Drawer (kept lean because BottomNav handles primary navigation) */}
       {mobileMenuOpen && (
-        <div className="border-t border-[#FFD700]/20 bg-[#0f0f0f] px-5 py-6 lg:hidden animate-in slide-in-from-top duration-200">
-          {/* Mobile Search */}
-          <form onSubmit={handleSearchSubmit} className="relative mb-5">
+        <div className="border-t border-[#FFD700]/20 bg-[#0f0f0f] px-5 py-5 lg:hidden animate-in slide-in-from-top duration-200">
+          {/* Quick Mobile Search */}
+          <form onSubmit={handleSearchSubmit} className="relative mb-4">
             <input
               type="text"
               placeholder="Search thrift finds, bags, shoes..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-2xl border border-white/10 bg-[#1c1c1c] px-4 py-3 pl-11 text-sm text-white placeholder-gray-400 outline-none focus:border-[#FFD700]"
+              className="w-full rounded-xl border border-white/10 bg-[#1c1c1c] px-4 py-2.5 pl-10 text-xs text-white placeholder-gray-400 outline-none focus:border-[#FFD700]"
             />
-            <Search className="absolute left-3.5 top-3.5 h-4 w-4 text-gray-400" />
-            <button
-              type="submit"
-              className="absolute right-2.5 top-2 rounded-xl bg-[#FFD700] px-3 py-1.5 text-xs font-bold text-black"
-            >
-              Search
-            </button>
+            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
           </form>
 
-          {/* Mobile Links */}
-          <div className="space-y-2">
-            <div className="text-[11px] font-black uppercase tracking-widest text-[#FFD700]/70">
-              Browse Categories
-            </div>
-            {navLinks.map((link) => (
+          {/* Quick Category Discovery Links */}
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            {discoveryLinks.map((link) => (
               <Link
                 key={link.name}
                 href={link.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-bold text-white/90 transition hover:bg-white/5 hover:text-[#FFD700]"
+                className="flex items-center justify-between rounded-lg bg-white/5 px-3 py-2 font-bold text-white/90 hover:bg-[#FFD700]/15 hover:text-[#FFD700] transition"
               >
                 <span>{link.name}</span>
-                <ArrowRight className="h-4 w-4 text-gray-500" />
+                <ArrowRight className="h-3 w-3 text-gray-500" />
               </Link>
             ))}
           </div>
 
-          <div className="mt-6 border-t border-white/10 pt-5">
-            <div className="flex flex-col gap-2.5">
-              <Link
-                href="/login"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-center rounded-xl border border-white/15 py-2.5 text-sm font-bold text-white transition hover:bg-white/5"
-              >
-                Login to Account
-              </Link>
-              <Link
-                href="/register"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-center rounded-xl bg-[#FFD700] py-2.5 text-sm font-black text-black transition hover:bg-[#ffcc00]"
-              >
-                Become a Seller
-              </Link>
-              {/* Discreet Admin Portal Link in Mobile Menu */}
-              <Link
-                href="/admin/login"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/5 py-2 text-xs font-semibold text-gray-400 hover:text-white transition"
-              >
-                <Shield className="h-3.5 w-3.5 text-gray-400" />
-                <span>Admin Portal</span>
-              </Link>
-            </div>
+          {/* Minimal Account & Seller Links */}
+          <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3 text-xs">
+            <Link
+              href="/login"
+              onClick={() => setMobileMenuOpen(false)}
+              className="font-bold text-gray-300 hover:text-[#FFD700]"
+            >
+              Sign In
+            </Link>
+            <Link
+              href="/register"
+              onClick={() => setMobileMenuOpen(false)}
+              className="font-black text-[#FFD700] hover:underline"
+            >
+              Sell on YabaRight →
+            </Link>
+            <Link
+              href="/admin/login"
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-[11px] text-gray-500 hover:text-gray-300"
+            >
+              Admin
+            </Link>
           </div>
         </div>
       )}

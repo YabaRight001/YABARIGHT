@@ -1,3 +1,6 @@
+'use client';
+
+import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { sampleProducts } from '@/lib/mockProducts';
 import { Navbar } from '@/components/Navbar';
@@ -7,466 +10,461 @@ import { ToastContainer } from '@/components/Toast';
 import { HeroCarousel } from '@/components/HeroCarousel';
 import { ProductCard } from '@/components/ProductCard';
 import { 
-  Flame, 
   ArrowRight, 
-  Truck, 
   ShieldCheck, 
-  BadgePercent, 
-  Award, 
   Sparkles,
-  Users,
+  ShoppingBag,
+  Ruler,
+  CheckCircle2,
   Store,
-  MapPin
+  DollarSign
 } from 'lucide-react';
 
-const categoryPills = [
-  { name: 'All Marketplace', href: '/products' },
-  { name: 'Suits Below ₦30k', href: '/products?category=suits&max_price=30000' },
-  { name: 'Corporate Shoes ₦22.9k', href: '/products?category=shoes&max_price=23000' },
-  { name: 'Office Shirts ₦9.9k', href: '/products?category=shirts&max_price=10000' },
-  { name: 'Casuals ₦9.9k', href: '/products?category=shirts&max_price=10000' },
-  { name: 'Bags & Totes', href: '/products?category=bags' },
-  { name: 'Denim Jeans', href: '/products?category=clothing' },
-  { name: "Women's Heels", href: '/products?category=shoes' },
-];
-
-const quickCategories = [
+const visualCategories = [
   {
-    title: 'Corporate Shoes',
-    subtitle: 'Oxfords • Loafers • Derby Pairs',
-    image: '/male-shoes-collection.jpg',
-    count: '2,340+ pairs',
-    href: '/products?category=shoes',
-  },
-  {
-    title: 'Leather Bags',
-    subtitle: 'Totes • Handbags • Crossbody',
-    image: '/bag-handbag.jpg',
-    count: '1,850+ items',
-    href: '/products?category=bags',
-  },
-  {
-    title: 'Denim & Jeans',
-    subtitle: 'Straight Cuts • Washed Streetwear',
-    image: '/jeans-folded.jpg',
-    count: '4,200+ pieces',
-    href: '/products?category=clothing',
-  },
-  {
-    title: 'Shirts & Polos',
-    subtitle: 'Casual Shirts • Office Stripes',
-    image: '/casual-shirts-colorful.jpg',
-    count: '1,560+ shirts',
-    href: '/products?category=shirts',
-  },
-  {
-    title: 'Suits & Blazers',
-    subtitle: 'Two-Piece Suits • Smart Office Fits',
+    title: 'Suits & Tailored Blazers',
+    caption: 'Executive 2-piece sets & sharp cuts',
     image: '/suit-blue-1.jpg',
-    count: '890+ suits',
     href: '/products?category=suits',
+    count: '890+ fits',
+    tag: 'Grade A Thrift'
+  },
+  {
+    title: 'Corporate Shoes & Loafers',
+    caption: 'Leather Oxfords, brogues & commute slip-ons',
+    image: '/male-shoes-collection.jpg',
+    href: '/products?category=shoes',
+    count: '2,340+ pairs',
+    tag: 'Verified Leather'
+  },
+  {
+    title: 'Leather Bags & Totes',
+    caption: 'Structured workbags & daily crossbody picks',
+    image: '/bag-handbag.jpg',
+    href: '/products?category=bags',
+    count: '1,850+ items',
+    tag: 'Trending'
+  },
+  {
+    title: 'Cotton Shirts & Polos',
+    caption: 'Breathable casual rolls & crisp office stripes',
+    image: '/casual-shirts-colorful.jpg',
+    href: '/products?category=shirts',
+    count: '1,560+ shirts',
+    tag: 'Under ₦10k'
+  },
+  {
+    title: 'Denim Jeans & Trousers',
+    caption: 'Straight cuts, vintage washes & streetwear',
+    image: '/jeans-folded.jpg',
+    href: '/products?category=clothing',
+    count: '4,200+ pieces',
+    tag: 'Daily Steals'
   },
   {
     title: "Women's Heels & Flats",
-    subtitle: 'Stiletto Pumps • Suede Ballet Flats',
+    caption: 'Classic black pumps & comfortable ballet flats',
     image: '/heels-black-pair.jpg',
-    count: '1,120+ pairs',
     href: '/products?category=shoes',
-  },
-];
-
-const styleCollections = [
-  {
-    title: 'Folded Shirts & Casuals',
-    caption: 'Clean rolls • ₦9,999 deal packs',
-    image: '/folded-shirts-blue.jpg',
-    accent: 'from-[#f5d76f] to-[#f4c542]',
-    link: '/products?category=shirts&max_price=10000',
-  },
-  {
-    title: 'Executive Tailored Suits',
-    caption: 'Smart business sets under ₦30,000',
-    image: '/suit-grey-1.jpg',
-    accent: 'from-[#a7d5d9] to-[#54c1c5]',
-    link: '/products?category=suits&max_price=30000',
-  },
-  {
-    title: 'Vintage Denim Washes',
-    caption: 'Heavyweight denim • Daily streetwear fits',
-    image: '/jeans-stack.jpg',
-    accent: 'from-[#f4d8c6] to-[#d7a58c]',
-    link: '/products?category=clothing',
-  },
-];
-
-const genderCollections = [
-  {
-    label: "Men's Collection",
-    description: 'Executive suits, corporate leather shoes, folded shirts, and casual streetwear',
-    image: 'https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?auto=format&fit=crop&w=900&q=80',
-    link: '/products?gender=male',
-  },
-  {
-    label: "Women's Collection",
-    description: 'Ankara wraps, silk lace boubou gowns, designer handbags, and stiletto heels',
-    image: 'https://images.unsplash.com/photo-1614081781451-29c084a7de30?auto=format&fit=crop&w=900&q=80',
-    link: '/products?gender=female',
+    count: '1,120+ pairs',
+    tag: 'Fresh Drop'
   },
 ];
 
 export default function Home() {
-  // Campaign deals under ₦25,000 matching posters
-  const campaignDeals = [
-    sampleProducts.find((p) => p.id === 'prod-4')!, // Folded Office Shirts (₦9,999)
-    sampleProducts.find((p) => p.id === 'prod-6')!, // Chop Casuals (₦9,999)
-    sampleProducts.find((p) => p.id === 'prod-3')!, // Chop Corporate Shoes (₦22,999)
-    sampleProducts.find((p) => p.id === 'prod-5')!, // Executive Suit (₦28,500)
-  ].filter(Boolean);
+  const categoryHeadingRef = useRef<HTMLDivElement>(null);
+  const editorialSectionRef = useRef<HTMLDivElement>(null);
 
-  // Top featured products for home showcase
-  const featuredProducts = sampleProducts.slice(0, 8);
+  // Progressive enhancement: Deliberate entrance animation for Category Discovery and Editorial Feature
+  useEffect(() => {
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (prefersReducedMotion) return;
+
+    // Check for GSAP availability with progressive fallback
+    const initEntrance = () => {
+      const gsap = (window as any).gsap;
+      if (!gsap) return;
+
+      try {
+        // 1. Deliberate entrance for Category Discovery heading
+        if (categoryHeadingRef.current) {
+          gsap.fromTo(
+            categoryHeadingRef.current,
+            { opacity: 0, y: 16 },
+            { opacity: 1, y: 0, duration: 0.65, ease: 'power2.out', delay: 0.1 }
+          );
+        }
+
+        // 2. Deliberate entrance for Editorial Feature section using IntersectionObserver
+        if (editorialSectionRef.current && 'IntersectionObserver' in window) {
+          const observer = new IntersectionObserver(
+            (entries) => {
+              entries.forEach((entry) => {
+                if (entry.isIntersecting && editorialSectionRef.current) {
+                  gsap.fromTo(
+                    editorialSectionRef.current,
+                    { opacity: 0, y: 20 },
+                    { opacity: 1, y: 0, duration: 0.7, ease: 'power2.out' }
+                  );
+                  observer.unobserve(entry.target);
+                }
+              });
+            },
+            { threshold: 0.15 }
+          );
+          observer.observe(editorialSectionRef.current);
+        }
+      } catch {
+        // Graceful fallback: CSS layout is completely visible by default
+      }
+    };
+
+    if ((window as any).gsap) {
+      initEntrance();
+    } else {
+      const timer = setTimeout(initEntrance, 600);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  // Curated Featured Drop products (8 items)
+  const featuredDropProducts = sampleProducts.slice(0, 8);
 
   return (
     <div className="flex min-h-screen flex-col bg-[#fffaf0] text-[#111111]">
       <Navbar />
 
       <main className="flex-1 pb-16 lg:pb-0">
-        {/* Interactive Responsive Hero Section with User Uploaded Posters */}
+        
+        {/* ================= 1. FASHION-EDITORIAL HERO CAROUSEL ================= */}
         <HeroCarousel />
 
-        {/* Quick Category Bar */}
-        <section className="border-y border-[#FFD700]/20 bg-[#0e0e0e] py-3.5">
+        {/* Quick Discovery Navigation Strip */}
+        <div className="border-y border-[#FFD700]/20 bg-[#0e0e0e] py-3">
           <div className="container-custom">
-            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide py-1">
-              {categoryPills.map((item) => (
+            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide py-0.5">
+              {[
+                { name: 'All Marketplace', href: '/products' },
+                { name: 'Suits Below ₦30k', href: '/products?category=suits&max_price=30000' },
+                { name: 'Corporate Shoes ₦22.9k', href: '/products?category=shoes&max_price=23000' },
+                { name: 'Office Shirts ₦9.9k', href: '/products?category=shirts&max_price=10000' },
+                { name: 'Leather Bags', href: '/products?category=bags' },
+                { name: 'Vintage Denim', href: '/products?category=clothing' },
+                { name: '💰 Affiliate Program', href: '/affiliate' },
+              ].map((pill) => (
                 <Link
-                  key={item.name}
-                  href={item.href}
-                  className="whitespace-nowrap rounded-full border border-[#FFD700]/30 bg-[#FFD700]/10 px-4 py-1.5 text-xs font-black uppercase tracking-wider text-[#FFD700] transition-all hover:bg-[#FFD700] hover:text-black"
+                  key={pill.name}
+                  href={pill.href}
+                  className="whitespace-nowrap rounded-full border border-[#FFD700]/30 bg-[#FFD700]/10 px-3.5 py-1 text-xs font-black uppercase tracking-wider text-[#FFD700] transition-colors hover:bg-[#FFD700] hover:text-black"
                 >
-                  {item.name}
+                  {pill.name}
                 </Link>
               ))}
             </div>
           </div>
-        </section>
+        </div>
 
-        {/* Featured Campaign Deals Section */}
-        <section id="special-offers" className="border-b border-black/5 bg-gradient-to-b from-amber-50/70 via-[#fffaf0] to-[#fffaf0] py-14">
+        {/* ================= 2. VISUAL CATEGORY DISCOVERY SECTION ================= */}
+        <section id="categories" className="py-12 sm:py-16 lg:py-20">
           <div className="container-custom">
-            <div className="mb-8 flex flex-col items-center text-center">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-red-600 px-4 py-1.5 text-xs font-black uppercase tracking-wider text-white shadow-sm">
-                <Flame className="h-4 w-4" />
-                Poster Campaign Deals
-              </span>
-              <h2 className="mt-4 text-3xl font-black tracking-tight text-[#111111] sm:text-4xl lg:text-5xl">
-                Featured Deals You Saw on the Banner
-              </h2>
-              <p className="mt-2.5 max-w-xl text-sm sm:text-base text-gray-600">
-                Directly shop the suits below ₦30k, corporate shoes at ₦22,999, and folded shirt packs at ₦9,999.
-              </p>
+            
+            {/* Section Header with deliberate entrance */}
+            <div ref={categoryHeadingRef} className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8 sm:mb-10">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.24em] text-[#c88d00]">
+                  Visual Discovery
+                </p>
+                <h2 className="mt-1.5 text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-[#111111]">
+                  Explore Curated Categories
+                </h2>
+                <p className="mt-1 text-xs sm:text-sm text-gray-600 max-w-xl">
+                  Handpicked Lagos thrift grails, Grade A corporate attire, and daily wardrobe staples.
+                </p>
+              </div>
+
+              <Link
+                href="/products"
+                className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-black uppercase tracking-wider text-[#111111] hover:text-[#c88d00] transition group self-start sm:self-auto"
+              >
+                <span>View Full Directory</span>
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Link>
             </div>
 
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {campaignDeals.map((product) => (
-                <ProductCard key={product.id} product={product} />
+            {/* Visual Category Tiles */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 lg:gap-5">
+              {visualCategories.map((cat) => (
+                <Link
+                  key={cat.title}
+                  href={cat.href}
+                  className="group relative flex flex-col overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#FFD700]/60 hover:shadow-xl"
+                >
+                  {/* Category Image with Gradient */}
+                  <div className="relative h-44 sm:h-52 w-full overflow-hidden bg-gray-100">
+                    <img
+                      src={cat.image}
+                      alt={cat.title}
+                      loading="lazy"
+                      decoding="async"
+                      className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
+                    
+                    {/* Top Tag Pill */}
+                    <div className="absolute top-2.5 left-2.5">
+                      <span className="rounded-full bg-black/60 backdrop-blur-sm px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-[#FFD700] border border-white/10">
+                        {cat.tag}
+                      </span>
+                    </div>
+
+                    {/* Bottom Title & Piece Count */}
+                    <div className="absolute bottom-2.5 left-2.5 right-2.5">
+                      <h3 className="text-xs sm:text-sm font-black text-white leading-snug drop-shadow-sm">
+                        {cat.title}
+                      </h3>
+                      <p className="mt-0.5 text-[10px] font-bold text-[#FFD700]">
+                        {cat.count}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Micro caption */}
+                  <div className="p-2.5 bg-white">
+                    <p className="line-clamp-1 text-[11px] text-gray-500 font-medium">
+                      {cat.caption}
+                    </p>
+                  </div>
+                </Link>
               ))}
             </div>
 
-            <div className="mt-10 text-center">
+          </div>
+        </section>
+
+        {/* ================= 3. FEATURED DROP PRODUCT SECTION ================= */}
+        <section id="featured-drop" className="border-t border-black/5 bg-white py-12 sm:py-16 lg:py-20">
+          <div className="container-custom">
+            
+            {/* Section Header */}
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8 sm:mb-10">
+              <div>
+                <div className="inline-flex items-center gap-1.5 rounded-full bg-[#FFD700]/20 border border-[#FFD700]/40 px-3 py-1 text-[11px] font-black uppercase tracking-wider text-[#a06f00] mb-2">
+                  <Sparkles className="h-3 w-3 text-[#c88d00]" />
+                  <span>Verified Fresh Inventory</span>
+                </div>
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-[#111111]">
+                  Featured Drop: Thrift Grade A & New Finds
+                </h2>
+                <p className="mt-1 text-xs sm:text-sm text-gray-600 max-w-xl">
+                  Physically inspected items with clear condition grading and transparent pricing.
+                </p>
+              </div>
+
               <Link
                 href="/products"
-                className="inline-flex items-center gap-2 rounded-full bg-[#111111] px-7 py-3 text-xs font-black uppercase tracking-wider text-[#FFD700] transition-all hover:bg-black hover:scale-105 shadow-md"
+                className="inline-flex items-center gap-2 rounded-full bg-[#0b0b0b] px-6 py-3 text-xs font-black uppercase tracking-wider text-[#FFD700] transition hover:bg-black hover:scale-105 active:scale-95 shadow-md self-start sm:self-auto"
               >
-                <span>View Full YabaRight Catalog</span>
+                <span>Shop All Drops</span>
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
-          </div>
-        </section>
 
-        {/* Browse by Category Grid */}
-        <section id="categories" className="container-custom py-14">
-          <div className="mb-8 flex items-end justify-between gap-4">
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.24em] text-[#c88d00]">
-                Accurate Category Directory
-              </p>
-              <h2 className="mt-1.5 text-2xl sm:text-3xl lg:text-4xl font-black text-[#111111]">
-                Shop by Category
-              </h2>
-            </div>
-            <Link
-              href="/products"
-              className="inline-flex items-center gap-1 text-xs sm:text-sm font-bold text-gray-700 hover:text-[#c88d00] transition"
-            >
-              <span>Explore all</span>
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-            {quickCategories.map((category) => (
-              <Link
-                key={category.title}
-                href={category.href}
-                className="group relative flex flex-col overflow-hidden rounded-[1.25rem] border border-black/5 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#FFD700]/50 hover:shadow-lg"
-              >
-                <div className="relative h-44 w-full overflow-hidden bg-gray-100">
-                  <img
-                    src={category.image}
-                    alt={category.title}
-                    className="h-full w-full object-cover transition duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
-                  <div className="absolute bottom-3 left-3 right-3">
-                    <p className="text-base font-black text-white drop-shadow-sm">
-                      {category.title}
-                    </p>
-                    <p className="text-[11px] font-bold text-[#FFD700]">
-                      {category.count}
-                    </p>
-                  </div>
-                </div>
-                <div className="p-3">
-                  <p className="line-clamp-1 text-xs text-gray-500">
-                    {category.subtitle}
-                  </p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-
-        {/* Featured Products Showcase */}
-        <section className="border-t border-black/5 bg-white py-14">
-          <div className="container-custom">
-            <div className="mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-              <div>
-                <p className="text-xs font-black uppercase tracking-[0.24em] text-[#c88d00]">
-                  Verified Inventory
-                </p>
-                <h2 className="mt-1.5 text-2xl sm:text-3xl lg:text-4xl font-black text-[#111111]">
-                  Latest Handpicked Fits
-                </h2>
-              </div>
-              <Link
-                href="/products"
-                className="inline-flex items-center gap-2 rounded-full bg-[#FFD700] px-5 py-2.5 text-xs font-black uppercase tracking-wider text-black transition hover:bg-[#ffcc00] hover:scale-105"
-              >
-                <span>Shop Catalog</span>
-                <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </div>
-
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {featuredProducts.map((product) => (
+            {/* Product Cards Grid (4 cols on desktop, 2 cols on mobile) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+              {featuredDropProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
-          </div>
-        </section>
 
-        {/* Curated Style Collections */}
-        <section className="container-custom py-14">
-          <div className="mb-8">
-            <p className="text-xs font-black uppercase tracking-[0.24em] text-[#c88d00]">
-              Curated Style Drops
-            </p>
-            <h2 className="mt-1.5 text-2xl sm:text-3xl lg:text-4xl font-black text-[#111111]">
-              Fresh Local Edits
-            </h2>
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-3">
-            {styleCollections.map((item) => (
+            {/* Bottom Section Link */}
+            <div className="mt-10 sm:mt-12 text-center">
               <Link
-                key={item.title}
-                href={item.link}
-                className="group relative overflow-hidden rounded-[1.75rem] border border-black/10 bg-[#f9f5f0] shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
+                href="/products"
+                className="inline-flex items-center gap-2 rounded-full border-2 border-black/10 bg-[#fffaf0] px-8 py-3.5 text-xs font-black uppercase tracking-wider text-[#111111] transition hover:border-[#FFD700] hover:bg-[#FFD700] hover:text-black shadow-sm"
               >
-                <div className={`relative h-80 bg-gradient-to-br ${item.accent} overflow-hidden`}>
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className="h-full w-full object-cover mix-blend-multiply opacity-90 transition duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
-                  <div className="absolute bottom-5 left-5 right-5">
-                    <p className="text-2xl font-black text-white drop-shadow-md">{item.title}</p>
-                    <p className="mt-1 text-xs sm:text-sm text-white/90">{item.caption}</p>
-                    <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-xs font-bold text-white backdrop-blur-md transition group-hover:bg-[#FFD700] group-hover:text-black">
-                      <span>Shop Edit</span>
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </span>
-                  </div>
-                </div>
+                <span>Browse All 5,000+ Verified Fits</span>
+                <ArrowRight className="h-4 w-4" />
               </Link>
-            ))}
+            </div>
+
           </div>
         </section>
 
-        {/* Gender Split Banner (African / Black Models) */}
-        <section className="border-t border-black/5 bg-[#fbf8f2] py-14">
+        {/* ================= 4. EDITORIAL COLLECTION FEATURE ================= */}
+        <section className="py-12 sm:py-16 lg:py-20 bg-[#f5f0e8]/60 border-t border-black/5">
           <div className="container-custom">
-            <div className="mb-8 text-center">
-              <p className="text-xs font-black uppercase tracking-[0.24em] text-[#c88d00]">
-                Shop by Style
-              </p>
-              <h2 className="mt-1.5 text-2xl sm:text-3xl lg:text-4xl font-black text-[#111111]">
-                Men&apos;s & Women&apos;s Edits
-              </h2>
-            </div>
-
-            <div className="grid gap-6 md:grid-cols-2">
-              {genderCollections.map((spot) => (
-                <Link
-                  key={spot.label}
-                  href={spot.link}
-                  className="group relative overflow-hidden rounded-[2rem] border border-black/10 shadow-sm transition hover:shadow-2xl"
-                >
-                  <div className="h-96 w-full overflow-hidden bg-black">
-                    <img
-                      src={spot.image}
-                      alt={spot.label}
-                      className="h-full w-full object-cover opacity-90 transition duration-700 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
-                  </div>
-                  <div className="absolute bottom-6 left-6 right-6 z-10">
-                    <p className="text-3xl font-black text-white">{spot.label}</p>
-                    <p className="mt-2 text-sm text-white/80 max-w-md">{spot.description}</p>
-                    <span className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#FFD700] px-6 py-2.5 text-xs font-black uppercase tracking-wider text-black transition group-hover:bg-white group-hover:scale-105">
-                      <span>Shop Collection</span>
-                      <ArrowRight className="h-3.5 w-3.5" />
+            <div 
+              ref={editorialSectionRef}
+              className="overflow-hidden rounded-2xl sm:rounded-3xl border border-black/10 bg-[#0e0e0e] text-white shadow-2xl"
+            >
+              <div className="grid grid-cols-1 lg:grid-cols-12 items-center">
+                
+                {/* Large Editorial Fashion Image (7 cols) */}
+                <div className="lg:col-span-7 relative h-72 sm:h-96 lg:h-[480px] w-full overflow-hidden bg-black">
+                  <img
+                    src="/banner-suit-tie.jpg"
+                    alt="The Executive & Vintage Edit"
+                    loading="lazy"
+                    decoding="async"
+                    className="h-full w-full object-cover object-center transition-transform duration-700 ease-out hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0e0e0e] via-transparent to-transparent lg:bg-gradient-to-r lg:from-transparent lg:to-[#0e0e0e]" />
+                  
+                  {/* Floating Collection Pill */}
+                  <div className="absolute top-4 left-4">
+                    <span className="rounded-full bg-[#FFD700] px-3.5 py-1 text-xs font-black uppercase tracking-wider text-black shadow-lg">
+                      Editorial Curated Drop
                     </span>
                   </div>
-                </Link>
-              ))}
+                </div>
+
+                {/* Editorial Collection Copy & Action (5 cols) */}
+                <div className="lg:col-span-5 p-6 sm:p-10 lg:p-12 flex flex-col justify-center">
+                  <p className="text-xs font-black uppercase tracking-[0.2em] text-[#FFD700]">
+                    The Style Standard
+                  </p>
+                  <h2 className="mt-2 text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white leading-tight">
+                    The Executive & Vintage Edit
+                  </h2>
+                  <p className="mt-3 text-xs sm:text-sm text-gray-300 leading-relaxed">
+                    Designed for Nigerian professionals and sharp dressers who value poise over hype. Featuring tailored two-piece blazers, Italian-cut cotton shirts, and verified leather Oxfords that let you make an entrance without emptying your savings.
+                  </p>
+
+                  {/* Curated Highlights */}
+                  <div className="mt-5 space-y-2 text-xs text-gray-300 font-semibold">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-[#FFD700]" />
+                      <span>Verified Grade A Thrift & Brand New sets</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-[#FFD700]" />
+                      <span>Full suit, shirt & tie combos under ₦30,000</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-[#FFD700]" />
+                      <span>Exact measurements listed for accurate fit</span>
+                    </div>
+                  </div>
+
+                  {/* Primary & Secondary Actions */}
+                  <div className="mt-8 flex flex-wrap items-center gap-3">
+                    <Link
+                      href="/products?category=suits&max_price=30000"
+                      className="inline-flex items-center justify-center gap-2 rounded-full bg-[#FFD700] px-6 py-3.5 text-xs font-black uppercase tracking-wider text-black transition hover:bg-[#ffcc00] hover:scale-105 active:scale-95 shadow-lg"
+                    >
+                      <ShoppingBag className="h-4 w-4" />
+                      <span>Shop The Executive Edit</span>
+                    </Link>
+
+                    <Link
+                      href="/products?category=suits"
+                      className="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/5 px-5 py-3.5 text-xs font-bold text-white transition hover:border-[#FFD700] hover:text-[#FFD700]"
+                    >
+                      <span>Explore Suits & Blazers</span>
+                    </Link>
+                  </div>
+                </div>
+
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Why YabaRight Value Props */}
-        <section className="bg-white py-14">
+        {/* ================= 5. "WHY YABARIGHT" TRUST SECTION ================= */}
+        <section id="why-yabaright" className="py-12 sm:py-16 lg:py-20 bg-white border-t border-black/5">
           <div className="container-custom">
-            <div className="mb-10 text-center">
+            
+            <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
               <p className="text-xs font-black uppercase tracking-[0.24em] text-[#c88d00]">
-                Why Shop YabaRight?
+                Marketplace Trust Standard
               </p>
-              <h2 className="mt-1.5 text-2xl sm:text-3xl lg:text-4xl font-black text-[#111111]">
-                Built for Nigerian Everyday Shoppers
+              <h2 className="mt-1.5 text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-[#111111]">
+                Why Shop YabaRight?
               </h2>
+              <p className="mt-2 text-xs sm:text-sm text-gray-600">
+                Online thrift shopping shouldn&apos;t feel like a gamble. We built three core standards into every transaction so you shop with 100% peace of mind.
+              </p>
             </div>
 
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="flex flex-col items-center rounded-[1.5rem] border border-black/5 bg-[#fbf8f2] p-6 text-center shadow-sm">
-                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FFD700]/20 text-[#c88d00]">
-                  <Truck className="h-7 w-7" />
+            {/* 3 Core Trust Pillars */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+              
+              {/* Pillar 1: Product Condition Grading */}
+              <div className="flex flex-col rounded-2xl border border-black/10 bg-[#fffaf0] p-6 sm:p-8 shadow-sm transition hover:border-[#FFD700]/50 hover:shadow-md">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#FFD700]/20 text-[#a06f00] mb-5">
+                  <CheckCircle2 className="h-6 w-6" />
                 </div>
-                <h3 className="text-base font-black text-[#111111]">Fast Nationwide Delivery</h3>
-                <p className="mt-2 text-xs leading-relaxed text-gray-600">
-                  Reliable dispatch across Lagos, Abuja, Port Harcourt, and all 36 states in 2-5 days.
+                <h3 className="text-lg font-black text-[#111111]">
+                  Clear Condition Grading
+                </h3>
+                <p className="mt-2 text-xs sm:text-sm text-gray-600 leading-relaxed">
+                  No misleading photos or hidden defects. We strictly evaluate and label every piece: <strong className="text-black">Brand New</strong>, <strong className="text-black">Thrift Grade A (Mint / Like New)</strong>, or <strong className="text-black">Thrift Grade B</strong>. Flaws, collar conditions, and fabric weights are explicitly noted.
                 </p>
+                <div className="mt-4 pt-4 border-t border-black/5 text-[11px] font-black uppercase tracking-wider text-[#c88d00]">
+                  5-Star Quality Standards
+                </div>
               </div>
 
-              <div className="flex flex-col items-center rounded-[1.5rem] border border-black/5 bg-[#fbf8f2] p-6 text-center shadow-sm">
-                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FFD700]/20 text-[#c88d00]">
-                  <ShieldCheck className="h-7 w-7" />
+              {/* Pillar 2: Sizing & Fit Guidance */}
+              <div className="flex flex-col rounded-2xl border border-black/10 bg-[#fffaf0] p-6 sm:p-8 shadow-sm transition hover:border-[#FFD700]/50 hover:shadow-md">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#FFD700]/20 text-[#a06f00] mb-5">
+                  <Ruler className="h-6 w-6" />
                 </div>
-                <h3 className="text-base font-black text-[#111111]">Vetted Nigerian Vendors</h3>
-                <p className="mt-2 text-xs leading-relaxed text-gray-600">
-                  Every merchant is verified and products are checked for authentic quality and grading.
+                <h3 className="text-lg font-black text-[#111111]">
+                  Sizing & Fit Guidance
+                </h3>
+                <p className="mt-2 text-xs sm:text-sm text-gray-600 leading-relaxed">
+                  Vintage and thrift sizing varies across American, UK, and European cuts. We take physical measurements of chest, waist, shoulder width, and inseam in inches and centimeters, comparing them with standard Nigerian body fits so your order fits right the first time.
                 </p>
+                <div className="mt-4 pt-4 border-t border-black/5 text-[11px] font-black uppercase tracking-wider text-[#c88d00]">
+                  Accurate Measurements Guaranteed
+                </div>
               </div>
 
-              <div className="flex flex-col items-center rounded-[1.5rem] border border-black/5 bg-[#fbf8f2] p-6 text-center shadow-sm">
-                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FFD700]/20 text-[#c88d00]">
-                  <BadgePercent className="h-7 w-7" />
+              {/* Pillar 3: Seller Trust & Verification */}
+              <div className="flex flex-col rounded-2xl border border-black/10 bg-[#fffaf0] p-6 sm:p-8 shadow-sm transition hover:border-[#FFD700]/50 hover:shadow-md">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#FFD700]/20 text-[#a06f00] mb-5">
+                  <ShieldCheck className="h-6 w-6" />
                 </div>
-                <h3 className="text-base font-black text-[#111111]">Real Thrift Prices</h3>
-                <p className="mt-2 text-xs leading-relaxed text-gray-600">
-                  Honest, transparent deals matching the posters so you get maximum style per Naira spent.
+                <h3 className="text-lg font-black text-[#111111]">
+                  Vetted Sellers & Buyer Escrow
+                </h3>
+                <p className="mt-2 text-xs sm:text-sm text-gray-600 leading-relaxed">
+                  Every merchant undergoes phone and identity verification before listing. Payments are secured in automated escrow: your money is only released to the seller after the package is delivered and inspected.
                 </p>
+                <div className="mt-4 pt-4 border-t border-black/5 text-[11px] font-black uppercase tracking-wider text-[#c88d00]">
+                  100% Protected Local Checkout
+                </div>
               </div>
 
-              <div className="flex flex-col items-center rounded-[1.5rem] border border-black/5 bg-[#fbf8f2] p-6 text-center shadow-sm">
-                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FFD700]/20 text-[#c88d00]">
-                  <Award className="h-7 w-7" />
-                </div>
-                <h3 className="text-base font-black text-[#111111]">5-Star Condition Grading</h3>
-                <p className="mt-2 text-xs leading-relaxed text-gray-600">
-                  Accurate, honest condition ratings so you know the exact state of every thrift fashion piece.
-                </p>
-              </div>
             </div>
+
           </div>
         </section>
 
-        {/* Live Marketplace Statistics */}
-        <section className="container-custom py-14">
-          <div className="overflow-hidden rounded-[2.25rem] bg-[#0f0f0f] p-8 text-white shadow-xl md:p-12 border border-[#FFD700]/20">
-            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="flex flex-col items-center text-center">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#FFD700]/10 text-[#FFD700] mb-3">
-                  <Sparkles className="h-5 w-5" />
-                </div>
-                <p className="text-3xl font-black text-[#FFD700] md:text-4xl">5,000+</p>
-                <p className="mt-1 text-xs uppercase tracking-wider text-gray-400">Curated Products</p>
-              </div>
-
-              <div className="flex flex-col items-center text-center">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#FFD700]/10 text-[#FFD700] mb-3">
-                  <Store className="h-5 w-5" />
-                </div>
-                <p className="text-3xl font-black text-[#FFD700] md:text-4xl">2,500+</p>
-                <p className="mt-1 text-xs uppercase tracking-wider text-gray-400">Verified Sellers</p>
-              </div>
-
-              <div className="flex flex-col items-center text-center">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#FFD700]/10 text-[#FFD700] mb-3">
-                  <Users className="h-5 w-5" />
-                </div>
-                <p className="text-3xl font-black text-[#FFD700] md:text-4xl">10,000+</p>
-                <p className="mt-1 text-xs uppercase tracking-wider text-gray-400">Happy Buyers</p>
-              </div>
-
-              <div className="flex flex-col items-center text-center">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#FFD700]/10 text-[#FFD700] mb-3">
-                  <MapPin className="h-5 w-5" />
-                </div>
-                <p className="text-3xl font-black text-[#FFD700] md:text-4xl">36</p>
-                <p className="mt-1 text-xs uppercase tracking-wider text-gray-400">States Covered</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* About Us (WHO WE ARE!) Section */}
-        <section id="about-us" className="border-t border-black/5 bg-gradient-to-b from-[#fffaf0] via-[#fbf5e6] to-[#fffaf0] py-16 sm:py-20">
+        {/* ================= 6. ABOUT US (WHO WE ARE!) SECTION ================= */}
+        <section id="about-us" className="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-[#fffaf0] via-[#fbf5e6] to-[#fffaf0] border-t border-black/5">
           <div className="container-custom max-w-4xl">
-            <div className="relative overflow-hidden rounded-[2.5rem] border border-[#FFD700]/40 bg-[#0e0e0e] p-8 sm:p-12 md:p-16 text-white shadow-2xl">
-              {/* Background Glow Accents */}
+            <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-[#FFD700]/30 bg-[#0e0e0e] p-6 sm:p-10 md:p-14 text-white shadow-2xl">
+              
               <div className="pointer-events-none absolute -left-20 -top-20 h-64 w-64 rounded-full bg-[#FFD700]/10 blur-3xl" />
               <div className="pointer-events-none absolute -bottom-20 -right-20 h-64 w-64 rounded-full bg-[#e8941f]/10 blur-3xl" />
 
-              <div className="relative z-10 text-center sm:text-left">
-                <div className="inline-flex items-center gap-2 rounded-full border border-[#FFD700]/30 bg-[#FFD700]/10 px-4 py-1.5 text-xs font-black uppercase tracking-widest text-[#FFD700] mb-6">
-                  <span>About Us</span>
+              <div className="relative z-10">
+                <div className="inline-flex items-center gap-1.5 rounded-full border border-[#FFD700]/30 bg-[#FFD700]/10 px-3.5 py-1 text-xs font-black uppercase tracking-widest text-[#FFD700] mb-4">
+                  <span>Our Heart & Mission</span>
                 </div>
 
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-white uppercase">
-                  YABARIGHT <br className="hidden sm:inline" />
-                  <span className="text-[#FFD700]">WHO WE ARE!</span>
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-white uppercase">
+                  YABARIGHT <span className="text-[#FFD700]">WHO WE ARE!</span>
                 </h2>
 
-                <div className="mt-8 space-y-6 text-sm sm:text-base leading-relaxed text-gray-300 font-medium">
-                  <p className="text-base sm:text-lg text-white font-semibold italic">
-                    There comes a time when a father has to choose…
-                  </p>
-
-                  <div className="rounded-2xl border-l-4 border-[#FFD700] bg-white/5 p-4 sm:p-5 text-gray-200">
-                    <p className="text-lg sm:text-xl font-bold text-[#FFD700]">
+                <div className="mt-6 space-y-4 text-xs sm:text-sm leading-relaxed text-gray-300 font-medium">
+                  <div className="rounded-xl border-l-4 border-[#FFD700] bg-white/5 p-4 text-gray-200">
+                    <p className="text-sm sm:text-base font-bold text-[#FFD700]">
                       “Do I look good and take care of myself, or do I pay my children’s school fees?”
                     </p>
                   </div>
@@ -475,59 +473,72 @@ export default function Home() {
                     A time when a man begins sacrificing his youth, his confidence, his appearance, and the little things that once made him feel alive — all because he has a family to provide for.
                   </p>
 
-                  <div className="pt-2">
-                    <p className="text-xs font-black uppercase tracking-widest text-[#FFD700]">
-                      But here’s the truth:
-                    </p>
-                    <p className="mt-1 text-base sm:text-lg font-bold text-white">
-                      A man shouldn’t have to lose himself just to take care of the people he loves.
-                    </p>
-                  </div>
-
-                  <p>
-                    The moment you stop caring about yourself, stop looking good, stop having that confidence and swag… something inside you begins to fade.
-                  </p>
-
                   <p className="text-white font-bold">
-                    And we don’t believe that should be your story.
+                    A man shouldn’t have to lose himself just to take care of the people he loves. The moment you stop looking good and having that confidence, something inside you begins to fade.
                   </p>
 
-                  <p className="text-lg font-bold text-[#FFD700]">
-                    That’s the emotion behind Yabaright. ❤️
-                  </p>
-
-                  <p>
-                    <strong className="text-white">Yabaright.ng</strong> is built around the idea that you can look good, live better, and still create an extra source of income.
+                  <p className="text-sm sm:text-base font-bold text-[#FFD700]">
+                    That’s the emotion behind YabaRight. Look good. Earn more. Live better. ❤️
                   </p>
 
                   <p>
-                    Through our affiliate program, you have an opportunity to earn from products people already need and buy every day — while still living a life you’re proud of.
+                    Through our marketplace and affiliate program, you can dress in Grade A fashion without spending a fortune, while earning commissions from products people buy every day.
                   </p>
-
-                  <div className="pt-4 border-t border-white/10 text-center sm:text-left">
-                    <p className="text-lg sm:text-xl font-black text-white">
-                      Look good. Earn more. Live better.
-                    </p>
-                    <p className="text-sm font-bold text-[#FFD700] mt-1">
-                      This is what we stand for. ❤️
-                    </p>
-                  </div>
                 </div>
 
-                {/* CTAs */}
-                <div className="mt-10 flex flex-wrap items-center gap-4">
+                <div className="mt-8 flex flex-wrap items-center gap-3">
                   <Link
                     href="/products"
-                    className="inline-flex items-center gap-2 rounded-full bg-[#FFD700] px-7 py-3.5 text-xs font-black uppercase tracking-wider text-black transition hover:bg-[#ffcc00] hover:scale-105 shadow-lg"
+                    className="inline-flex items-center gap-2 rounded-full bg-[#FFD700] px-6 py-3 text-xs font-black uppercase tracking-wider text-black transition hover:bg-[#ffcc00] hover:scale-105 active:scale-95 shadow-lg"
                   >
-                    <span>Shop Fashion Fits</span>
+                    <span>Shop Affordable Fits</span>
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                   <Link
                     href="/affiliate"
-                    className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-7 py-3.5 text-xs font-black uppercase tracking-wider text-white transition hover:bg-white/20 hover:text-[#FFD700]"
+                    className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-6 py-3 text-xs font-black uppercase tracking-wider text-white transition hover:bg-white/20 hover:text-[#FFD700]"
                   >
+                    <DollarSign className="h-4 w-4 text-[#FFD700]" />
                     <span>Join Affiliate & Earn</span>
+                  </Link>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        {/* ================= 7. PROMINENT SELLER CTA BANNER ================= */}
+        <section className="py-12 sm:py-16">
+          <div className="container-custom">
+            <div className="overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-r from-[#FFD700] via-[#ffcc00] to-[#e8941f] p-8 sm:p-12 shadow-xl border border-black/10">
+              <div className="flex flex-col items-center justify-between gap-6 md:flex-row text-center md:text-left">
+                <div className="max-w-xl">
+                  <div className="inline-flex items-center gap-1.5 rounded-full bg-black/10 px-3 py-1 text-[11px] font-black uppercase tracking-wider text-black mb-3">
+                    <Store className="h-3.5 w-3.5" />
+                    <span>Vendor Hub</span>
+                  </div>
+                  <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-black tracking-tight">
+                    Turn Your Closet into Daily Income
+                  </h2>
+                  <p className="mt-2 text-xs sm:text-sm text-black/85 leading-relaxed">
+                    Have quality thrift pieces, vintage jackets, corporate footwear, or boutique stock? Join thousands of verified Nigerian vendors selling on YabaRight with nationwide delivery support.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3 flex-shrink-0">
+                  <Link
+                    href="/register"
+                    className="inline-flex items-center gap-2 rounded-full bg-black px-7 py-3.5 text-xs font-black uppercase tracking-wider text-[#FFD700] transition-all hover:bg-white hover:text-black hover:scale-105 active:scale-95 shadow-xl"
+                  >
+                    <span>Start Selling Free</span>
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                  <Link
+                    href="/login"
+                    className="inline-flex items-center justify-center rounded-full border border-black/20 bg-black/10 px-6 py-3.5 text-xs font-bold text-black transition hover:bg-black/20"
+                  >
+                    <span>Seller Login</span>
                   </Link>
                 </div>
               </div>
@@ -535,30 +546,9 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Seller CTA Banner */}
-        <section className="container-custom pb-14">
-          <div className="overflow-hidden rounded-[2.25rem] bg-gradient-to-r from-[#FFD700] via-[#ffcc00] to-[#e8941f] p-8 md:p-12 shadow-lg">
-            <div className="flex flex-col items-center justify-between gap-6 md:flex-row text-center md:text-left">
-              <div>
-                <h2 className="text-2xl font-black text-black md:text-3xl">
-                  Turn Your Closet into Cash
-                </h2>
-                <p className="mt-2 text-sm text-black/80 max-w-lg">
-                  Join thousands of fashion vendors and everyday thrifters selling pre-owned fits, vintage grails, and new inventory on YabaRight today.
-                </p>
-              </div>
-              <Link
-                href="/register"
-                className="inline-flex items-center gap-2 rounded-full bg-black px-8 py-3.5 text-xs font-black uppercase tracking-wider text-[#FFD700] transition-all hover:bg-white hover:text-black hover:scale-105 shadow-xl"
-              >
-                <span>Start Selling Free</span>
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-          </div>
-        </section>
       </main>
 
+      {/* ================= 8. SIMPLIFIED FOOTER ================= */}
       <Footer />
       <BottomNav />
       <ToastContainer />
