@@ -137,28 +137,38 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/products?category=thrift" className="transition hover:text-[#FFD700]">
-                  Thrift Grade A (Mint)
+                <Link href="/products?category=Sneakers" className="transition hover:text-[#FFD700]">
+                  Sneakers & Trainers
                 </Link>
               </li>
               <li>
-                <Link href="/products?category=suits" className="transition hover:text-[#FFD700]">
-                  Suits & Blazers
+                <Link href="/products?category=Gadgets" className="transition hover:text-[#FFD700]">
+                  Gadgets & Laptops
                 </Link>
               </li>
               <li>
-                <Link href="/products?category=shoes" className="transition hover:text-[#FFD700]">
-                  Corporate Shoes & Loafers
+                <Link href="/products?category=Shirts" className="transition hover:text-[#FFD700]">
+                  Shirts & Silk Ties
                 </Link>
               </li>
               <li>
-                <Link href="/products?category=shirts" className="transition hover:text-[#FFD700]">
-                  Office & Casual Shirts
+                <Link href="/products?category=Jeans" className="transition hover:text-[#FFD700]">
+                  Jeans & Pant Trousers
                 </Link>
               </li>
               <li>
-                <Link href="/products?category=bags" className="transition hover:text-[#FFD700]">
-                  Leather Bags & Totes
+                <Link href="/gift-shop" className="transition hover:text-[#FFD700] text-[#FFD700] font-semibold">
+                  🎁 Gift Shop & Invoices (Jerseys, Mugs, Tees)
+                </Link>
+              </li>
+              <li>
+                <Link href="/#aso-ebi" className="transition hover:text-[#FFD700] text-[#FFD700] font-semibold">
+                  👑 Aso Ebi Made Easy
+                </Link>
+              </li>
+              <li>
+                <Link href="/products?category=Trade" className="transition hover:text-[#FFD700]">
+                  🔄 Trade & Thrift Swap
                 </Link>
               </li>
             </ul>

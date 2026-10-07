@@ -19,10 +19,20 @@ import { useAdminStore } from '@/store/adminStore';
 
 const DEFAULT_CATEGORIES = [
   'All',
+  'Sneakers',
+  'Trainers',
+  'Shirts',
+  'Ties',
+  'Trade',
+  'Gadgets',
+  'Laptops',
+  'Jeans',
+  'Pant Trousers',
+  'Gift Items',
+  'Aso Ebi',
   'Clothing',
   'Shoes',
   'Bags',
-  'Shirts',
   'Suits',
   'Accessories'
 ];

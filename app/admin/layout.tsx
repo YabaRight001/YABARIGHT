@@ -19,6 +19,7 @@ import {
   Shield,
   KeyRound,
   Lock,
+  Gift,
 } from 'lucide-react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -97,6 +98,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       href: '/admin/products',
       icon: Package,
       badge: `${products.length}`,
+    },
+    {
+      name: 'Gift Shop Pricing',
+      href: '/admin/gift-shop',
+      icon: Gift,
+      badge: 'PM Rates',
+      badgeColor: 'bg-[#FFD700]/20 text-[#FFD700] border border-[#FFD700]/30',
     },
     {
       name: 'Vendor Verification',

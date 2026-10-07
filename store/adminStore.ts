@@ -61,8 +61,30 @@ interface AdminState {
   addImagePreset: (preset: { label: string; url: string }) => void;
   deleteImagePreset: (idOrUrl: string) => void;
 
+  // Gift Shop Pricing Management (for Product Managers)
+  giftPricings: GiftItemPricing[];
+  updateGiftPrice: (id: string, updates: Partial<GiftItemPricing>) => void;
+  addGiftPricing: (item: GiftItemPricing) => void;
+  deleteGiftPricing: (id: string) => void;
+
   // Getters
   isSellerVerified: (sellerId: string) => boolean;
+}
+
+export interface GiftItemPricing {
+  id: string;
+  type: string;
+  name: string;
+  category: string;
+  basePrice: number;
+  customizationFee: number;
+  estimatedDays: number;
+  image: string;
+  description: string;
+  isAvailable: boolean;
+  colorOptions?: string[];
+  placeholderText?: string;
+  defaultText?: string;
 }
 
 export interface ImagePreset {
@@ -71,17 +93,160 @@ export interface ImagePreset {
   url: string;
 }
 
+export const initialGiftPricings: GiftItemPricing[] = [
+  {
+    id: 'jerzy',
+    type: 'Jerzy',
+    name: 'Customized Club / Country Jersey',
+    category: 'Gift Items',
+    basePrice: 12500,
+    customizationFee: 1500,
+    estimatedDays: 2,
+    image: 'https://images.unsplash.com/photo-1577223625816-7546f13df25d?auto=format&fit=crop&w=800&q=80',
+    description: 'Custom sports jersey with official vinyl back name & squad number print.',
+    isAvailable: true,
+    colorOptions: ['Forest Green', 'Royal Blue', 'Classic White', 'Crimson Red'],
+    placeholderText: 'E.g. KANU 4, BABA 01, OMA 7',
+    defaultText: 'ADEBAYO 10',
+  },
+  {
+    id: 'mug',
+    type: 'Mug',
+    name: 'Custom Photo & Personal Message Ceramic Mug',
+    category: 'Gift Items',
+    basePrice: 4500,
+    customizationFee: 500,
+    estimatedDays: 1,
+    image: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80',
+    description: 'High-gloss 11oz ceramic mug with heat-sealed photo, quote, or monogram.',
+    isAvailable: true,
+    colorOptions: ['Pure White', 'Matte Black', 'Gold Rim'],
+    placeholderText: 'E.g. QUEEN OF MY HEART, DR. TUNDE',
+    defaultText: 'BEST DAD IN LAGOS',
+  },
+  {
+    id: 'tshirt',
+    type: 'Tshirt',
+    name: 'Personalized Heavyweight Cotton Graphic Tee',
+    category: 'Gift Items',
+    basePrice: 7999,
+    customizationFee: 1000,
+    estimatedDays: 2,
+    image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&q=80',
+    description: '240GSM combed cotton tee with high-definition DTF graphic or text print.',
+    isAvailable: true,
+    colorOptions: ['Onyx Black', 'Vintage Cream', 'Steel Grey'],
+    placeholderText: 'E.g. BIG WINS ONLY, 1994 VINTAGE',
+    defaultText: 'BLESSED & FOCUSED',
+  },
+  {
+    id: 'caps',
+    type: 'Caps',
+    name: 'Custom Monogram Embroidered Streetwear Cap',
+    category: 'Gift Items',
+    basePrice: 6500,
+    customizationFee: 1000,
+    estimatedDays: 2,
+    image: 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&w=800&q=80',
+    description: 'Structured 6-panel streetwear cap with 3D puff embroidery.',
+    isAvailable: true,
+    colorOptions: ['Midnight Black', 'Desert Khaki', 'Navy'],
+    placeholderText: 'E.g. LAGOS 26, LAX, INITIALS',
+    defaultText: 'LAGOS 26',
+  },
+  {
+    id: 'phone_case',
+    type: 'Phone case',
+    name: 'Personalized Shockproof Hybrid Phone Case',
+    category: 'Gift Items',
+    basePrice: 4999,
+    customizationFee: 500,
+    estimatedDays: 1,
+    image: 'https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?auto=format&fit=crop&w=800&q=80',
+    description: 'Military-grade drop-tested case with laser-printed monogram or photo.',
+    isAvailable: true,
+    colorOptions: ['Clear Hybrid', 'Matte Carbon', 'Frosted Smoke'],
+    placeholderText: 'E.g. iPhone 15 Pro / AMINAT K.',
+    defaultText: 'AMINAT K.',
+  },
+  {
+    id: 'folder',
+    type: 'Folder',
+    name: 'Executive Debossed Leather Document Folder',
+    category: 'Gift Items',
+    basePrice: 9500,
+    customizationFee: 1500,
+    estimatedDays: 2,
+    image: 'https://images.unsplash.com/photo-1586075010923-2dd4570fb338?auto=format&fit=crop&w=800&q=80',
+    description: 'PU vegan leather document folder with laser-engraved metallic nameplate.',
+    isAvailable: true,
+    colorOptions: ['Classic Black', 'Cognac Brown', 'Navy Blue'],
+    placeholderText: 'E.g. BARR. TUNDE JOHNSON',
+    defaultText: 'BARR. TUNDE JOHNSON',
+  },
+  {
+    id: 'books',
+    type: 'Books',
+    name: 'Gold-Foil Hardcover Journal & Book Gift Set',
+    category: 'Gift Items',
+    basePrice: 5500,
+    customizationFee: 1000,
+    estimatedDays: 1,
+    image: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800&q=80',
+    description: '200-page lined journal with gold-foil stamped custom title & ribbon.',
+    isAvailable: true,
+    colorOptions: ['Emerald Green', 'Royal Navy', 'Burgundy Wine'],
+    placeholderText: 'E.g. BOOK OF PURPOSE 2026',
+    defaultText: 'BOOK OF PURPOSE 2026',
+  },
+  {
+    id: 'pen',
+    type: 'Pen',
+    name: 'Laser-Engraved Executive Gold-Trim Pen Box',
+    category: 'Gift Items',
+    basePrice: 4500,
+    customizationFee: 500,
+    estimatedDays: 1,
+    image: 'https://images.unsplash.com/photo-1583485088034-697b5bc54ccd?auto=format&fit=crop&w=800&q=80',
+    description: 'Weighted brass ballpoint pen with 24K gold accents in velvet box.',
+    isAvailable: true,
+    colorOptions: ['Matte Black & Gold', 'Gloss Silver & Gold', 'Pure Gold Tone'],
+    placeholderText: 'E.g. DR. BOLANLE S.',
+    defaultText: 'DR. BOLANLE S.',
+  },
+  {
+    id: 'bracelets',
+    type: 'Bracelets',
+    name: 'Custom Name Magnetic Couple Charm Bracelets',
+    category: 'Gift Items',
+    basePrice: 5999,
+    customizationFee: 1000,
+    estimatedDays: 1,
+    image: 'https://images.unsplash.com/photo-1611591475837-7f8976b97664?auto=format&fit=crop&w=800&q=80',
+    description: 'Dual stone bead bracelets with engraved custom charms & magnetic link.',
+    isAvailable: true,
+    colorOptions: ['Duo Onyx & Howlite', 'Triple Black Stone', 'Rose Quartz & Onyx'],
+    placeholderText: 'E.g. CHIDI ♡ IFEOMA',
+    defaultText: 'CHIDI ♡ IFEOMA',
+  },
+];
+
 export const initialCategories: string[] = [
-  'Clothing',
-  'Shoes',
-  'Bags',
+  'Sneakers',
+  'Trainers',
   'Shirts',
+  'Ties',
+  'Trade',
+  'Gadgets',
+  'Laptops',
+  'Jeans',
+  'Pant Trousers',
+  'Gift Items',
+  'Aso Ebi',
   'Suits',
-  'Trousers',
+  'Bags',
+  'Clothing',
   'Accessories',
-  'Designer Items',
-  'Vintage',
-  'Traditional Wears',
 ];
 
 export const initialImagePresets: ImagePreset[] = [
@@ -92,10 +257,21 @@ export const initialImagePresets: ImagePreset[] = [
   { id: 'pre-5', label: 'Leather Bag', url: '/bag-handbag.jpg' },
   { id: 'pre-6', label: 'Corporate Shoes', url: '/male-shoes-collection.jpg' },
   { id: 'pre-7', label: 'Jeans Stack', url: '/jeans-stack.jpg' },
-  { id: 'pre-8', label: 'Heels Black', url: '/heels-black-pair.jpg' },
-  { id: 'pre-9', label: 'Ballet Flats', url: '/female-shoe-flat.jpg' },
-  { id: 'pre-10', label: 'Polo Shirts', url: '/polo-shirts.jpg' },
-  { id: 'pre-11', label: 'Banner Suits', url: '/banner-suit-tie.jpg' },
+  { id: 'pre-8', label: 'Sneakers Retro', url: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=800&q=80' },
+  { id: 'pre-9', label: 'Trainers Runner', url: 'https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?auto=format&fit=crop&w=800&q=80' },
+  { id: 'pre-10', label: 'Laptop MacBook', url: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80' },
+  { id: 'pre-11', label: 'Gadgets Earbuds', url: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=800&q=80' },
+  { id: 'pre-12', label: 'Ties Silk Pack', url: '/banner-suit-tie.jpg' },
+  { id: 'pre-13', label: 'Pant Trousers', url: 'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?auto=format&fit=crop&w=800&q=80' },
+  { id: 'pre-14', label: 'Custom Jersey', url: 'https://images.unsplash.com/photo-1577223625816-7546f13df25d?auto=format&fit=crop&w=800&q=80' },
+  { id: 'pre-15', label: 'Custom Mug', url: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80' },
+  { id: 'pre-16', label: 'Custom Tshirt', url: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&q=80' },
+  { id: 'pre-17', label: 'Custom Cap', url: 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&w=800&q=80' },
+  { id: 'pre-18', label: 'Phone Case', url: 'https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?auto=format&fit=crop&w=800&q=80' },
+  { id: 'pre-19', label: 'Executive Pen', url: 'https://images.unsplash.com/photo-1583485088034-697b5bc54ccd?auto=format&fit=crop&w=800&q=80' },
+  { id: 'pre-20', label: 'Aso Ebi Swiss Lace', url: 'https://images.unsplash.com/photo-1614081781451-29c084a7de30?auto=format&fit=crop&w=800&q=80' },
+  { id: 'pre-21', label: 'Aso Ebi Velvet Sequin', url: 'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&w=800&q=80' },
+  { id: 'pre-22', label: 'Gele Headtie', url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80' },
 ];
 
 const initialVendors: VendorProfile[] = [
@@ -353,6 +529,32 @@ export const useAdminStore = create<AdminState>()(
         }));
       },
 
+      // Gift Shop Pricing Management
+      giftPricings: initialGiftPricings,
+
+      updateGiftPrice: (id: string, updates: Partial<GiftItemPricing>) => {
+        set((state) => {
+          const current = state.giftPricings && state.giftPricings.length > 0 ? state.giftPricings : initialGiftPricings;
+          return {
+            giftPricings: current.map((item) => (item.id === id ? { ...item, ...updates } : item)),
+          };
+        });
+      },
+
+      addGiftPricing: (item: GiftItemPricing) => {
+        set((state) => ({
+          giftPricings: [...(state.giftPricings && state.giftPricings.length > 0 ? state.giftPricings : initialGiftPricings), item],
+        }));
+      },
+
+      deleteGiftPricing: (id: string) => {
+        set((state) => ({
+          giftPricings: (state.giftPricings && state.giftPricings.length > 0 ? state.giftPricings : initialGiftPricings).filter(
+            (item) => item.id !== id
+          ),
+        }));
+      },
+
       isSellerVerified: (sellerId: string) => {
         if (sellerId === 'admin-official') return true;
         const vendor = get().vendors.find((v) => v.id === sellerId);
@@ -361,6 +563,30 @@ export const useAdminStore = create<AdminState>()(
     }),
     {
       name: 'yabaright-admin-store',
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          const current = state.categories || [];
+          const missing = initialCategories.filter(
+            (c) => !current.some((x) => x.toLowerCase() === c.toLowerCase())
+          );
+          if (missing.length > 0) {
+            state.categories = [...current, ...missing];
+          }
+
+          if (!state.giftPricings || state.giftPricings.length === 0) {
+            state.giftPricings = initialGiftPricings;
+          } else {
+            // Ensure any newly added default items are present
+            const currentGifts = state.giftPricings;
+            const missingGifts = initialGiftPricings.filter(
+              (g) => !currentGifts.some((x) => x.id === g.id)
+            );
+            if (missingGifts.length > 0) {
+              state.giftPricings = [...currentGifts, ...missingGifts];
+            }
+          }
+        }
+      },
     }
   )
 );

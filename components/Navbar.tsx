@@ -22,13 +22,13 @@ import {
 
 const discoveryLinks = [
   { name: 'All Products', href: '/products' },
-  { name: 'Thrift Grade A', href: '/products?category=thrift' },
-  { name: 'New Drops', href: '/products?category=new' },
-  { name: 'Hot Deals', href: '/products?category=deals' },
-  { name: 'Suits', href: '/products?category=suits' },
-  { name: 'Shoes', href: '/products?category=shoes' },
-  { name: 'Bags', href: '/products?category=bags' },
-  { name: 'Affiliate', href: '/affiliate', highlight: true },
+  { name: 'Sneakers & Trainers', href: '/products?category=Sneakers' },
+  { name: 'Gadgets & Laptops', href: '/products?category=Gadgets' },
+  { name: 'Shirts & Ties', href: '/products?category=Shirts' },
+  { name: '🎁 Gift Shop', href: '/gift-shop', highlight: true },
+  { name: '👑 Aso Ebi', href: '/#aso-ebi', highlight: true },
+  { name: 'Trade / Swap', href: '/products?category=Trade' },
+  { name: 'Affiliate', href: '/affiliate' },
 ];
 
 export function Navbar() {
