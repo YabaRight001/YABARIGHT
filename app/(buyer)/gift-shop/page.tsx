@@ -292,6 +292,21 @@ Please confirm production and dispatch details.`;
                       <span>⚡ Turnaround: {selectedItem.estimatedDays || 2} Days</span>
                       <span className="text-emerald-400 font-semibold">✓ PM Price Verified</span>
                     </div>
+
+                    {/* Official Gift Shop Flyer Badge */}
+                    <div className="mt-3 flex items-center gap-3 p-2.5 rounded-xl border border-[#FFD700]/30 bg-black/50">
+                      <div className="h-12 w-10 flex-shrink-0 overflow-hidden rounded-lg border border-[#FFD700]/50 shadow-md">
+                        <img 
+                          src="/banner-gift-shop.jpg" 
+                          alt="Official YabaRight Gift Shop Flyer" 
+                          className="h-full w-full object-cover" 
+                        />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-xs font-black text-white">Official Gift Shop Flyer</p>
+                        <p className="text-[10px] text-[#FFD700] font-semibold">Unique Gifts • Personal Touch • Lasting Memories</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
 

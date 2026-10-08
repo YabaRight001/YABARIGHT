@@ -35,55 +35,71 @@ import {
 } from 'lucide-react';
 import { Product } from '@/types';
 
-// Visual Category Tiles representing ground inventory + special features
+// Visual Category Tiles representing ground inventory + special features using authentic flyer assets
 const visualCategories = [
   {
-    title: 'Sneakers & Trainers',
-    caption: 'High-tops, running kicks & athletic trainers',
-    image: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=800&q=80',
-    href: '/products?category=Sneakers',
-    count: '1,420+ pairs',
-    tag: 'On Ground'
-  },
-  {
-    title: 'Gadgets & Laptops',
-    caption: 'Refurbished MacBooks, ANC wireless earbuds & tech',
-    image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80',
+    title: 'Electronics & Gadgets',
+    caption: 'MacBooks, ANC wireless earbuds & tech gear',
+    image: '/banner-electronics.jpg',
     href: '/products?category=Gadgets',
     count: '350+ units',
     tag: 'Tested Tech'
   },
   {
-    title: 'Shirts & Silk Ties',
-    caption: 'Crisp button-ups & 100% woven Italian neckties',
-    image: '/casual-shirts-colorful.jpg',
-    href: '/products?category=Shirts',
-    count: '890+ fits',
-    tag: 'Grade A'
+    title: 'Phones & iPhones',
+    caption: 'Certified iPhones, Samsung Galaxy & Androids',
+    image: '/banner-phones.jpg',
+    href: '/products?category=Phones',
+    count: '240+ phones',
+    tag: 'Real Value'
   },
   {
-    title: 'Jeans & Pant Trousers',
-    caption: 'Straight cuts, vintage washes & corporate flex trousers',
-    image: '/jeans-folded.jpg',
-    href: '/products?category=Jeans',
-    count: '1,200+ pieces',
-    tag: 'Daily Steals'
+    title: 'Aso Ebi Made Easy',
+    caption: 'Swiss voile lace, velvet sequin & Agbada sets',
+    image: '/banner-aso-ebi.jpg',
+    href: '#aso-ebi',
+    count: 'Bulk Orders',
+    tag: 'Wedding Ready'
   },
   {
-    title: 'Customized Gifts',
-    caption: 'Jerseys, mugs, tees, caps, phone cases & pens',
-    image: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=800&q=80',
-    href: '#custom-gifts',
+    title: 'YabaRight Gift Shop',
+    caption: 'Custom jerseys, mugs, tees, caps & phone cases',
+    image: '/banner-gift-shop.jpg',
+    href: '/gift-shop',
     count: '9 Gift Items',
     tag: 'Personalized'
   },
   {
-    title: 'Aso Ebi Made Easy',
-    caption: 'Swiss voile lace, velvet sequin, auto-gele & Agbada',
-    image: 'https://images.unsplash.com/photo-1614081781451-29c084a7de30?auto=format&fit=crop&w=800&q=80',
-    href: '#aso-ebi',
-    count: 'Bulk Orders',
-    tag: 'Wedding Ready'
+    title: 'Super Combo Deal',
+    caption: 'Complete 3-piece fit: Shirt, Jeans & Shoes',
+    image: '/banner-super-combo.jpg',
+    href: '/products?category=Combos',
+    count: '₦25,000 Set',
+    tag: 'Hot Deal'
+  },
+  {
+    title: 'Suits & Blazers',
+    caption: 'Tailored 2-piece suits, blazers & silk ties',
+    image: '/banner-suit-tie.jpg',
+    href: '/products?category=Suits',
+    count: 'Below ₦30k',
+    tag: 'Grade A'
+  },
+  {
+    title: 'Chop Corporate Shoes',
+    caption: 'Genuine leather Oxfords, loafers & sneakers',
+    image: '/banner-corporate-shoes.jpg',
+    href: '/products?category=Shoes',
+    count: '₦22,999 Only',
+    tag: 'Verified Leather'
+  },
+  {
+    title: 'Casual & Office Shirts',
+    caption: 'Crisp button-ups, breathable cotton & stripes',
+    image: '/banner-casual-shirts.jpg',
+    href: '/products?category=Shirts',
+    count: 'From ₦9,999',
+    tag: 'Daily Steals'
   },
 ];
 
@@ -332,14 +348,17 @@ export default function Home() {
             <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide py-0.5">
               {[
                 { name: 'All Marketplace', href: '/products' },
-                { name: '👟 Sneakers', href: '/products?category=Sneakers' },
-                { name: '🏃 Trainers', href: '/products?category=Trainers' },
-                { name: '👔 Shirts & Ties', href: '/products?category=Shirts' },
-                { name: '👖 Jeans & Trousers', href: '/products?category=Jeans' },
-                { name: '💻 Gadgets & Laptops', href: '/products?category=Gadgets' },
-                { name: '🔄 Trade / Swap', href: '/products?category=Trade' },
-                { name: '🎁 Gift Shop', href: '/gift-shop', highlight: true },
+                { name: '⚡ Electronics', href: '/products?category=Gadgets', highlight: true },
+                { name: '📱 Phones', href: '/products?category=Phones', highlight: true },
                 { name: '👑 Aso Ebi Made Easy', href: '#aso-ebi', highlight: true },
+                { name: '🎁 Gift Shop', href: '/gift-shop', highlight: true },
+                { name: '🔥 Super Combo Deal', href: '/products?category=Combos', highlight: true },
+                { name: '👔 Suits & Blazers', href: '/products?category=Suits' },
+                { name: '👞 Footwear', href: '/products?category=Shoes' },
+                { name: '👕 Casual & Office Shirts', href: '/products?category=Shirts' },
+                { name: '👖 Jeans & Trousers', href: '/products?category=Jeans' },
+                { name: '👟 Sneakers & Trainers', href: '/products?category=Sneakers' },
+                { name: '🔄 Trade / Swap', href: '/products?category=Trade' },
                 { name: '💰 Affiliate Hub', href: '/affiliate' },
               ].map((pill) => (
                 <Link
@@ -363,7 +382,7 @@ export default function Home() {
           <div className="container-custom">
             <Link
               href="/gift-shop"
-              className="group relative block overflow-hidden rounded-3xl border-2 border-[#FFD700] bg-gradient-to-r from-[#0d0d0d] via-[#161616] to-[#0a0a0a] p-6 sm:p-10 text-white shadow-2xl transition-all duration-300 hover:shadow-[#FFD700]/20 hover:border-white"
+              className="group relative block overflow-hidden rounded-3xl border-2 border-[#FFD700] bg-gradient-to-r from-[#0d0d0d] via-[#161616] to-[#0a0a0a] p-5 sm:p-8 text-white shadow-2xl transition-all duration-300 hover:shadow-[#FFD700]/20 hover:border-white"
             >
               {/* Flyer Background Glow & Graphic Elements */}
               <div className="pointer-events-none absolute -left-20 -top-20 h-64 w-64 rounded-full bg-[#FFD700]/15 blur-3xl group-hover:bg-[#FFD700]/25 transition" />
@@ -371,9 +390,23 @@ export default function Home() {
               
               <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                 
+                {/* Authentic Flyer Showcase Thumbnail */}
+                <div className="w-full lg:w-48 flex-shrink-0 flex justify-center">
+                  <div className="relative overflow-hidden rounded-2xl border-2 border-[#FFD700]/40 bg-black shadow-2xl group-hover:scale-105 transition-transform duration-300 max-w-[200px]">
+                    <img 
+                      src="/banner-gift-shop.jpg" 
+                      alt="YabaRight Gift Shop Official Flyer" 
+                      className="w-full h-auto object-cover max-h-56"
+                    />
+                    <div className="absolute top-2 right-2 rounded-full bg-[#FFD700] px-2 py-0.5 text-[9px] font-black uppercase text-black">
+                      Flyer
+                    </div>
+                  </div>
+                </div>
+
                 {/* Flyer Left Badge & Copy */}
-                <div className="max-w-2xl">
-                  <div className="flex flex-wrap items-center gap-2 mb-3">
+                <div className="max-w-2xl flex-1">
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FFD700] px-3.5 py-1 text-[11px] font-black uppercase tracking-wider text-black shadow-md">
                       <Gift className="h-3.5 w-3.5" />
                       <span>Official Gift Shop Flyer</span>
@@ -384,11 +417,11 @@ export default function Home() {
                   </div>
 
                   <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black uppercase tracking-tight text-white leading-tight">
-                    CUSTOMIZE & GIFT TO <span className="text-[#FFD700]">YOUR LOVED ONES</span>
+                    SEND A GIFT TO <span className="text-[#FFD700]">SOMEONE SPECIAL TODAY</span>
                   </h2>
 
                   <p className="mt-2 text-xs sm:text-sm text-gray-300 leading-relaxed">
-                    Jerseys, ceramic mugs, heavyweight tees, embroidered caps, phone cases, leather folders, journals, engraved pens & charm bracelets. Choose your item, type what you want to write in it, and generate an official proforma invoice or add directly to bag!
+                    Thoughtful gifts. Lasting memories. Branded T-Shirts, Mugs, Phone Cases, Diaries & Notebooks, Couple Bracelets, Caps, Keychains, and Phone Stands. Add custom names, generate instant proforma invoices, and dispatch nationwide!
                   </p>
 
                   <div className="mt-4 flex flex-wrap items-center gap-4 text-xs font-bold text-gray-300">
@@ -404,25 +437,10 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* Flyer Right CTA & Mini Mockup Thumbnails */}
+                {/* Flyer Right CTA */}
                 <div className="flex flex-col sm:flex-row lg:flex-col items-start lg:items-end justify-between gap-4 flex-shrink-0">
-                  <div className="flex items-center -space-x-3 overflow-hidden p-1">
-                    {[
-                      { img: 'https://images.unsplash.com/photo-1577223625816-7546f13df25d?auto=format&fit=crop&w=400&q=80', label: 'Jersey' },
-                      { img: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=400&q=80', label: 'Mug' },
-                      { img: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=400&q=80', label: 'Tee' },
-                      { img: 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&w=400&q=80', label: 'Cap' },
-                      { img: 'https://images.unsplash.com/photo-1583485088034-697b5bc54ccd?auto=format&fit=crop&w=400&q=80', label: 'Pen' },
-                    ].map((m, i) => (
-                      <div key={i} className="relative h-12 w-12 rounded-full border-2 border-[#FFD700] overflow-hidden bg-black shadow-lg">
-                        <img src={m.img} alt={m.label} className="h-full w-full object-cover" />
-                      </div>
-                    ))}
-                    <span className="pl-5 text-xs font-black text-[#FFD700]">+4 More</span>
-                  </div>
-
                   <span className="inline-flex items-center gap-2 rounded-full bg-[#FFD700] px-6 py-3.5 text-xs sm:text-sm font-black uppercase tracking-wider text-black transition group-hover:bg-white shadow-xl shadow-[#FFD700]/25">
-                    <span>Click to Customize & Get Invoice</span>
+                    <span>Open Gift Studio & Invoice</span>
                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </span>
                 </div>
@@ -446,7 +464,7 @@ export default function Home() {
                   Explore Curated Categories On Ground
                 </h2>
                 <p className="mt-1 text-xs sm:text-sm text-gray-600 max-w-xl">
-                  Sneakers, trainers, Grade A shirts, silk ties, gadgets, laptops, custom gifts & Aso Ebi bundles.
+                  Electronics, phones, custom gifts, Aso Ebi, suits, shoes & combo deals verified on ground.
                 </p>
               </div>
 
@@ -460,7 +478,7 @@ export default function Home() {
             </div>
 
             {/* Visual Category Tiles */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 lg:gap-5">
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 xl:grid-cols-8 gap-3 sm:gap-4">
               {visualCategories.map((cat) => (
                 <Link
                   key={cat.title}
@@ -836,13 +854,80 @@ export default function Home() {
                 </Link>
 
                 <a
-                  href="https://wa.me/2348000000000?text=Hello%20YabaRight,%20I%20want%20to%20plan%20Aso%20Ebi%20for%20my%20upcoming%20event!"
+                  href="https://wa.me/2349060755247?text=Hello%20YabaRight,%20I%20saw%20your%20Aso%20Ebi%20flyer%20and%20want%20to%20order%20for%20my%20event!"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 rounded-full border border-black/20 bg-white px-5 py-3.5 text-xs font-black uppercase tracking-wider text-[#111111] hover:bg-[#FFD700] hover:text-black transition"
                 >
-                  <span>WhatsApp Coordinator</span>
+                  <span>WhatsApp: +234 906 075 5247</span>
                 </a>
+              </div>
+            </div>
+
+            {/* Official Aso Ebi Flyer Feature Spotlight */}
+            <div className="mb-12 sm:mb-16 overflow-hidden rounded-3xl border border-[#c88d00]/30 bg-gradient-to-br from-[#141414] via-[#0d0d0d] to-[#141414] text-white p-6 sm:p-10 shadow-2xl">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                <div className="lg:col-span-5 flex justify-center">
+                  <div className="relative overflow-hidden rounded-2xl border-2 border-[#FFD700]/50 shadow-2xl group max-w-sm">
+                    <img 
+                      src="/banner-aso-ebi.jpg" 
+                      alt="Best Plenty Aso Ebi Deals on YabaRight" 
+                      className="w-full h-auto max-h-[380px] object-contain transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute top-3 left-3 rounded-full bg-[#FFD700] px-3 py-1 text-[10px] font-black uppercase text-black shadow-md">
+                      Official Aso Ebi Flyer
+                    </div>
+                  </div>
+                </div>
+
+                <div className="lg:col-span-7 flex flex-col justify-center">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-[#FFD700]/15 border border-[#FFD700]/30 px-3.5 py-1 text-xs font-black uppercase tracking-wider text-[#FFD700] mb-3 self-start">
+                    <Crown className="h-3.5 w-3.5" />
+                    <span>Dress Together. Celebrate Together.</span>
+                  </div>
+
+                  <h3 className="text-2xl sm:text-3xl lg:text-4xl font-black uppercase text-white leading-tight">
+                    BEST PLENTY <span className="text-[#FFD700]">ASO EBI DEALS</span> ON YABARIGHT
+                  </h3>
+
+                  <p className="mt-3 text-xs sm:text-sm text-gray-300 leading-relaxed">
+                    Premium fabrics, wide range of owambe colors, and unmatchable group prices. From Swiss voile lace bundles and velvet sequin to luxury auto-gele headties and bespoke men&apos;s cashmere Agbada, get exact 5-yard cuts packed with zero short yard disappointment.
+                  </p>
+
+                  <div className="mt-5 grid grid-cols-3 gap-3 text-center">
+                    <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase">Fabrics</p>
+                      <p className="text-xs sm:text-sm font-black text-[#FFD700]">Premium Swiss & Velvet</p>
+                    </div>
+                    <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase">Guarantee</p>
+                      <p className="text-xs sm:text-sm font-black text-[#FFD700]">Exact 5 Yards</p>
+                    </div>
+                    <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase">Dispatch</p>
+                      <p className="text-xs sm:text-sm font-black text-[#FFD700]">Nationwide</p>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 flex flex-wrap items-center gap-3">
+                    <Link
+                      href="/products?category=Aso+Ebi"
+                      className="inline-flex items-center gap-2 rounded-full bg-[#FFD700] px-6 py-3 text-xs sm:text-sm font-black uppercase text-black hover:bg-white transition shadow-lg"
+                    >
+                      <ShoppingBag className="h-4 w-4" />
+                      <span>Shop The Look Now</span>
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                    <a
+                      href="https://wa.me/2349060755247?text=Hello%20YabaRight,%20I%20want%20to%20inquire%20about%20the%20Aso%20Ebi%20deals%20flyer"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-5 py-3 text-xs font-bold text-white hover:bg-white/15 transition"
+                    >
+                      <span>Direct WhatsApp +234 906 075 5247</span>
+                    </a>
+                  </div>
+                </div>
               </div>
             </div>
 
