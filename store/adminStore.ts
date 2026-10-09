@@ -557,7 +557,7 @@ export const useAdminStore = create<AdminState>()(
 
       isSellerVerified: (sellerId: string) => {
         if (sellerId === 'admin-official') return true;
-        const vendor = get().vendors.find((v) => v.id === sellerId);
+        const vendor = get().vendors?.find((v) => v.id === sellerId);
         return vendor?.isVerified ?? false;
       },
     }),

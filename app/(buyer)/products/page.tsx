@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useProductStore } from '@/store/productStore';
 import { sampleProducts } from '@/lib/mockProducts';
@@ -62,7 +62,10 @@ function ProductsContent() {
 
   const adminProducts = useAdminStore((s) => s.products);
   const storedCategories = useAdminStore((s) => s.categories);
-  const categoriesList = ['All', ...(storedCategories && storedCategories.length > 0 ? storedCategories : DEFAULT_CATEGORIES.slice(1))];
+  const categoriesList = useMemo(() => [
+    'All',
+    ...(storedCategories && storedCategories.length > 0 ? storedCategories : DEFAULT_CATEGORIES.slice(1))
+  ], [storedCategories]);
 
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState('All');
@@ -79,11 +82,10 @@ function ProductsContent() {
     }
   }, [searchParams, setActiveRef]);
 
-  // Sync search parameters and live products from adminStore on mount/change
-  useEffect(() => {
-    setLoading(true);
-    setError(null);
+  // Sync search parameters and live products from adminStore on mount or URL change
+  const searchParamsString = searchParams ? searchParams.toString() : '';
 
+  useEffect(() => {
     const initialCategory = searchParams.get('category') || '';
     const initialSearch = searchParams.get('search') || '';
     const initialMaxPrice = searchParams.get('max_price') 
@@ -114,9 +116,7 @@ function ProductsContent() {
       condition: initialCondition,
       sort: 'newest',
     });
-
-    setLoading(false);
-  }, [adminProducts, searchParams, setError, setLoading, setProducts, setFilters, categoriesList]);
+  }, [adminProducts, searchParamsString, categoriesList]);
 
   // Handle category pill click
   const handleCategorySelect = (cat: string) => {

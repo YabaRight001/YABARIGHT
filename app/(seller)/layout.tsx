@@ -1,4 +1,3 @@
-import '@/styles/globals.css';
 import Link from 'next/link';
 import { ToastContainer } from '@/components/Toast';
 import { Store, PlusCircle, ArrowLeftRight } from 'lucide-react';

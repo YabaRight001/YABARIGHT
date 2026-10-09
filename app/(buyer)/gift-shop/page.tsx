@@ -5,10 +5,6 @@ import Link from 'next/link';
 import { useAdminStore, GiftItemPricing, initialGiftPricings } from '@/store/adminStore';
 import { useCartStore } from '@/store/cartStore';
 import { useToastStore } from '@/store/toastStore';
-import { Navbar } from '@/components/Navbar';
-import { Footer } from '@/components/Footer';
-import { BottomNav } from '@/components/BottomNav';
-import { ToastContainer } from '@/components/Toast';
 import {
   Gift,
   Sparkles,
@@ -171,12 +167,8 @@ Please confirm production and dispatch details.`;
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#fffaf0] text-[#111111]">
-      <Navbar />
-
-      <main className="flex-1 pb-16 lg:pb-0">
-        
-        {/* ================= 1. PROMOTIONAL FLYER HERO BANNER ================= */}
+    <div className="w-full">
+      {/* ================= 1. PROMOTIONAL FLYER HERO BANNER ================= */}
         <section className="relative overflow-hidden bg-[#0a0a0a] text-white py-12 sm:py-16 lg:py-20 border-b border-[#FFD700]/30 shadow-2xl">
           {/* Subtle Ambient Background Light */}
           <div className="pointer-events-none absolute -left-24 top-0 h-96 w-96 rounded-full bg-[#FFD700]/15 blur-3xl" />
@@ -727,8 +719,6 @@ Please confirm production and dispatch details.`;
           </div>
         </section>
 
-      </main>
-
       {/* ================= 3. OFFICIAL PROFORMA INVOICE MODAL & PRINT VIEW ================= */}
       {showInvoiceModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-3 sm:p-6 overflow-y-auto">
@@ -890,10 +880,7 @@ Please confirm production and dispatch details.`;
         </div>
       )}
 
-      {/* ================= 4. FOOTER & BOTTOM NAV ================= */}
-      <Footer />
-      <BottomNav />
-      <ToastContainer />
+      {/* End Gift Shop Content */}
     </div>
   );
 }

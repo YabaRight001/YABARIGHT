@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getProductById, sampleProducts } from '@/lib/mockProducts';
@@ -29,7 +29,7 @@ import {
   Info
 } from 'lucide-react';
 
-export default function ProductDetailPage({
+function ProductDetailContent({
   params,
 }: {
   params: { productId: string };
@@ -49,7 +49,7 @@ export default function ProductDetailPage({
   const product = allProducts.find((p) => p.id === params.productId);
 
   const isOfficial = product?.sellerId === 'admin-official';
-  const vendor = vendors.find((v) => v.id === product?.sellerId);
+  const vendor = vendors?.find((v) => v.id === product?.sellerId);
   const isVerified = isOfficial || (vendor?.isVerified ?? false);
 
   const addItem = useCartStore((state) => state.addItem);
@@ -130,29 +130,6 @@ export default function ProductDetailPage({
       setTimeout(() => setCopied(false), 2000);
     }
   };
-
-  // Available sizes list
-  if (!product) {
-    return (
-      <div className="container-custom py-16 text-center">
-        <div className="mx-auto max-w-md rounded-3xl border border-black/10 bg-white p-8 shadow-sm">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 text-amber-600">
-            <Info className="h-7 w-7" />
-          </div>
-          <h2 className="text-xl font-black text-gray-950">Item Not Found</h2>
-          <p className="mt-2 text-xs sm:text-sm text-gray-500">
-            This product may have been removed, sold, or is no longer available in the catalog.
-          </p>
-          <Link
-            href="/products"
-            className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#FFD700] px-6 py-2.5 text-xs font-black uppercase text-black hover:bg-[#ffcc00] transition"
-          >
-            <span>Back to Marketplace</span>
-          </Link>
-        </div>
-      </div>
-    );
-  }
 
   const availableSizes =
     product.sizes && product.sizes.length > 0
@@ -536,5 +513,23 @@ export default function ProductDetailPage({
         onClose={() => setShowConditionGuide(false)}
       />
     </div>
+  );
+}
+
+export default function ProductDetailPage({
+  params,
+}: {
+  params: { productId: string };
+}) {
+  return (
+    <Suspense
+      fallback={
+        <div className="container-custom py-16 text-center text-xs font-bold text-gray-500">
+          Loading product details...
+        </div>
+      }
+    >
+      <ProductDetailContent params={params} />
+    </Suspense>
   );
 }
