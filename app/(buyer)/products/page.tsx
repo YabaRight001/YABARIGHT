@@ -40,10 +40,12 @@ const DEFAULT_CATEGORIES = [
 ];
 
 const PRICE_PRESETS = [
-  { label: 'All Prices', max: 100000 },
-  { label: 'Under ₦10K', max: 10000 },
-  { label: 'Under ₦20K', max: 20000 },
-  { label: 'Under ₦35K', max: 35000 },
+  { label: 'All Prices', min: 0, max: 2000000 },
+  { label: 'Under ₦25K', min: 0, max: 25000 },
+  { label: 'Under ₦50K', min: 0, max: 50000 },
+  { label: 'Under ₦100K', min: 0, max: 100000 },
+  { label: 'Under ₦500K', min: 0, max: 500000 },
+  { label: '₦500K - ₦2M', min: 500000, max: 2000000 },
 ];
 
 function ProductsContent() {
@@ -90,7 +92,7 @@ function ProductsContent() {
     const initialSearch = searchParams.get('search') || '';
     const initialMaxPrice = searchParams.get('max_price') 
       ? Number(searchParams.get('max_price')) 
-      : 100000;
+      : 2000000;
     const initialCondition = searchParams.get('condition') || '';
 
     // Match category
@@ -138,15 +140,15 @@ function ProductsContent() {
   };
 
   // Handle price preset
-  const handlePricePreset = (max: number) => {
-    setFilters({ maxPrice: max });
+  const handlePricePreset = (min: number, max: number) => {
+    setFilters({ minPrice: min, maxPrice: max });
   };
 
   // Count active filters
   const activeFiltersCount = [
     activeCategory !== 'All' ? 1 : 0,
     filters.search ? 1 : 0,
-    filters.maxPrice < 100000 ? 1 : 0,
+    (filters.minPrice > 0 || filters.maxPrice < 2000000) ? 1 : 0,
     filters.condition ? 1 : 0,
   ].reduce((a, b) => a + b, 0);
 
@@ -157,7 +159,7 @@ function ProductsContent() {
       search: '',
       category: '',
       minPrice: 0,
-      maxPrice: 100000,
+      maxPrice: 2000000,
       condition: undefined,
       sort: 'newest',
     });
@@ -295,15 +297,16 @@ function ProductsContent() {
                 </label>
                 <div className="flex flex-wrap gap-1.5">
                   {PRICE_PRESETS.map((preset) => {
-                    const isSelected = filters.maxPrice === preset.max;
+                    const isSelected =
+                      filters.maxPrice === preset.max && filters.minPrice === preset.min;
                     return (
                       <button
                         key={preset.label}
                         type="button"
-                        onClick={() => handlePricePreset(preset.max)}
+                        onClick={() => handlePricePreset(preset.min, preset.max)}
                         className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${
                           isSelected
-                            ? 'bg-[#111111] text-[#FFD700]'
+                            ? 'bg-[#111111] text-[#FFD700] shadow-sm'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                         }`}
                       >
@@ -314,10 +317,10 @@ function ProductsContent() {
                 </div>
               </div>
 
-              {/* Slider Range */}
+              {/* Slider Range & Inputs */}
               <div>
                 <div className="flex items-center justify-between text-xs font-bold text-gray-700 mb-2">
-                  <span>Max Price</span>
+                  <span>Max Price Range</span>
                   <span className="text-base font-black text-[#c88d00]">
                     ₦{filters.maxPrice.toLocaleString()}
                   </span>
@@ -325,12 +328,41 @@ function ProductsContent() {
                 <input
                   type="range"
                   min="5000"
-                  max="100000"
-                  step="2500"
+                  max="2000000"
+                  step="10000"
                   value={filters.maxPrice}
                   onChange={(e) => setFilters({ maxPrice: Number(e.target.value) })}
                   className="w-full accent-[#c88d00]"
                 />
+                
+                {/* Min / Max Numeric Inputs */}
+                <div className="grid grid-cols-2 gap-2 mt-3">
+                  <div>
+                    <label className="text-[10px] font-bold text-gray-500 uppercase">Min Price (₦)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max={filters.maxPrice}
+                      step="2500"
+                      value={filters.minPrice === 0 ? '' : filters.minPrice}
+                      placeholder="0"
+                      onChange={(e) => setFilters({ minPrice: Math.max(0, Number(e.target.value)) })}
+                      className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-bold text-gray-900 outline-none focus:border-[#c88d00]"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-gray-500 uppercase">Max Price (₦)</label>
+                    <input
+                      type="number"
+                      min={filters.minPrice}
+                      max="10000000"
+                      step="10000"
+                      value={filters.maxPrice}
+                      onChange={(e) => setFilters({ maxPrice: Math.max(filters.minPrice, Number(e.target.value)) })}
+                      className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-bold text-gray-900 outline-none focus:border-[#c88d00]"
+                    />
+                  </div>
+                </div>
               </div>
 
               {/* Condition Filter */}
@@ -435,9 +467,9 @@ function ProductsContent() {
                     <button
                       key={preset.label}
                       type="button"
-                      onClick={() => handlePricePreset(preset.max)}
+                      onClick={() => handlePricePreset(preset.min, preset.max)}
                       className={`rounded-xl px-3.5 py-2 text-xs font-bold ${
-                        filters.maxPrice === preset.max
+                        filters.maxPrice === preset.max && filters.minPrice === preset.min
                           ? 'bg-[#111111] text-[#FFD700]'
                           : 'bg-gray-100 text-gray-700'
                       }`}
@@ -448,7 +480,7 @@ function ProductsContent() {
                 </div>
               </div>
 
-              {/* Slider */}
+              {/* Slider & Inputs Mobile */}
               <div>
                 <div className="flex items-center justify-between text-xs font-bold mb-2">
                   <span>Max Price</span>
@@ -459,12 +491,30 @@ function ProductsContent() {
                 <input
                   type="range"
                   min="5000"
-                  max="100000"
-                  step="2500"
+                  max="2000000"
+                  step="10000"
                   value={filters.maxPrice}
                   onChange={(e) => setFilters({ maxPrice: Number(e.target.value) })}
                   className="w-full accent-[#c88d00]"
                 />
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="Min Price (₦)"
+                    value={filters.minPrice === 0 ? '' : filters.minPrice}
+                    onChange={(e) => setFilters({ minPrice: Math.max(0, Number(e.target.value)) })}
+                    className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs font-bold text-gray-900"
+                  />
+                  <input
+                    type="number"
+                    min={filters.minPrice}
+                    placeholder="Max Price (₦)"
+                    value={filters.maxPrice}
+                    onChange={(e) => setFilters({ maxPrice: Math.max(filters.minPrice, Number(e.target.value)) })}
+                    className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs font-bold text-gray-900"
+                  />
+                </div>
               </div>
 
               {/* Actions */}

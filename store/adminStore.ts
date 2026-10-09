@@ -102,7 +102,7 @@ export const initialGiftPricings: GiftItemPricing[] = [
     basePrice: 12500,
     customizationFee: 1500,
     estimatedDays: 2,
-    image: 'https://images.unsplash.com/photo-1577223625816-7546f13df25d?auto=format&fit=crop&w=800&q=80',
+    image: '/custom-jersey.jpg',
     description: 'Custom sports jersey with official vinyl back name & squad number print.',
     isAvailable: true,
     colorOptions: ['Forest Green', 'Royal Blue', 'Classic White', 'Crimson Red'],
@@ -262,16 +262,23 @@ export const initialImagePresets: ImagePreset[] = [
   { id: 'pre-10', label: 'Laptop MacBook', url: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80' },
   { id: 'pre-11', label: 'Gadgets Earbuds', url: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=800&q=80' },
   { id: 'pre-12', label: 'Ties Silk Pack', url: '/banner-suit-tie.jpg' },
-  { id: 'pre-13', label: 'Pant Trousers', url: 'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?auto=format&fit=crop&w=800&q=80' },
-  { id: 'pre-14', label: 'Custom Jersey', url: 'https://images.unsplash.com/photo-1577223625816-7546f13df25d?auto=format&fit=crop&w=800&q=80' },
+  { id: 'pre-13', label: 'Pant Trousers', url: '/formal-pant-trousers.jpg' },
+  { id: 'pre-14', label: 'Custom Jersey', url: '/custom-jersey.jpg' },
   { id: 'pre-15', label: 'Custom Mug', url: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80' },
   { id: 'pre-16', label: 'Custom Tshirt', url: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&q=80' },
   { id: 'pre-17', label: 'Custom Cap', url: 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&w=800&q=80' },
   { id: 'pre-18', label: 'Phone Case', url: 'https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?auto=format&fit=crop&w=800&q=80' },
   { id: 'pre-19', label: 'Executive Pen', url: 'https://images.unsplash.com/photo-1583485088034-697b5bc54ccd?auto=format&fit=crop&w=800&q=80' },
-  { id: 'pre-20', label: 'Aso Ebi Swiss Lace', url: 'https://images.unsplash.com/photo-1614081781451-29c084a7de30?auto=format&fit=crop&w=800&q=80' },
-  { id: 'pre-21', label: 'Aso Ebi Velvet Sequin', url: 'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&w=800&q=80' },
-  { id: 'pre-22', label: 'Gele Headtie', url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80' },
+  { id: 'pre-20', label: 'Aso Ebi Swiss Lace', url: '/swiss-voile-lace.jpg' },
+  { id: 'pre-21', label: 'Aso Ebi Velvet Sequin', url: '/velvet-sequin-lace.jpg' },
+  { id: 'pre-22', label: 'Gele Headtie', url: '/auto-gele-headtie.jpg' },
+  { id: 'pre-23', label: 'Men Agbada Set', url: '/nigerian-agbada-set.jpg' },
+  { id: 'pre-24', label: 'Agbada Fabric & Cap', url: '/agbada-fabric-cap.jpg' },
+  { id: 'pre-25', label: 'Boubou Gown', url: '/boubou-gown.jpg' },
+  { id: 'pre-26', label: 'Coral Beads', url: '/african-coral-beads.jpg' },
+  { id: 'pre-27', label: 'iPhone 13 Pro', url: '/iphone-13-pro-blue.jpg' },
+  { id: 'pre-28', label: 'Samsung S22 Ultra', url: '/samsung-s22-ultra.jpg' },
+  { id: 'pre-29', label: 'Swap Pass Card', url: '/swap-pass-voucher.jpg' },
 ];
 
 const initialVendors: VendorProfile[] = [
@@ -576,9 +583,11 @@ export const useAdminStore = create<AdminState>()(
           if (!state.giftPricings || state.giftPricings.length === 0) {
             state.giftPricings = initialGiftPricings;
           } else {
-            // Migrate any legacy jerzy id to jersey
+            // Migrate any legacy jerzy id to jersey & update image
             state.giftPricings = state.giftPricings.map((g) =>
-              g.id === 'jerzy' ? { ...g, id: 'jersey', type: 'Jersey' } : g
+              g.id === 'jerzy' || g.id === 'jersey'
+                ? { ...g, id: 'jersey', type: 'Jersey', image: '/custom-jersey.jpg' }
+                : g
             );
             // Ensure any newly added default items are present
             const currentGifts = state.giftPricings;
@@ -588,6 +597,31 @@ export const useAdminStore = create<AdminState>()(
             if (missingGifts.length > 0) {
               state.giftPricings = [...currentGifts, ...missingGifts];
             }
+          }
+
+          // Migrate any cached products with old contradictory images to authentic Nigerian images
+          const imageMigrationMap: Record<string, string[]> = {
+            'prod-9': ['/nigerian-agbada-set.jpg'],
+            'prod-10': ['/african-coral-beads.jpg'],
+            'prod-11': ['/boubou-gown.jpg'],
+            'prod-16': ['/formal-pant-trousers.jpg'],
+            'prod-19': ['/swap-pass-voucher.jpg'],
+            'prod-20': ['/custom-jersey.jpg'],
+            'prod-29': ['/swiss-voile-lace.jpg'],
+            'prod-30': ['/velvet-sequin-lace.jpg'],
+            'prod-31': ['/auto-gele-headtie.jpg'],
+            'prod-32': ['/agbada-fabric-cap.jpg'],
+            'prod-phone-1': ['/iphone-13-pro-blue.jpg'],
+            'prod-phone-2': ['/samsung-s22-ultra.jpg'],
+          };
+
+          if (state.products && state.products.length > 0) {
+            state.products = state.products.map((p) => {
+              if (imageMigrationMap[p.id]) {
+                return { ...p, images: imageMigrationMap[p.id] };
+              }
+              return p;
+            });
           }
         }
       },

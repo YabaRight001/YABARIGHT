@@ -33,7 +33,7 @@ const defaultFilters: ProductFilters = {
   search: '',
   category: '',
   minPrice: 0,
-  maxPrice: 100000,
+  maxPrice: 2000000,
   sort: 'newest',
 };
 

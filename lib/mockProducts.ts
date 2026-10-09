@@ -208,8 +208,7 @@ export const sampleProducts: Product[] = [
     price: 35000,
     originalPrice: 65000,
     images: [
-      'https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?auto=format&fit=crop&w=900&q=80',
-      'https://images.unsplash.com/photo-1614081781451-29c084a7de30?auto=format&fit=crop&w=900&q=80',
+      '/nigerian-agbada-set.jpg',
     ],
     size: 'XL',
     condition: ProductCondition.NEW,
@@ -233,7 +232,7 @@ export const sampleProducts: Product[] = [
     price: 4500,
     originalPrice: 9000,
     images: [
-      'https://images.unsplash.com/photo-1614081781451-29c084a7de30?auto=format&fit=crop&w=900&q=80',
+      '/african-coral-beads.jpg',
     ],
     size: 'Adjustable',
     condition: ProductCondition.NEW,
@@ -257,8 +256,7 @@ export const sampleProducts: Product[] = [
     price: 26000,
     originalPrice: 48000,
     images: [
-      'https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?auto=format&fit=crop&w=900&q=80',
-      'https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?auto=format&fit=crop&w=900&q=80',
+      '/boubou-gown.jpg',
     ],
     size: 'Free Size',
     condition: ProductCondition.NEW,
@@ -378,7 +376,7 @@ export const sampleProducts: Product[] = [
     price: 11500,
     originalPrice: 19000,
     images: [
-      'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?auto=format&fit=crop&w=800&q=80',
+      '/formal-pant-trousers.jpg',
     ],
     size: '34 / 36',
     condition: ProductCondition.LIKE_NEW,
@@ -450,7 +448,7 @@ export const sampleProducts: Product[] = [
     price: 15000,
     originalPrice: 20000,
     images: [
-      '/banner-super-combo.jpg',
+      '/swap-pass-voucher.jpg',
     ],
     size: 'Digital Voucher',
     condition: ProductCondition.NEW,
@@ -498,7 +496,7 @@ export const sampleProducts: Product[] = [
     price: 385000,
     originalPrice: 450000,
     images: [
-      '/banner-phones.jpg',
+      '/iphone-13-pro-blue.jpg',
     ],
     size: '6.1-inch OLED',
     condition: ProductCondition.LIKE_NEW,
@@ -522,7 +520,7 @@ export const sampleProducts: Product[] = [
     price: 395000,
     originalPrice: 470000,
     images: [
-      '/banner-phones.jpg',
+      '/samsung-s22-ultra.jpg',
     ],
     size: '6.8-inch Dynamic AMOLED',
     condition: ProductCondition.LIKE_NEW,
@@ -571,7 +569,7 @@ export const sampleProducts: Product[] = [
     price: 12500,
     originalPrice: 20000,
     images: [
-      'https://images.unsplash.com/photo-1577223625816-7546f13df25d?auto=format&fit=crop&w=800&q=80',
+      '/custom-jersey.jpg',
     ],
     size: 'Customized (S-XXL)',
     condition: ProductCondition.NEW,
@@ -787,7 +785,7 @@ export const sampleProducts: Product[] = [
     price: 34500,
     originalPrice: 55000,
     images: [
-      'https://images.unsplash.com/photo-1614081781451-29c084a7de30?auto=format&fit=crop&w=800&q=80',
+      '/swiss-voile-lace.jpg',
     ],
     size: '5 Yards Fabric Bundle',
     condition: ProductCondition.NEW,
@@ -811,7 +809,7 @@ export const sampleProducts: Product[] = [
     price: 38000,
     originalPrice: 62000,
     images: [
-      'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&w=800&q=80',
+      '/velvet-sequin-lace.jpg',
     ],
     size: '5 Yards Fabric Bundle',
     condition: ProductCondition.NEW,
@@ -835,7 +833,7 @@ export const sampleProducts: Product[] = [
     price: 15500,
     originalPrice: 24000,
     images: [
-      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80',
+      '/auto-gele-headtie.jpg',
     ],
     size: 'Adjustable Auto-Fit',
     condition: ProductCondition.NEW,
@@ -859,7 +857,7 @@ export const sampleProducts: Product[] = [
     price: 29500,
     originalPrice: 48000,
     images: [
-      'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=800&q=80',
+      '/agbada-fabric-cap.jpg',
     ],
     size: '4 Yards Fabric + Cap (Size 7-8)',
     condition: ProductCondition.NEW,

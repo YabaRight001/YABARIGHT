@@ -121,13 +121,13 @@ interface GiftOption {
 
 const GIFT_OPTIONS: GiftOption[] = [
   {
-    id: 'jerzy',
-    type: 'Jerzy',
+    id: 'jersey',
+    type: 'Jersey',
     title: 'Customized Club / Country Jersey',
     tagline: 'Custom back name & squad number print with official sports vinyl',
     price: 12500,
     originalPrice: 20000,
-    image: 'https://images.unsplash.com/photo-1577223625816-7546f13df25d?auto=format&fit=crop&w=800&q=80',
+    image: '/custom-jersey.jpg',
     defaultText: 'ADEBAYO 10',
     placeholder: 'E.g. KANU 4, BABA 01, OMA 7',
     productId: 'prod-20',
