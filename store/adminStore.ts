@@ -95,8 +95,8 @@ export interface ImagePreset {
 
 export const initialGiftPricings: GiftItemPricing[] = [
   {
-    id: 'jerzy',
-    type: 'Jerzy',
+    id: 'jersey',
+    type: 'Jersey',
     name: 'Customized Club / Country Jersey',
     category: 'Gift Items',
     basePrice: 12500,
@@ -576,6 +576,10 @@ export const useAdminStore = create<AdminState>()(
           if (!state.giftPricings || state.giftPricings.length === 0) {
             state.giftPricings = initialGiftPricings;
           } else {
+            // Migrate any legacy jerzy id to jersey
+            state.giftPricings = state.giftPricings.map((g) =>
+              g.id === 'jerzy' ? { ...g, id: 'jersey', type: 'Jersey' } : g
+            );
             // Ensure any newly added default items are present
             const currentGifts = state.giftPricings;
             const missingGifts = initialGiftPricings.filter(

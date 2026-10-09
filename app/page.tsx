@@ -495,13 +495,6 @@ export default function Home() {
                       className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
-                    
-                    {/* Top Tag Pill */}
-                    <div className="absolute top-2.5 left-2.5">
-                      <span className="rounded-full bg-black/60 backdrop-blur-sm px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-[#FFD700] border border-white/10">
-                        {cat.tag}
-                      </span>
-                    </div>
 
                     {/* Bottom Title & Piece Count */}
                     <div className="absolute bottom-2.5 left-2.5 right-2.5">

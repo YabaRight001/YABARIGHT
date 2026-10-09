@@ -43,7 +43,7 @@ export default function GiftShopPage() {
       : initialGiftPricings;
 
   // Selected Item State
-  const [selectedItemId, setSelectedItemId] = useState<string>('jerzy');
+  const [selectedItemId, setSelectedItemId] = useState<string>('jersey');
 
   // Form State
   const [customText, setCustomText] = useState('ADEBAYO 10');
@@ -70,7 +70,7 @@ export default function GiftShopPage() {
   }, []);
 
   const selectedItem: GiftItemPricing =
-    items.find((i) => i.id === selectedItemId) || items[0] || initialGiftPricings[0];
+    items.find((i) => i.id === selectedItemId || (selectedItemId === 'jersey' && i.id === 'jerzy')) || items[0] || initialGiftPricings[0];
 
   // Whenever selected item changes, update default text & color
   const handleSelectItem = (item: GiftItemPricing) => {

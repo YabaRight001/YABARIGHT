@@ -20,13 +20,32 @@ import {
   ChevronDown
 } from 'lucide-react';
 
-const discoveryLinks = [
-  { name: 'All Products', href: '/products' },
-  { name: 'Sneakers & Trainers', href: '/products?category=Sneakers' },
-  { name: 'Gadgets & Laptops', href: '/products?category=Gadgets' },
-  { name: 'Shirts & Ties', href: '/products?category=Shirts' },
+const primaryNavLinks = [
+  { name: 'Marketplace', href: '/products' },
+  { name: 'Phones & Tech', href: '/products?category=Phones' },
   { name: '🎁 Gift Shop', href: '/gift-shop', highlight: true },
   { name: '👑 Aso Ebi', href: '/#aso-ebi', highlight: true },
+  { name: 'Affiliate', href: '/affiliate' },
+];
+
+const categoryDropdownLinks = [
+  { name: 'All Marketplace', href: '/products' },
+  { name: 'Sneakers & Trainers', href: '/products?category=Sneakers' },
+  { name: 'Suits & Blazers', href: '/products?category=Suits' },
+  { name: 'Corporate Shoes', href: '/products?category=Shoes' },
+  { name: 'Shirts & Polos', href: '/products?category=Shirts' },
+  { name: 'Jeans & Trousers', href: '/products?category=Jeans' },
+  { name: '🔥 Super Combo Deal', href: '/products?category=Combos' },
+  { name: 'Trade / Swap', href: '/products?category=Trade' },
+];
+
+const discoveryLinks = [
+  { name: 'All Products', href: '/products' },
+  { name: 'Phones & Tech', href: '/products?category=Phones' },
+  { name: 'Sneakers & Trainers', href: '/products?category=Sneakers' },
+  { name: '🎁 Gift Shop', href: '/gift-shop', highlight: true },
+  { name: '👑 Aso Ebi', href: '/#aso-ebi', highlight: true },
+  { name: 'Suits & Shoes', href: '/products?category=Suits' },
   { name: 'Trade / Swap', href: '/products?category=Trade' },
   { name: 'Affiliate', href: '/affiliate' },
 ];
@@ -39,16 +58,21 @@ export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const [categoriesMenuOpen, setCategoriesMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   const accountMenuRef = useRef<HTMLDivElement>(null);
+  const categoriesMenuRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Close account menu when clicking outside
+  // Close menus when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (accountMenuRef.current && !accountMenuRef.current.contains(event.target as Node)) {
         setAccountMenuOpen(false);
+      }
+      if (categoriesMenuRef.current && !categoriesMenuRef.current.contains(event.target as Node)) {
+        setCategoriesMenuOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -74,7 +98,7 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-40 border-b border-[#FFD700]/20 bg-[#0b0b0b]/95 backdrop-blur-md transition-all shadow-md">
       {/* Top Value Announcement Bar */}
-      <div className="bg-gradient-to-r from-[#FFD700] via-[#ffcc00] to-[#e8941f] px-4 py-1.5 text-center text-[11px] font-black uppercase tracking-wider text-black sm:text-xs">
+      <div className="bg-gradient-to-r from-[#FFD700] via-[#ffcc00] to-[#e8941f] px-4 py-1 text-center text-[11px] font-black uppercase tracking-wider text-black">
         <div className="container-custom flex items-center justify-center gap-2">
           <Sparkles className="h-3.5 w-3.5 text-black flex-shrink-0" />
           <span className="truncate">NATIONWIDE DELIVERY 2-4 DAYS • VERIFIED THRIFT GRADE A & BRAND NEW</span>
@@ -84,7 +108,7 @@ export function Navbar() {
 
       {/* Main Navigation Bar */}
       <div className="container-custom">
-        <div className="flex h-16 sm:h-20 items-center justify-between gap-4">
+        <div className="flex h-16 items-center justify-between gap-3 sm:gap-6">
           
           {/* ================= ZONE 1: BRAND AREA (Desktop & Mobile) ================= */}
           <div className="flex items-center gap-3 flex-shrink-0">
@@ -92,32 +116,28 @@ export function Navbar() {
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 text-white transition hover:border-[#FFD700] hover:text-[#FFD700] md:hidden"
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 text-white transition hover:border-[#FFD700] hover:text-[#FFD700] lg:hidden"
               aria-label="Toggle navigation drawer"
             >
               {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
             </button>
 
-            <Link href="/" className="flex items-center gap-2.5 group">
+            <Link href="/" className="flex items-center gap-2 group">
               <img
                 src="/logo.png"
                 alt="YabaRight Logo"
-                className="h-11 sm:h-14 w-auto object-contain transition group-hover:scale-102"
+                className="h-10 sm:h-12 w-auto object-contain transition group-hover:scale-102"
               />
-              <div className="hidden xl:flex flex-col">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#FFD700]">Yaba Marketplace</span>
-                <span className="text-[9px] font-semibold text-gray-400">Lagos Thrift & Fashion</span>
-              </div>
             </Link>
           </div>
 
-          {/* ================= ZONE 2: DISCOVERY AREA (Desktop Center) ================= */}
-          <nav className="hidden lg:flex items-center justify-center gap-5 xl:gap-7 flex-1 px-4">
-            {discoveryLinks.map((link) => (
+          {/* ================= ZONE 2: DISCOVERY AREA (Clean & Uncluttered for Laptop/Desktop) ================= */}
+          <nav className="hidden lg:flex items-center justify-center gap-4 xl:gap-6 flex-1 px-2">
+            {primaryNavLinks.map((link) => (
               <Link
                 key={link.name}
                 href={link.href}
-                className={`text-xs font-black uppercase tracking-wider transition-colors py-1 ${
+                className={`text-xs font-black uppercase tracking-wider transition-colors py-1 whitespace-nowrap ${
                   link.highlight
                     ? 'text-[#FFD700] hover:text-[#ffcc00] flex items-center gap-1'
                     : 'text-white/80 hover:text-[#FFD700]'
@@ -127,6 +147,39 @@ export function Navbar() {
                 {link.name}
               </Link>
             ))}
+
+            {/* Categories Dropdown */}
+            <div className="relative" ref={categoriesMenuRef}>
+              <button
+                type="button"
+                onClick={() => setCategoriesMenuOpen(!categoriesMenuOpen)}
+                className="inline-flex items-center gap-1 text-xs font-black uppercase tracking-wider text-white/80 hover:text-[#FFD700] py-1 transition"
+                aria-expanded={categoriesMenuOpen}
+              >
+                <span>Categories</span>
+                <ChevronDown className={`h-3 w-3 transition-transform ${categoriesMenuOpen ? 'rotate-180 text-[#FFD700]' : ''}`} />
+              </button>
+
+              {categoriesMenuOpen && (
+                <div className="absolute left-1/2 -translate-x-1/2 mt-2 w-52 rounded-2xl border border-white/10 bg-[#141414] p-2 text-white shadow-2xl backdrop-blur-xl z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                  <div className="px-3 py-1.5 border-b border-white/10">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-[#FFD700]">Shop Categories</p>
+                  </div>
+                  <div className="space-y-0.5 py-1 text-xs">
+                    {categoryDropdownLinks.map((cat) => (
+                      <Link
+                        key={cat.name}
+                        href={cat.href}
+                        onClick={() => setCategoriesMenuOpen(false)}
+                        className="flex items-center justify-between rounded-xl px-3 py-1.5 font-bold text-gray-200 hover:bg-white/10 hover:text-[#FFD700] transition"
+                      >
+                        <span>{cat.name}</span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </nav>
 
           {/* ================= ZONE 3: UTILITY AREA (Right) ================= */}

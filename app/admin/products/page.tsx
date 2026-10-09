@@ -3,12 +3,13 @@
 import { useState, useRef } from 'react';
 import { useAdminStore } from '@/store/adminStore';
 import { useToastStore } from '@/store/toastStore';
-import { ProductCondition } from '@/types';
+import { Product, ProductCondition } from '@/types';
 import { BodyTypeVisualizer } from '@/components/BodyTypeVisualizer';
 import {
   Package,
   PlusCircle,
   Plus,
+  Pencil,
   Trash2,
   Search,
   Filter,
@@ -34,6 +35,7 @@ export default function AdminProductsPage() {
   const {
     products,
     addProduct,
+    updateProduct,
     deleteProduct,
     categories: storedCategories,
     addCategory,
@@ -162,6 +164,56 @@ export default function AdminProductsPage() {
     imageUrl: '/suit-blue-1.jpg',
   });
 
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
+
+  const resetForm = () => {
+    setEditingProductId(null);
+    setForm({
+      name: '',
+      category: 'Clothing',
+      price: '',
+      originalPrice: '',
+      condition: ProductCondition.NEW,
+      quantity: '10',
+      selectedSizes: ['Medium', 'Large'],
+      gender: 'Unisex',
+      neckSize: '15.5"',
+      waistSize: '32"',
+      bodyTypeFit: ['Medium', 'Large'],
+      brand: 'YabaRight Official',
+      material: 'Premium Quality',
+      description: '',
+      imageUrl: '/suit-blue-1.jpg',
+    });
+  };
+
+  const handleEdit = (p: Product) => {
+    setEditingProductId(p.id);
+    setForm({
+      name: p.name,
+      category: p.category,
+      price: p.price.toString(),
+      originalPrice: p.originalPrice ? p.originalPrice.toString() : '',
+      condition: p.condition || ProductCondition.NEW,
+      quantity: (p.quantity ?? 10).toString(),
+      selectedSizes:
+        p.sizes && p.sizes.length > 0
+          ? (p.sizes as ('Small' | 'Medium' | 'Large' | 'XL' | 'XXL' | 'XXXL')[])
+          : p.size
+          ? [p.size as any]
+          : ['Medium', 'Large'],
+      gender: (p.gender as 'Male' | 'Female' | 'Unisex') || 'Unisex',
+      neckSize: p.neckSize || '15.5"',
+      waistSize: p.waistSize || '32"',
+      bodyTypeFit: (p.bodyTypeFit as any) || ['Medium', 'Large'],
+      brand: p.brand || 'YabaRight Official',
+      material: p.material || 'Premium Quality',
+      description: p.description || '',
+      imageUrl: p.images?.[0] || '/suit-blue-1.jpg',
+    });
+    setModalOpen(true);
+  };
+
   const toggleSize = (size: 'Small' | 'Medium' | 'Large' | 'XL' | 'XXL' | 'XXXL') => {
     if (form.selectedSizes.includes(size)) {
       setForm({ ...form, selectedSizes: form.selectedSizes.filter((s) => s !== size) });
@@ -181,45 +233,53 @@ export default function AdminProductsPage() {
     const origPriceNum = form.originalPrice ? Number(form.originalPrice) : Math.round(priceNum * 1.5);
     const qtyNum = Number(form.quantity) || 1;
 
-    addProduct({
-      sellerId: 'admin-official',
-      name: form.name,
-      description: form.description,
-      category: form.category,
-      price: priceNum,
-      originalPrice: origPriceNum,
-      condition: form.condition,
-      images: [form.imageUrl],
-      size: form.selectedSizes.join(', ') || 'Standard',
-      sizes: form.selectedSizes,
-      gender: form.gender,
-      neckSize: form.neckSize,
-      waistSize: form.waistSize,
-      bodyTypeFit: form.bodyTypeFit,
-      brand: form.brand || 'YabaRight Official',
-      material: form.material,
-      quantity: qtyNum,
-    });
+    if (editingProductId) {
+      updateProduct(editingProductId, {
+        name: form.name,
+        description: form.description,
+        category: form.category,
+        price: priceNum,
+        originalPrice: origPriceNum,
+        condition: form.condition,
+        images: [form.imageUrl],
+        size: form.selectedSizes.join(', ') || 'Standard',
+        sizes: form.selectedSizes,
+        gender: form.gender,
+        neckSize: form.neckSize,
+        waistSize: form.waistSize,
+        bodyTypeFit: form.bodyTypeFit,
+        brand: form.brand || 'YabaRight Official',
+        material: form.material,
+        quantity: qtyNum,
+      });
 
-    showToast(`Product "${form.name}" uploaded successfully! 🎉`, 'success');
+      showToast(`Product "${form.name}" updated successfully! 🎉`, 'success');
+    } else {
+      addProduct({
+        sellerId: 'admin-official',
+        name: form.name,
+        description: form.description,
+        category: form.category,
+        price: priceNum,
+        originalPrice: origPriceNum,
+        condition: form.condition,
+        images: [form.imageUrl],
+        size: form.selectedSizes.join(', ') || 'Standard',
+        sizes: form.selectedSizes,
+        gender: form.gender,
+        neckSize: form.neckSize,
+        waistSize: form.waistSize,
+        bodyTypeFit: form.bodyTypeFit,
+        brand: form.brand || 'YabaRight Official',
+        material: form.material,
+        quantity: qtyNum,
+      });
+
+      showToast(`Product "${form.name}" uploaded successfully! 🎉`, 'success');
+    }
+
     setModalOpen(false);
-    setForm({
-      name: '',
-      category: 'Clothing',
-      price: '',
-      originalPrice: '',
-      condition: ProductCondition.NEW,
-      quantity: '10',
-      selectedSizes: ['Medium', 'Large'],
-      gender: 'Unisex',
-      neckSize: '15.5"',
-      waistSize: '32"',
-      bodyTypeFit: ['Medium', 'Large'],
-      brand: 'YabaRight Official',
-      material: 'Premium Quality',
-      description: '',
-      imageUrl: '/suit-blue-1.jpg',
-    });
+    resetForm();
   };
 
   const handleDelete = (id: string, name: string) => {
@@ -253,7 +313,10 @@ export default function AdminProductsPage() {
 
         <button
           type="button"
-          onClick={() => setModalOpen(true)}
+          onClick={() => {
+            resetForm();
+            setModalOpen(true);
+          }}
           className="inline-flex items-center gap-2 rounded-full bg-[#FFD700] px-6 py-3 text-xs font-black uppercase tracking-wider text-black hover:bg-[#ffcc00] transition shadow-lg shadow-[#FFD700]/20"
         >
           <PlusCircle className="h-4 w-4" />
@@ -320,7 +383,7 @@ export default function AdminProductsPage() {
                 <th className="pb-3">Sizes & Specs</th>
                 <th className="pb-3">Price</th>
                 <th className="pb-3">Stock</th>
-                <th className="pb-3 text-right">Delete</th>
+                <th className="pb-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
@@ -381,14 +444,24 @@ export default function AdminProductsPage() {
                     </td>
                     <td className="py-3.5 text-gray-300">{p.quantity} in stock</td>
                     <td className="py-3.5 text-right">
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(p.id, p.name)}
-                        className="rounded-xl bg-red-500/10 border border-red-500/20 p-2 text-red-400 hover:bg-red-500 hover:text-white transition"
-                        title="Delete product from catalog"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => handleEdit(p)}
+                          className="rounded-xl bg-[#FFD700]/10 border border-[#FFD700]/30 p-2 text-[#FFD700] hover:bg-[#FFD700] hover:text-black transition"
+                          title="Edit product details"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(p.id, p.name)}
+                          className="rounded-xl bg-red-500/10 border border-red-500/20 p-2 text-red-400 hover:bg-red-500 hover:text-white transition"
+                          title="Delete product from catalog"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -405,16 +478,25 @@ export default function AdminProductsPage() {
             <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-6">
               <div className="flex items-center gap-2">
                 <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-[#FFD700]/20 text-[#FFD700]">
-                  <Upload className="h-4 w-4" />
+                  {editingProductId ? <Pencil className="h-4 w-4" /> : <Upload className="h-4 w-4" />}
                 </div>
                 <div>
-                  <h2 className="text-lg font-black text-white">Upload YabaRight Apparel & Goods</h2>
-                  <p className="text-[11px] text-gray-400">Configure sizing, gender, measurements and AI body types</p>
+                  <h2 className="text-lg font-black text-white">
+                    {editingProductId ? `Edit Product: ${form.name || 'Item'}` : 'Upload YabaRight Apparel & Goods'}
+                  </h2>
+                  <p className="text-[11px] text-gray-400">
+                    {editingProductId
+                      ? 'Update specifications, pricing, stock, sizing and media'
+                      : 'Configure sizing, gender, measurements and AI body types'}
+                  </p>
                 </div>
               </div>
               <button
                 type="button"
-                onClick={() => setModalOpen(false)}
+                onClick={() => {
+                  setModalOpen(false);
+                  resetForm();
+                }}
                 className="text-gray-400 hover:text-white"
               >
                 <X className="h-5 w-5" />
@@ -817,11 +899,14 @@ export default function AdminProductsPage() {
                   type="submit"
                   className="flex-1 rounded-full bg-[#FFD700] py-3.5 text-xs font-black uppercase tracking-wider text-black hover:bg-[#ffcc00] transition shadow-lg shadow-[#FFD700]/15"
                 >
-                  Confirm & Publish to Catalog
+                  {editingProductId ? 'Save & Update Product' : 'Confirm & Publish to Catalog'}
                 </button>
                 <button
                   type="button"
-                  onClick={() => setModalOpen(false)}
+                  onClick={() => {
+                    setModalOpen(false);
+                    resetForm();
+                  }}
                   className="rounded-full border border-white/20 bg-white/5 px-6 py-3.5 text-xs font-bold uppercase text-gray-300 hover:bg-white/10"
                 >
                   Cancel

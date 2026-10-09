@@ -40,7 +40,7 @@ const heroSlides: HeroSlide[] = [
     badge: 'Tested Tech • 100% Genuine',
     title: 'Hottest Tech & Gadget Deals',
     subtitle: 'Refurbished Apple MacBooks, active noise-cancelling wireless earbuds, smartwatches & tech accessories verified by specialists.',
-    dealPrice: 'From ₦16,500',
+    dealPrice: 'From ₦100,000 (100k)',
     categoryName: 'Electronics & Gadgets',
     tabLabel: 'Electronics',
     iconName: 'Laptop',
@@ -358,18 +358,8 @@ export function HeroCarousel() {
                     alt={activeSlide.title}
                     fetchPriority="high"
                     decoding="async"
-                    className="max-h-[340px] sm:max-h-[440px] md:max-h-[500px] lg:max-h-[530px] w-auto max-w-full rounded-xl object-contain shadow-2xl transition duration-500 group-hover:scale-[1.02] group-hover:brightness-105"
+                    className="max-h-[340px] sm:max-h-[440px] md:max-h-[500px] lg:max-h-[530px] w-auto max-w-full rounded-xl object-contain shadow-2xl transition duration-500 group-hover:scale-[1.01]"
                   />
-                  
-                  {/* Interactive Floating Quick-Tag on Flyer */}
-                  <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
-                    <span className="rounded-full bg-[#FFD700] px-3 py-1 text-[10px] sm:text-xs font-black uppercase tracking-wider text-black shadow-lg">
-                      {activeSlide.categoryName}
-                    </span>
-                    <span className="rounded-full bg-black/70 backdrop-blur-md px-2.5 py-1 text-[10px] sm:text-xs font-bold text-white border border-white/20">
-                      Tap To Shop
-                    </span>
-                  </div>
 
                   {/* Subtle Hover Action Overlay */}
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-200 group-hover:opacity-100 bg-black/40 rounded-xl backdrop-blur-[2px]">
@@ -379,18 +369,6 @@ export function HeroCarousel() {
                       <ArrowRight className="h-4 w-4" />
                     </span>
                   </div>
-                </div>
-
-                {/* Subtle Image Footer Strip */}
-                <div className="flex items-center justify-between border-t border-white/10 bg-[#121212] px-4 py-2.5 text-[11px] text-gray-400">
-                  <span className="font-bold text-white/90 flex items-center gap-1.5">
-                    <Sparkles className="h-3 w-3 text-[#FFD700]" />
-                    {activeSlide.categoryName}
-                  </span>
-                  <span className="font-semibold text-[#FFD700] flex items-center gap-1">
-                    <span>Direct Link to Products</span>
-                    <ArrowRight className="h-3 w-3" />
-                  </span>
                 </div>
               </Link>
             </div>

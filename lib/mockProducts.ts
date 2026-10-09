@@ -543,8 +543,8 @@ export const sampleProducts: Product[] = [
     name: 'Hottest Tech Deals: Refurbished Laptops & SoundPulse Wireless ANC Earbuds',
     description: 'Hottest tech & gadget deals! Tested and verified Grade A pre-owned laptops, Bluetooth active noise-cancelling earbuds, and smart devices. Genuine quality and easy warranty.',
     category: 'Gadgets',
-    price: 16500,
-    originalPrice: 28000,
+    price: 100000,
+    originalPrice: 160000,
     images: [
       '/banner-electronics.jpg',
     ],
