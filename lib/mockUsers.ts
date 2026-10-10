@@ -16,7 +16,7 @@ const defaultUsers: StoredUser[] = [
   {
     id: 'usr-admin-01',
     name: 'YabaRight Administrator',
-    email: 'yabatightofficial@gmail.com',
+    email: 'yabarightofficial@gmail.com',
     plainPassword: 'admin1234',
     role: 'ADMIN',
     phone: '0806 308 1972',

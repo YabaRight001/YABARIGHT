@@ -229,11 +229,6 @@ export function Footer() {
                     Shopping Bag
                   </Link>
                 </li>
-                <li>
-                  <Link href="/admin/login" className="text-xs text-gray-500 hover:text-gray-300">
-                    Admin Portal
-                  </Link>
-                </li>
               </ul>
             </div>
           </div>

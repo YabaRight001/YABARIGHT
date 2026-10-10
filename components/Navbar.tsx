@@ -299,17 +299,6 @@ export function Navbar() {
                       <span>Affiliate Program</span>
                     </Link>
                   </div>
-
-                  <div className="border-t border-white/10 pt-1 mt-1">
-                    <Link
-                      href="/admin/login"
-                      onClick={() => setAccountMenuOpen(false)}
-                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-bold text-gray-400 hover:bg-[#FFD700]/10 hover:text-[#FFD700] transition"
-                    >
-                      <Shield className="h-3.5 w-3.5 text-gray-400" />
-                      <span>Admin Portal</span>
-                    </Link>
-                  </div>
                 </div>
               )}
             </div>
@@ -362,13 +351,6 @@ export function Navbar() {
               className="font-black text-[#FFD700] hover:underline"
             >
               Sell on YabaRight →
-            </Link>
-            <Link
-              href="/admin/login"
-              onClick={() => setMobileMenuOpen(false)}
-              className="text-[11px] text-gray-500 hover:text-gray-300"
-            >
-              Admin
             </Link>
           </div>
         </div>

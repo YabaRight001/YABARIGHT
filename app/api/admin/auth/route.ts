@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server';
+import { findUserByEmail, verifyUserCredentials } from '@/lib/mockUsers';
 
-// Official system admin credentials
-const SYSTEM_ADMIN = {
+// Official primary system admin credentials
+const OFFICIAL_ADMIN = {
   id: 'adm-001',
   name: 'Chief Admin',
-  email: 'yabatightofficial@gmail.com',
+  email: 'yabarightofficial@gmail.com',
   password: 'admin1234',
   role: 'SUPER_ADMIN',
-  avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+  avatar: '/logo.png',
 };
 
 export async function POST(request: Request) {
@@ -22,39 +23,58 @@ export async function POST(request: Request) {
       );
     }
 
-    // Normalize email
     const cleanEmail = email.trim().toLowerCase();
 
-    // Check official admin credentials or secondary test credentials
-    const isValidAdmin =
-      (cleanEmail === SYSTEM_ADMIN.email.toLowerCase() && password === SYSTEM_ADMIN.password) ||
-      (cleanEmail === 'admin@yabaright.ng' && password === 'admin123') ||
-      (cleanEmail === 'superadmin@yabaright.ng' && password === 'yaba2026');
+    // 1. Check if user is registered with role 'ADMIN'
+    const registeredUser = await verifyUserCredentials(cleanEmail, password);
+    let authenticatedAdmin = null;
 
-    if (!isValidAdmin) {
+    if (registeredUser && registeredUser.role === 'ADMIN') {
+      authenticatedAdmin = {
+        id: registeredUser.id,
+        name: registeredUser.name,
+        email: registeredUser.email,
+        role: 'ADMIN',
+        avatar: '/logo.png',
+        loginTime: new Date().toISOString(),
+      };
+    } else if (cleanEmail === OFFICIAL_ADMIN.email.toLowerCase() && password === OFFICIAL_ADMIN.password) {
+      authenticatedAdmin = {
+        id: OFFICIAL_ADMIN.id,
+        name: OFFICIAL_ADMIN.name,
+        email: OFFICIAL_ADMIN.email,
+        role: 'SUPER_ADMIN',
+        avatar: OFFICIAL_ADMIN.avatar,
+        loginTime: new Date().toISOString(),
+      };
+    } else if (
+      (cleanEmail === 'admin@yabaright.ng' && password === 'admin123') ||
+      (cleanEmail === 'superadmin@yabaright.ng' && password === 'yaba2026')
+    ) {
+      authenticatedAdmin = {
+        id: `adm-${Date.now()}`,
+        name: 'YabaRight Administrator',
+        email: cleanEmail,
+        role: 'ADMIN',
+        avatar: '/logo.png',
+        loginTime: new Date().toISOString(),
+      };
+    }
+
+    if (!authenticatedAdmin) {
       return NextResponse.json(
-        { error: 'Invalid admin credentials. Please check your email and password.' },
+        { error: 'Invalid admin credentials or account is not registered as an administrator.' },
         { status: 401 }
       );
     }
 
-    // Admin authenticated successfully
-    const adminUser = {
-      id: SYSTEM_ADMIN.id,
-      name: 'YabaRight Administrator',
-      email: cleanEmail,
-      role: 'SUPER_ADMIN',
-      avatar: SYSTEM_ADMIN.avatar,
-      loginTime: new Date().toISOString(),
-    };
-
-    const token = `adm_tok_${Buffer.from(`${adminUser.id}:${Date.now()}`).toString('base64')}`;
+    const token = `adm_tok_${Buffer.from(`${authenticatedAdmin.id}:${Date.now()}`).toString('base64')}`;
 
     return NextResponse.json({
       success: true,
       message: 'Admin authenticated successfully',
       token,
-      user: adminUser,
+      user: authenticatedAdmin,
     });
   } catch (error) {
     console.error('Admin auth error:', error);

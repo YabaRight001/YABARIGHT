@@ -94,9 +94,44 @@ export default function AdminProductsPage() {
     showToast(`Added category "${targetName}"! 🎉`, 'success');
   };
 
-  const handleDeviceFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [uploadingImage, setUploadingImage] = useState(false);
+
+  const handleDeviceFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    try {
+      setUploadingImage(true);
+      showToast('Uploading image to server... ⏳', 'info');
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.url) {
+          setForm((prev) => ({ ...prev, imageUrl: data.url }));
+          const cleanLabel = file.name.replace(/\.[^/.]+$/, '').slice(0, 16);
+          addImagePreset({
+            label: cleanLabel || 'Device Upload',
+            url: data.url,
+          });
+          showToast('Image uploaded successfully! Visible on all devices 📸', 'success');
+          setUploadingImage(false);
+          e.target.value = '';
+          return;
+        }
+      }
+    } catch (uploadErr) {
+      console.warn('Direct upload error, falling back to data URL:', uploadErr);
+    } finally {
+      setUploadingImage(false);
+    }
 
     const reader = new FileReader();
     reader.onloadend = () => {
@@ -109,7 +144,7 @@ export default function AdminProductsPage() {
         url: base64Url,
       });
 
-      showToast(`Image loaded from device & saved to sample presets! 📸`, 'success');
+      showToast(`Image loaded from device! 📸`, 'success');
     };
     reader.readAsDataURL(file);
     e.target.value = '';

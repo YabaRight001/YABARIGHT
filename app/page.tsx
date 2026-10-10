@@ -271,6 +271,7 @@ export default function Home() {
 
   useEffect(() => {
     setMounted(true);
+    useAdminStore.getState().fetchProducts();
   }, []);
 
   // Update default custom text and color when switching gift item

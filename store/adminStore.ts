@@ -37,6 +37,7 @@ interface AdminState {
   users: PlatformUser[];
 
   // Product Actions
+  fetchProducts: () => Promise<void>;
   addProduct: (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'sold' | 'rating' | 'trending' | 'published' | 'sellerId'> & { sellerId?: string; rating?: number; trending?: boolean; published?: boolean }) => Product;
   deleteProduct: (productId: string) => void;
   updateProduct: (productId: string, updates: Partial<Product>) => void;
@@ -392,16 +393,31 @@ const initialUsers: PlatformUser[] = [
 export const useAdminStore = create<AdminState>()(
   persist(
     (set, get) => ({
-      products: sampleProducts,
+      products: [],
       vendors: initialVendors,
       users: initialUsers,
       categories: initialCategories,
       imagePresets: initialImagePresets,
 
+      // Global Server API Sync
+      fetchProducts: async () => {
+        try {
+          const res = await fetch('/api/products');
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data.products)) {
+              set({ products: data.products });
+            }
+          }
+        } catch (err) {
+          console.error('Failed to fetch global products:', err);
+        }
+      },
+
       // Product Management
       addProduct: (data) => {
         const newProduct: Product = {
-          id: `prod-${Date.now()}`,
+          id: `prod-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
           rating: 5.0,
           sold: 0,
           trending: true,
@@ -411,7 +427,16 @@ export const useAdminStore = create<AdminState>()(
           ...data,
           sellerId: data.sellerId || 'admin-official',
         };
+        // Optimistic local update
         set((state) => ({ products: [newProduct, ...state.products] }));
+
+        // Persist globally via API so all devices see it
+        fetch('/api/products', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newProduct),
+        }).catch((err) => console.error('Global product sync error:', err));
+
         return newProduct;
       },
 
@@ -419,6 +444,10 @@ export const useAdminStore = create<AdminState>()(
         set((state) => ({
           products: state.products.filter((p) => p.id !== productId),
         }));
+
+        fetch(`/api/products?id=${productId}`, {
+          method: 'DELETE',
+        }).catch((err) => console.error('Global product delete error:', err));
       },
 
       updateProduct: (productId, updates) => {
@@ -427,6 +456,12 @@ export const useAdminStore = create<AdminState>()(
             p.id === productId ? { ...p, ...updates, updatedAt: new Date() } : p
           ),
         }));
+
+        fetch('/api/products', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: productId, ...updates }),
+        }).catch((err) => console.error('Global product update error:', err));
       },
 
       // Vendor Verification (Jiji style)
@@ -599,30 +634,14 @@ export const useAdminStore = create<AdminState>()(
             }
           }
 
-          // Migrate any cached products with old contradictory images to authentic Nigerian images
-          const imageMigrationMap: Record<string, string[]> = {
-            'prod-9': ['/nigerian-agbada-set.jpg'],
-            'prod-10': ['/african-coral-beads.jpg'],
-            'prod-11': ['/boubou-gown.jpg'],
-            'prod-16': ['/formal-pant-trousers.jpg'],
-            'prod-19': ['/swap-pass-voucher.jpg'],
-            'prod-20': ['/custom-jersey.jpg'],
-            'prod-29': ['/swiss-voile-lace.jpg'],
-            'prod-30': ['/velvet-sequin-lace.jpg'],
-            'prod-31': ['/auto-gele-headtie.jpg'],
-            'prod-32': ['/agbada-fabric-cap.jpg'],
-            'prod-phone-1': ['/iphone-13-pro-blue.jpg'],
-            'prod-phone-2': ['/samsung-s22-ultra.jpg'],
-          };
-
+          // Filter out legacy dummy mock products from local storage cache
           if (state.products && state.products.length > 0) {
-            state.products = state.products.map((p) => {
-              if (imageMigrationMap[p.id]) {
-                return { ...p, images: imageMigrationMap[p.id] };
-              }
-              return p;
-            });
+            state.products = state.products.filter(
+              (p) => !p.id.match(/^prod-[0-9]{1,2}$/) && !p.id.startsWith('prod-phone-')
+            );
           }
+          // Fetch real global products from server API
+          state.fetchProducts();
         }
       },
     }

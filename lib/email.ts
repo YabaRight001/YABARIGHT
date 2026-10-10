@@ -1,3 +1,28 @@
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'yabaright_super_secret_jwt_key_2026';
+
+export function createVerificationToken(email: string, code: string): string {
+  return jwt.sign(
+    { email: email.trim().toLowerCase(), code: code.trim() },
+    JWT_SECRET,
+    { expiresIn: '30m' }
+  );
+}
+
+export function verifyVerificationToken(email: string, code: string, token: string): boolean {
+  try {
+    const decoded: any = jwt.verify(token, JWT_SECRET);
+    if (!decoded) return false;
+    return (
+      decoded.email?.toLowerCase() === email.trim().toLowerCase() &&
+      String(decoded.code).trim() === code.trim()
+    );
+  } catch (err) {
+    return false;
+  }
+}
+
 interface SendMailParams {
   to: string;
   name: string;
@@ -8,18 +33,19 @@ interface SendMailParams {
 // In-memory verification storage: email -> { code, token, expiresAt }
 export const emailVerificationStore: Map<string, { code: string; token: string; expiresAt: number }> = new Map();
 
-export async function sendVerificationEmail({ to, name, code, verifyUrl }: SendMailParams): Promise<{ success: boolean; message: string }> {
-  // Save OTP in memory store (15 minute expiration)
-  const token = `tok_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+export async function sendVerificationEmail({ to, name, code, verifyUrl }: SendMailParams): Promise<{ success: boolean; message: string; token?: string }> {
+  const token = createVerificationToken(to, code);
+  
+  // Also save in memory store for local development instances
   emailVerificationStore.set(to.toLowerCase().trim(), {
     code: code.trim(),
     token,
-    expiresAt: Date.now() + 15 * 60 * 1000,
+    expiresAt: Date.now() + 30 * 60 * 1000,
   });
 
   const smtpHost = process.env.EMAIL_SERVER_HOST || 'smtp.gmail.com';
   const smtpPort = Number(process.env.EMAIL_SERVER_PORT) || 465;
-  const smtpUser = process.env.EMAIL_SERVER_USER || process.env.GMAIL_USER || 'yabatightofficial@gmail.com';
+  const smtpUser = process.env.EMAIL_SERVER_USER || process.env.GMAIL_USER || 'yabarightofficial@gmail.com';
   const smtpPass = process.env.EMAIL_SERVER_PASSWORD || process.env.GMAIL_APP_PASSWORD || process.env.SMTP_PASSWORD;
   const smtpFrom = process.env.EMAIL_FROM || `YABARIGHT <${smtpUser}>`;
 
@@ -133,13 +159,13 @@ export async function sendVerificationEmail({ to, name, code, verifyUrl }: SendM
       });
 
       console.log(`[Email Sent] Verification code dispatched to ${to}`);
-      return { success: true, message: `Verification email sent to ${to}` };
+      return { success: true, message: `Verification email sent to ${to}`, token };
     } catch (err: any) {
       console.error('[SMTP Send Error]:', err);
-      return { success: false, message: err.message || 'SMTP delivery failed' };
+      return { success: false, message: err.message || 'SMTP delivery failed', token };
     }
   } else {
     console.log(`[Email Mock/Dev Dispatch]: Code ${code} for ${to}. Direct link: ${verifyUrl}`);
-    return { success: true, message: `Verification email dispatched to ${to}` };
+    return { success: true, message: `Verification email dispatched to ${to}`, token };
   }
 }

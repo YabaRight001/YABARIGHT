@@ -63,7 +63,13 @@ function ProductsContent() {
   const { setActiveRef } = useAffiliateStore();
 
   const adminProducts = useAdminStore((s) => s.products);
+  const fetchProducts = useAdminStore((s) => s.fetchProducts);
   const storedCategories = useAdminStore((s) => s.categories);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
+
   const categoriesList = useMemo(() => [
     'All',
     ...(storedCategories && storedCategories.length > 0 ? storedCategories : DEFAULT_CATEGORIES.slice(1))

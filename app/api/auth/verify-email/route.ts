@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { emailVerificationStore } from '@/lib/email';
+import { emailVerificationStore, verifyVerificationToken } from '@/lib/email';
 import { findUserByEmail } from '@/lib/mockUsers';
 
 export async function POST(req: NextRequest) {
@@ -15,27 +15,33 @@ export async function POST(req: NextRequest) {
     }
 
     const normalizedEmail = email.trim().toLowerCase();
-    const record = emailVerificationStore.get(normalizedEmail);
+    const submittedCode = code ? String(code).trim() : '';
 
     let isValid = false;
 
-    // Check master bypass code for testing
-    if (code && code.trim() === '123456') {
+    // 1. Check master bypass code for testing
+    if (submittedCode === '123456') {
       isValid = true;
     }
 
-    // Check memory store
-    if (!isValid && record) {
-      if (Date.now() > record.expiresAt) {
-        return NextResponse.json(
-          { success: false, message: 'Verification code has expired. Please request a new one.' },
-          { status: 400 }
-        );
+    // 2. Check cryptographically signed JWT token (works 100% reliably in serverless/Vercel)
+    if (!isValid && token && submittedCode) {
+      if (verifyVerificationToken(normalizedEmail, submittedCode, token)) {
+        isValid = true;
       }
-      if (code && record.code === code.trim()) {
-        isValid = true;
-      } else if (token && record.token === token.trim()) {
-        isValid = true;
+    }
+
+    // 3. Fallback to memory store check (for same-process instances)
+    if (!isValid) {
+      const record = emailVerificationStore.get(normalizedEmail);
+      if (record) {
+        if (Date.now() <= record.expiresAt) {
+          if (submittedCode && record.code === submittedCode) {
+            isValid = true;
+          } else if (token && record.token === token.trim()) {
+            isValid = true;
+          }
+        }
       }
     }
 

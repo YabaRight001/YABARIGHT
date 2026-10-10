@@ -35,6 +35,7 @@ export async function POST(req: NextRequest) {
       success: true,
       message: `Verification code sent to ${normalizedEmail}`,
       code, // return to client sync
+      token: result.token,
     });
   } catch (error: any) {
     console.error('Send verification error:', error);

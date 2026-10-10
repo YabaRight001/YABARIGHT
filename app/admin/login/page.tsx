@@ -45,32 +45,6 @@ export default function AdminLoginPage() {
     }
   };
 
-  // Quick 1-Click Official Admin Login
-  const handleQuickDemoLogin = async () => {
-    setEmail('yabatightofficial@gmail.com');
-    setPassword('admin1234');
-    setError('');
-    setLoading(true);
-
-    try {
-      const res = await fetch('/api/admin/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: 'yabatightofficial@gmail.com', password: 'admin1234' }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to login');
-
-      loginAdmin(data.user, data.token);
-      router.push('/admin');
-    } catch (err: any) {
-      setError(err.message || 'Quick login failed');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-[#0d0d0d] text-white flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden">
       {/* Glow Effects */}
@@ -90,26 +64,6 @@ export default function AdminLoginPage() {
           <p className="text-xs sm:text-sm text-gray-400 mt-1">
             Secure Management & Platform Oversight
           </p>
-        </div>
-
-        {/* 1-Click Quick Login Box */}
-        <div className="mb-6 rounded-2xl border border-[#FFD700]/40 bg-[#161616] p-4 text-center shadow-lg">
-          <div className="flex items-center justify-center gap-1.5 text-xs font-black uppercase tracking-wider text-[#FFD700] mb-1.5">
-            <Sparkles className="h-3.5 w-3.5" />
-            <span>Official Admin Access</span>
-          </div>
-          <p className="text-[11px] text-gray-300 mb-3">
-            Click below to instantly log in as <span className="text-[#FFD700] font-bold">the admin</span>.
-          </p>
-          <button
-            type="button"
-            onClick={handleQuickDemoLogin}
-            disabled={loading}
-            className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#FFD700] to-[#c88d00] px-4 py-2.5 text-xs font-black uppercase tracking-wider text-black transition hover:opacity-90 active:scale-[0.98] disabled:opacity-50 shadow-md"
-          >
-            <KeyRound className="h-4 w-4" />
-            <span>{loading ? 'Authenticating...' : '⚡ 1-Click Admin Login'}</span>
-          </button>
         </div>
 
         {/* Login Form Card */}

@@ -27,19 +27,27 @@ export function EmailVerificationModal({
   const [digits, setDigits] = useState(['', '', '', '', '', '']);
   const [resendCooldown, setResendCooldown] = useState(45);
   const [sendingEmail, setSendingEmail] = useState(false);
+  const [serverToken, setServerToken] = useState<string>('');
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const sentRef = useRef(false);
 
-  // Automatically trigger real email sending when the modal opens
+  // Automatically trigger real email sending when the modal opens (guaranteed exactly once)
   useEffect(() => {
     clearError();
+
+    if (sentRef.current) return;
+    sentRef.current = true;
 
     async function triggerEmail() {
       try {
         setSendingEmail(true);
-        await api.post('/auth/send-verification', {
+        const res = await api.post('/auth/send-verification', {
           email: email.trim().toLowerCase(),
           name: userName,
         });
+        if (res.data?.token) {
+          setServerToken(res.data.token);
+        }
         showToast(`Verification code sent to ${email}. Check your inbox! ✉️`, 'success');
       } catch (err: any) {
         console.error('Email dispatch error:', err);
@@ -89,10 +97,13 @@ export function EmailVerificationModal({
     if (resendCooldown > 0 || sendingEmail) return;
     try {
       setSendingEmail(true);
-      await api.post('/auth/send-verification', {
+      const res = await api.post('/auth/send-verification', {
         email: email.trim().toLowerCase(),
         name: userName,
       });
+      if (res.data?.token) {
+        setServerToken(res.data.token);
+      }
       setResendCooldown(45);
       showToast(`A fresh verification code has been dispatched to ${email}`, 'success');
     } catch {
@@ -111,10 +122,11 @@ export function EmailVerificationModal({
     }
 
     try {
-      // Verify via API endpoint
+      // Verify via API endpoint with cryptographically signed token
       await api.post('/auth/verify-email', {
         email: email.trim().toLowerCase(),
         code: fullCode,
+        token: serverToken,
       });
 
       // Also mark in auth store
