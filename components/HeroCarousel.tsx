@@ -75,7 +75,7 @@ const heroSlides: HeroSlide[] = [
     image: '/banner-corporate-shoes.jpg',
     targetHref: '/products?category=Shoes&max_price=23000',
     secondaryHref: '/products?category=Shoes',
-    callToAction: 'Shop Footwear',
+    callToAction: 'Shop Footwears',
   },
   {
     id: 4,
