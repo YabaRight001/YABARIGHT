@@ -237,7 +237,7 @@ export function Footer() {
 
         {/* Bottom Bar */}
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-6 text-xs text-gray-500 sm:flex-row">
-          <p>© {new Date().getFullYear()} YabaRight Marketplace Ltd. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} YabaRight Marketplace Ltd. All rights reserved</p>
           <div className="flex items-center gap-6">
             <span>Built for Nigeria • Styled for Real Life</span>
             <span className="font-semibold text-gray-400">Lagos, Nigeria</span>
