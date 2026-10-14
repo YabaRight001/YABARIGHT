@@ -322,8 +322,8 @@ export default function Home() {
     }, 600);
   };
 
-  // Curated Featured Drop products from live adminStore
-  const displayProducts = mounted && adminProducts ? adminProducts : sampleProducts;
+  // Curated Featured Drop products from live adminStore with authentic sample fallback
+  const displayProducts = (adminProducts && adminProducts.length > 0) ? adminProducts : sampleProducts;
   const featuredDropProducts = displayProducts.slice(0, 8);
   const asoEbiProducts = displayProducts.filter((p) => p.category === 'Aso Ebi').slice(0, 4);
 

@@ -2,11 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import { Product } from '@/types';
+import defaultProducts from '@/data/products.json';
+
+export const dynamic = 'force-dynamic';
 
 const dataFilePath = path.join(process.cwd(), 'data', 'products.json');
 
-// In-memory fallback cache in case filesystem is read-only (e.g. serverless)
-let inMemoryProducts: Product[] = [];
+// In-memory cache pre-seeded with verified inventory
+let inMemoryProducts: Product[] = (defaultProducts as unknown as Product[]) || [];
 
 function loadProducts(): Product[] {
   try {
@@ -14,7 +17,7 @@ function loadProducts(): Product[] {
       const fileData = fs.readFileSync(dataFilePath, 'utf8');
       if (fileData.trim()) {
         const parsed = JSON.parse(fileData);
-        if (Array.isArray(parsed)) {
+        if (Array.isArray(parsed) && parsed.length > 0) {
           inMemoryProducts = parsed;
           return parsed;
         }
@@ -23,6 +26,13 @@ function loadProducts(): Product[] {
   } catch (error) {
     console.error('Error reading products file:', error);
   }
+
+  // If in-memory already has items, use them
+  if (inMemoryProducts.length > 0) {
+    return inMemoryProducts;
+  }
+
+  inMemoryProducts = (defaultProducts as unknown as Product[]) || [];
   return inMemoryProducts;
 }
 
@@ -36,13 +46,14 @@ function saveProducts(products: Product[]): boolean {
     fs.writeFileSync(dataFilePath, JSON.stringify(products, null, 2), 'utf8');
     return true;
   } catch (error) {
-    console.warn('Could not write to products.json (read-only environment), kept in memory cache:', error);
+    console.warn('Could not write to products.json, kept in active memory cache:', error);
     return false;
   }
 }
 
 export async function GET() {
   const products = loadProducts();
+  console.log('[API Products GET] path:', dataFilePath, 'exists:', fs.existsSync(dataFilePath), 'count:', products.length);
   return NextResponse.json({
     success: true,
     products,

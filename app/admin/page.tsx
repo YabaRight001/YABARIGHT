@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import Link from 'next/link';
 import { useAdminStore } from '@/store/adminStore';
 import {
@@ -17,7 +18,11 @@ import {
 } from 'lucide-react';
 
 export default function AdminOverviewPage() {
-  const { products, vendors, users, verifyVendor, deleteProduct } = useAdminStore();
+  const { products, vendors, users, verifyVendor, deleteProduct, fetchProducts } = useAdminStore();
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
   const verifiedVendors = vendors.filter((v) => v.isVerified);
   const pendingVendors = vendors.filter((v) => !v.isVerified);

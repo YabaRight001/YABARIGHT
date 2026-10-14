@@ -1,7 +1,8 @@
 import { ProductCondition, type Product } from '@/types';
+import productsData from '@/data/products.json';
 
-// All online dummy products removed as requested - only authentic admin & vendor uploads are displayed
-export const sampleProducts: Product[] = [];
+export const sampleProducts: Product[] = (productsData as unknown as Product[]) || [];
 
 export const getProductById = (productId: string) =>
   sampleProducts.find((product) => product.id === productId);
+

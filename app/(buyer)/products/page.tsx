@@ -113,8 +113,8 @@ function ProductsContent() {
 
     setSearchInput(initialSearch);
 
-    // Use live products from adminStore (with fallback to sampleProducts before store hydration)
-    const productsSource = adminProducts !== undefined ? adminProducts : sampleProducts;
+    // Use live products from adminStore (with fallback to sampleProducts if empty or before hydration)
+    const productsSource = (adminProducts && adminProducts.length > 0) ? adminProducts : sampleProducts;
     setProducts(productsSource);
 
     setFilters({

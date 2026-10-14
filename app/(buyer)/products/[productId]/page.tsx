@@ -39,13 +39,19 @@ function ProductDetailContent({
   const adminProducts = useAdminStore((state) => state.products);
   const vendors = useAdminStore((state) => state.vendors);
   
+  const fetchProducts = useAdminStore((state) => state.fetchProducts);
   const [mounted, setMounted] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
     setMounted(true);
-  }, []);
+    fetchProducts().finally(() => {
+      setIsLoading(false);
+    });
+  }, [fetchProducts]);
 
-  // Use live products from adminStore once mounted
-  const allProducts = mounted && adminProducts !== undefined ? adminProducts : sampleProducts;
+  // Use live products from adminStore or sampleProducts fallback
+  const allProducts = adminProducts && adminProducts.length > 0 ? adminProducts : sampleProducts;
   const product = allProducts.find((p) => p.id === params.productId);
 
   const isOfficial = product?.sellerId === 'admin-official';
@@ -76,6 +82,17 @@ function ProductDetailContent({
       }
     }
   }, [searchParams, setActiveRef]);
+
+  if (isLoading && !product) {
+    return (
+      <main className="min-h-[70vh] flex items-center justify-center px-4 py-16">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-10 w-10 rounded-full border-4 border-[#FFD700] border-t-transparent animate-spin" />
+          <p className="text-xs font-black uppercase tracking-wider text-gray-500">Loading item specifications...</p>
+        </div>
+      </main>
+    );
+  }
 
   if (!product) {
     return (

@@ -1,1 +1,661 @@
-[]
+[
+  {
+    "id": "prod-suit-001",
+    "sellerId": "admin-official",
+    "name": "Executive Charcoal Grey 2-Piece Tailored Suit",
+    "description": "Tailored two-piece Italian cut wool blazer and trousers. Crisp structured shoulders, notched lapels, and silk inner lining. Perfect for boardroom presentations, corporate events, and formal dinners.",
+    "category": "Suits",
+    "price": 28500,
+    "originalPrice": 45000,
+    "images": [
+      "/suit-grey-1.jpg"
+    ],
+    "size": "40R",
+    "sizes": [
+      "38R",
+      "40R",
+      "42R",
+      "44R"
+    ],
+    "gender": "Male",
+    "neckSize": "15.5\"",
+    "waistSize": "32\"",
+    "bodyTypeFit": [
+      "Medium",
+      "Large"
+    ],
+    "condition": "NEW",
+    "material": "90% Wool Blend, 10% Silk Lining",
+    "color": "Charcoal Grey",
+    "brand": "Savile Row Lagos Edit",
+    "quantity": 12,
+    "sold": 8,
+    "rating": 4.9,
+    "trending": true,
+    "published": true,
+    "createdAt": "2026-09-01T10:00:00.000Z",
+    "updatedAt": "2026-09-01T10:00:00.000Z"
+  },
+  {
+    "id": "prod-suit-002",
+    "sellerId": "admin-official",
+    "name": "Royal Navy Blue Slim-Fit Blazer",
+    "description": "Modern single-breasted blazer in deep navy blue. Features double rear vents, horn buttons, and breathable fabric ideal for Nigerian climate.",
+    "category": "Suits",
+    "price": 24000,
+    "originalPrice": 38000,
+    "images": [
+      "/suit-blue-1.jpg"
+    ],
+    "size": "42R",
+    "sizes": [
+      "40R",
+      "42R",
+      "44R"
+    ],
+    "gender": "Male",
+    "neckSize": "16.0\"",
+    "waistSize": "34\"",
+    "bodyTypeFit": [
+      "Large",
+      "XL"
+    ],
+    "condition": "NEW",
+    "material": "Tropical Wool Blend",
+    "color": "Navy Blue",
+    "brand": "Milano Executive",
+    "quantity": 10,
+    "sold": 5,
+    "rating": 4.8,
+    "trending": true,
+    "published": true,
+    "createdAt": "2026-09-02T10:00:00.000Z",
+    "updatedAt": "2026-09-02T10:00:00.000Z"
+  },
+  {
+    "id": "prod-shirt-001",
+    "sellerId": "admin-official",
+    "name": "Crisp Italian Cotton White Spread-Collar Shirt",
+    "description": "Essential formal white button-up made with 100% two-ply Egyptian cotton. Easy-iron finish, firm reinforced collar stays, and French cuffs.",
+    "category": "Shirts",
+    "price": 9999,
+    "originalPrice": 16000,
+    "images": [
+      "/casual-shirts-stack.jpg"
+    ],
+    "size": "Medium",
+    "sizes": [
+      "Small",
+      "Medium",
+      "Large",
+      "XL"
+    ],
+    "gender": "Male",
+    "neckSize": "15.5\"",
+    "waistSize": "32\"",
+    "bodyTypeFit": [
+      "Medium",
+      "Large"
+    ],
+    "condition": "NEW",
+    "material": "100% Egyptian Cotton",
+    "color": "Pure White",
+    "brand": "YabaRight Essentials",
+    "quantity": 25,
+    "sold": 34,
+    "rating": 5.0,
+    "trending": true,
+    "published": true,
+    "createdAt": "2026-09-03T10:00:00.000Z",
+    "updatedAt": "2026-09-03T10:00:00.000Z"
+  },
+  {
+    "id": "prod-shirt-002",
+    "sellerId": "admin-official",
+    "name": "Vintage Pastel Stripe Oxford Button-Down",
+    "description": "Grade-A thrift authentic American Oxford cloth shirt with vibrant candy stripes. Heavyweight durable cotton, locker loop on back, and chest pocket.",
+    "category": "Shirts",
+    "price": 9999,
+    "originalPrice": 15000,
+    "images": [
+      "/casual-shirts-colorful.jpg"
+    ],
+    "size": "Large",
+    "sizes": [
+      "Medium",
+      "Large"
+    ],
+    "gender": "Unisex",
+    "neckSize": "16.0\"",
+    "waistSize": "34\"",
+    "bodyTypeFit": [
+      "Large"
+    ],
+    "condition": "LIKE_NEW",
+    "material": "Heavy Oxford Cotton",
+    "color": "Pastel Stripes",
+    "brand": "Ralph Lauren Thrift",
+    "quantity": 14,
+    "sold": 19,
+    "rating": 4.8,
+    "trending": false,
+    "published": true,
+    "createdAt": "2026-09-04T10:00:00.000Z",
+    "updatedAt": "2026-09-04T10:00:00.000Z"
+  },
+  {
+    "id": "prod-shirt-003",
+    "sellerId": "admin-official",
+    "name": "Breathable Pique Cotton Polo Shirt",
+    "description": "Classic breathable polo shirt with ribbed collar and double-stitched hem. Ideal for weekend chill out, casual Fridays, and smart everyday wear.",
+    "category": "Shirts",
+    "price": 8500,
+    "originalPrice": 14000,
+    "images": [
+      "/polo-shirts.jpg"
+    ],
+    "size": "Medium",
+    "sizes": [
+      "Small",
+      "Medium",
+      "Large"
+    ],
+    "gender": "Unisex",
+    "neckSize": "15.0\"",
+    "waistSize": "32\"",
+    "bodyTypeFit": [
+      "Medium"
+    ],
+    "condition": "NEW",
+    "material": "100% Pique Cotton",
+    "color": "Classic Blue",
+    "brand": "YabaRight Casuals",
+    "quantity": 18,
+    "sold": 22,
+    "rating": 4.7,
+    "trending": true,
+    "published": true,
+    "createdAt": "2026-09-05T10:00:00.000Z",
+    "updatedAt": "2026-09-05T10:00:00.000Z"
+  },
+  {
+    "id": "prod-shoe-001",
+    "sellerId": "admin-official",
+    "name": "Handcrafted Leather Oxford Corporate Shoes",
+    "description": "Genuine burnished calfskin leather Oxfords with Goodyear-welted rubber-injected soles. Sleek cap-toe styling for the modern professional.",
+    "category": "Shoes",
+    "price": 22999,
+    "originalPrice": 35000,
+    "images": [
+      "/male-shoes-collection.jpg"
+    ],
+    "size": "43",
+    "sizes": [
+      "41",
+      "42",
+      "43",
+      "44",
+      "45"
+    ],
+    "gender": "Male",
+    "condition": "NEW",
+    "material": "100% Genuine Calfskin Leather",
+    "color": "Espresso Brown",
+    "brand": "Chop Corporate",
+    "quantity": 10,
+    "sold": 16,
+    "rating": 5.0,
+    "trending": true,
+    "published": true,
+    "createdAt": "2026-09-06T10:00:00.000Z",
+    "updatedAt": "2026-09-06T10:00:00.000Z"
+  },
+  {
+    "id": "prod-shoe-002",
+    "sellerId": "admin-official",
+    "name": "Women's Pointed Toe Classic Black Stiletto Heels",
+    "description": "Elegant 4-inch black stiletto pumps with padded footbed for all-day comfort. High-shine finish suited for weddings, galas, and office power moves.",
+    "category": "Shoes",
+    "price": 9999,
+    "originalPrice": 18000,
+    "images": [
+      "/heels-black-pair.jpg"
+    ],
+    "size": "39",
+    "sizes": [
+      "37",
+      "38",
+      "39",
+      "40"
+    ],
+    "gender": "Female",
+    "condition": "NEW",
+    "material": "Gloss Vegan Patent Leather",
+    "color": "Onyx Black",
+    "brand": "Zara Lagos Collection",
+    "quantity": 15,
+    "sold": 28,
+    "rating": 4.9,
+    "trending": true,
+    "published": true,
+    "createdAt": "2026-09-07T10:00:00.000Z",
+    "updatedAt": "2026-09-07T10:00:00.000Z"
+  },
+  {
+    "id": "prod-shoe-003",
+    "sellerId": "admin-official",
+    "name": "Comfort Soft Leather Ballet Flats",
+    "description": "Flexible round-toe ballet flats with cushioned arch support. Premium soft leather upper that fits into handbags for quick workday shoe changes.",
+    "category": "Shoes",
+    "price": 9999,
+    "originalPrice": 15000,
+    "images": [
+      "/female-shoe-flat.jpg"
+    ],
+    "size": "38",
+    "sizes": [
+      "37",
+      "38",
+      "39",
+      "40"
+    ],
+    "gender": "Female",
+    "condition": "NEW",
+    "material": "Supple Nappa Leather",
+    "color": "Tan Nude",
+    "brand": "Nine West Thrift",
+    "quantity": 12,
+    "sold": 20,
+    "rating": 4.8,
+    "trending": false,
+    "published": true,
+    "createdAt": "2026-09-08T10:00:00.000Z",
+    "updatedAt": "2026-09-08T10:00:00.000Z"
+  },
+  {
+    "id": "prod-jeans-001",
+    "sellerId": "admin-official",
+    "name": "Premium Raw Selvedge Denim Straight Jeans",
+    "description": "Authentic Grade-A thrift heavy denim jeans. Zero stretch 14oz raw selvedge cotton that molds to your body shape. Classic 5-pocket rivet styling.",
+    "category": "Jeans",
+    "price": 9999,
+    "originalPrice": 18000,
+    "images": [
+      "/jeans-stack.jpg"
+    ],
+    "size": "32\"",
+    "sizes": [
+      "30\"",
+      "32\"",
+      "34\"",
+      "36\""
+    ],
+    "gender": "Unisex",
+    "waistSize": "32\"",
+    "condition": "LIKE_NEW",
+    "material": "100% Raw Cotton Denim",
+    "color": "Indigo Blue",
+    "brand": "Levi's 501 Grade A",
+    "quantity": 20,
+    "sold": 41,
+    "rating": 4.9,
+    "trending": true,
+    "published": true,
+    "createdAt": "2026-09-09T10:00:00.000Z",
+    "updatedAt": "2026-09-09T10:00:00.000Z"
+  },
+  {
+    "id": "prod-jeans-002",
+    "sellerId": "admin-official",
+    "name": "Relaxed Vintage Wash Slim Tapered Jeans",
+    "description": "Pre-washed thrift denim with custom fading and whiskering. Comfortable mid-rise waist with tailored leg taper that stacks neatly over sneakers.",
+    "category": "Jeans",
+    "price": 9999,
+    "originalPrice": 16000,
+    "images": [
+      "/jeans-folded.jpg"
+    ],
+    "size": "34\"",
+    "sizes": [
+      "32\"",
+      "34\"",
+      "36\""
+    ],
+    "gender": "Male",
+    "waistSize": "34\"",
+    "condition": "GOOD",
+    "material": "98% Cotton, 2% Elastane",
+    "color": "Vintage Stone Wash",
+    "brand": "Diesel Authentic Thrift",
+    "quantity": 15,
+    "sold": 18,
+    "rating": 4.7,
+    "trending": false,
+    "published": true,
+    "createdAt": "2026-09-10T10:00:00.000Z",
+    "updatedAt": "2026-09-10T10:00:00.000Z"
+  },
+  {
+    "id": "prod-trousers-001",
+    "sellerId": "admin-official",
+    "name": "Bespoke Pleated Charcoal Formal Trousers",
+    "description": "Double-pleated English style trousers with side adjuster buckles. Unhemmed bottoms for tailored length adjustment. Wrinkle resistant weave.",
+    "category": "Pant Trousers",
+    "price": 11500,
+    "originalPrice": 18000,
+    "images": [
+      "/formal-pant-trousers.jpg"
+    ],
+    "size": "32\"",
+    "sizes": [
+      "30\"",
+      "32\"",
+      "34\"",
+      "36\""
+    ],
+    "gender": "Male",
+    "waistSize": "32\"",
+    "condition": "NEW",
+    "material": "Poly-Viscose Wool Feel",
+    "color": "Charcoal Black",
+    "brand": "Savile Row Lagos",
+    "quantity": 16,
+    "sold": 12,
+    "rating": 4.8,
+    "trending": false,
+    "published": true,
+    "createdAt": "2026-09-11T10:00:00.000Z",
+    "updatedAt": "2026-09-11T10:00:00.000Z"
+  },
+  {
+    "id": "prod-asobi-001",
+    "sellerId": "admin-official",
+    "name": "Luxury Swiss Voile Lace (Verified 5-Yard Cut)",
+    "description": "Authentic Swiss voile lace with intricate stone detailing and scalloped border embroidery. Guaranteed exact 5 yards on cutting table. Zero short yard disappointment.",
+    "category": "Aso Ebi",
+    "price": 34500,
+    "originalPrice": 50000,
+    "images": [
+      "/swiss-voile-lace.jpg"
+    ],
+    "size": "5 Yards",
+    "sizes": [
+      "5 Yards",
+      "10 Yards"
+    ],
+    "gender": "Unisex",
+    "condition": "NEW",
+    "material": "100% Pure Swiss Voile Cotton",
+    "color": "Royal Teal & Gold Stones",
+    "brand": "Austrian Swiss Pure",
+    "quantity": 45,
+    "sold": 82,
+    "rating": 5.0,
+    "trending": true,
+    "published": true,
+    "createdAt": "2026-09-12T10:00:00.000Z",
+    "updatedAt": "2026-09-12T10:00:00.000Z"
+  },
+  {
+    "id": "prod-asobi-002",
+    "sellerId": "admin-official",
+    "name": "Heavy Velvet Sequin Lace (Verified 5-Yard Cut)",
+    "description": "High-density micro-sequin embellishments on lush velvet fabric. Shimmers beautifully under hall lights, ideal for bride's mother and high-society owambe guests.",
+    "category": "Aso Ebi",
+    "price": 28000,
+    "originalPrice": 42000,
+    "images": [
+      "/velvet-sequin-lace.jpg"
+    ],
+    "size": "5 Yards",
+    "sizes": [
+      "5 Yards",
+      "10 Yards"
+    ],
+    "gender": "Female",
+    "condition": "NEW",
+    "material": "Luxury Micro-Velvet & Sequins",
+    "color": "Emerald Green",
+    "brand": "Lagos Owambe Regal",
+    "quantity": 30,
+    "sold": 49,
+    "rating": 4.9,
+    "trending": true,
+    "published": true,
+    "createdAt": "2026-09-13T10:00:00.000Z",
+    "updatedAt": "2026-09-13T10:00:00.000Z"
+  },
+  {
+    "id": "prod-asobi-003",
+    "sellerId": "admin-official",
+    "name": "Bespoke Nigerian Cashmere Agbada 3-Piece Set",
+    "description": "Complete traditional groom and distinguished guest outfit. Includes heavyweight cashmere Agbada, matching Buba and Sokoto, and embroidered Fila cap.",
+    "category": "Aso Ebi",
+    "price": 32000,
+    "originalPrice": 55000,
+    "images": [
+      "/nigerian-agbada-set.jpg",
+      "/agbada-fabric-cap.jpg"
+    ],
+    "size": "Free Size",
+    "sizes": [
+      "Medium",
+      "Large",
+      "XL"
+    ],
+    "gender": "Male",
+    "condition": "NEW",
+    "material": "Premium Cashmere Wool",
+    "color": "Ivory Cream & Gold",
+    "brand": "YabaRight Heritage",
+    "quantity": 25,
+    "sold": 38,
+    "rating": 5.0,
+    "trending": true,
+    "published": true,
+    "createdAt": "2026-09-14T10:00:00.000Z",
+    "updatedAt": "2026-09-14T10:00:00.000Z"
+  },
+  {
+    "id": "prod-asobi-004",
+    "sellerId": "admin-official",
+    "name": "Pre-Tied Luxury Auto-Gele Headtie",
+    "description": "Ready-to-wear Auto-Gele that fastens in 10 seconds with velcro and adjustable straps. Beautiful pleated design, holds shape through 8+ hours of dancing.",
+    "category": "Aso Ebi",
+    "price": 12500,
+    "originalPrice": 18000,
+    "images": [
+      "/auto-gele-headtie.jpg"
+    ],
+    "size": "Adjustable",
+    "sizes": [
+      "Standard"
+    ],
+    "gender": "Female",
+    "condition": "NEW",
+    "material": "Aso Oke Handwoven",
+    "color": "Metallic Champagne Gold",
+    "brand": "Gele Elegance",
+    "quantity": 40,
+    "sold": 65,
+    "rating": 4.9,
+    "trending": false,
+    "published": true,
+    "createdAt": "2026-09-15T10:00:00.000Z",
+    "updatedAt": "2026-09-15T10:00:00.000Z"
+  },
+  {
+    "id": "prod-bag-001",
+    "sellerId": "admin-official",
+    "name": "Executive Structured Leather Handbag",
+    "description": "Cross-grain vegan leather tote with gold-tone hardware, removable crossbody strap, and protective metal base feet. Fits a 13-inch laptop and workday essentials.",
+    "category": "Bags",
+    "price": 14999,
+    "originalPrice": 26000,
+    "images": [
+      "/bag-handbag.jpg"
+    ],
+    "size": "Medium",
+    "sizes": [
+      "Medium"
+    ],
+    "gender": "Female",
+    "condition": "NEW",
+    "material": "Cross-Grain Saffiano Leather",
+    "color": "Burgundy Wine",
+    "brand": "Michael Kors Thrift",
+    "quantity": 9,
+    "sold": 15,
+    "rating": 4.8,
+    "trending": true,
+    "published": true,
+    "createdAt": "2026-09-16T10:00:00.000Z",
+    "updatedAt": "2026-09-16T10:00:00.000Z"
+  },
+  {
+    "id": "prod-phone-001",
+    "sellerId": "admin-official",
+    "name": "Apple iPhone 13 Pro (128GB, Sierra Blue) - Certified Grade A+",
+    "description": "Certified tested device with 91% battery health, original OLED Super Retina XDR 120Hz display, and spotless stainless steel frame. Factory unlocked for all Nigerian networks (MTN, Airtel, Glo).",
+    "category": "Phones",
+    "price": 495000,
+    "originalPrice": 580000,
+    "images": [
+      "/iphone-13-pro-blue.jpg"
+    ],
+    "size": "128GB",
+    "sizes": [
+      "128GB",
+      "256GB"
+    ],
+    "gender": "Unisex",
+    "condition": "LIKE_NEW",
+    "material": "Ceramic Shield & Stainless Steel",
+    "color": "Sierra Blue",
+    "brand": "Apple Certified",
+    "quantity": 5,
+    "sold": 11,
+    "rating": 5.0,
+    "trending": true,
+    "published": true,
+    "createdAt": "2026-09-17T10:00:00.000Z",
+    "updatedAt": "2026-09-17T10:00:00.000Z"
+  },
+  {
+    "id": "prod-phone-002",
+    "sellerId": "admin-official",
+    "name": "Samsung Galaxy S22 Ultra 5G (256GB) - Grade A",
+    "description": "Built-in S-Pen, 108MP camera with 100x Space Zoom, and pristine Dynamic AMOLED 2X display. Tested motherboards and battery with 30-day swap warranty.",
+    "category": "Phones",
+    "price": 520000,
+    "originalPrice": 620000,
+    "images": [
+      "/samsung-s22-ultra.jpg"
+    ],
+    "size": "256GB",
+    "sizes": [
+      "256GB"
+    ],
+    "gender": "Unisex",
+    "condition": "LIKE_NEW",
+    "material": "Armor Aluminum & Gorilla Glass Victus+",
+    "color": "Phantom Black",
+    "brand": "Samsung Certified",
+    "quantity": 4,
+    "sold": 7,
+    "rating": 4.9,
+    "trending": true,
+    "published": true,
+    "createdAt": "2026-09-18T10:00:00.000Z",
+    "updatedAt": "2026-09-18T10:00:00.000Z"
+  },
+  {
+    "id": "prod-gadget-001",
+    "sellerId": "admin-official",
+    "name": "Wireless Active Noise Cancelling Studio Earbuds",
+    "description": "High-fidelity wireless earbuds with hybrid active noise cancellation, transparency mode, and 32-hour battery life with charging case. Sweat & water resistant.",
+    "category": "Gadgets",
+    "price": 28500,
+    "originalPrice": 45000,
+    "images": [
+      "/banner-electronics.jpg"
+    ],
+    "size": "One Size",
+    "sizes": [
+      "Standard"
+    ],
+    "gender": "Unisex",
+    "condition": "NEW",
+    "material": "Matte Polycarbonate",
+    "color": "Stealth Black",
+    "brand": "SoundCore Pro",
+    "quantity": 15,
+    "sold": 26,
+    "rating": 4.8,
+    "trending": true,
+    "published": true,
+    "createdAt": "2026-09-19T10:00:00.000Z",
+    "updatedAt": "2026-09-19T10:00:00.000Z"
+  },
+  {
+    "id": "prod-combo-001",
+    "sellerId": "admin-official",
+    "name": "Super Combo Fit: Shirt + Raw Denim + Loafers 3-Piece",
+    "description": "The complete sharp look in one discounted package. Includes 1 Italian cotton button-up, 1 raw denim jeans, and 1 pair of leather loafers. Save ₦17,000 on the full fit.",
+    "category": "Combos",
+    "price": 25000,
+    "originalPrice": 42000,
+    "images": [
+      "/banner-super-combo.jpg"
+    ],
+    "size": "Medium/32/43",
+    "sizes": [
+      "M/32/42",
+      "L/34/43",
+      "XL/36/44"
+    ],
+    "gender": "Male",
+    "condition": "NEW",
+    "material": "Cotton, Denim & Leather",
+    "color": "Classic Blue & Brown",
+    "brand": "YabaRight Combo Steals",
+    "quantity": 10,
+    "sold": 29,
+    "rating": 5.0,
+    "trending": true,
+    "published": true,
+    "createdAt": "2026-09-20T10:00:00.000Z",
+    "updatedAt": "2026-09-20T10:00:00.000Z"
+  },
+  {
+    "id": "prod-gift-001",
+    "sellerId": "admin-official",
+    "name": "Customized Club / Country Jersey (Custom Back Print)",
+    "description": "Authentic supporter kit with high-grade sports vinyl name and squad number heat-pressed. Machine washable, vibrant colors that never peel.",
+    "category": "Gift Items",
+    "price": 12500,
+    "originalPrice": 20000,
+    "images": [
+      "/custom-jersey.jpg"
+    ],
+    "size": "Large",
+    "sizes": [
+      "Small",
+      "Medium",
+      "Large",
+      "XL"
+    ],
+    "gender": "Unisex",
+    "condition": "NEW",
+    "material": "Dri-FIT Breathable Polyester",
+    "color": "Forest Green",
+    "brand": "YabaRight Gift Studio",
+    "quantity": 50,
+    "sold": 94,
+    "rating": 4.9,
+    "trending": true,
+    "published": true,
+    "createdAt": "2026-09-21T10:00:00.000Z",
+    "updatedAt": "2026-09-21T10:00:00.000Z"
+  }
+]

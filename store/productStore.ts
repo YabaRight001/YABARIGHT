@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { Product } from '@/types';
+import { sampleProducts } from '@/lib/mockProducts';
 
 interface ProductFilters {
   search: string;
@@ -38,8 +39,8 @@ const defaultFilters: ProductFilters = {
 };
 
 export const useProductStore = create<ProductState>((set, get) => ({
-  products: [],
-  filteredProducts: [],
+  products: sampleProducts,
+  filteredProducts: sampleProducts,
   isLoading: false,
   error: null,
   filters: defaultFilters,

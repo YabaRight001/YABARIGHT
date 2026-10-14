@@ -1,7 +1,9 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Product, Order, OrderStatus, ProductCondition } from '@/types';
+import { useAdminStore } from '@/store/adminStore';
 import { 
   Package, 
   TrendingUp, 
@@ -160,6 +162,49 @@ const formatDate = (date: Date) => {
 };
 
 export default function SellerDashboardPage() {
+  const allProducts = useAdminStore((s) => s.products);
+  const fetchProducts = useAdminStore((s) => s.fetchProducts);
+  const deleteProduct = useAdminStore((s) => s.deleteProduct);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
+
+  const sellerListings = allProducts.length > 0
+    ? allProducts.slice(0, 8)
+    : (recentProducts as Product[]);
+
+  const dynamicStats = [
+    {
+      label: 'Total Products',
+      value: `${allProducts.length > 0 ? allProducts.length : 24}`,
+      change: 'Verified on Ground',
+      icon: Package,
+      color: 'bg-blue-50 text-blue-600',
+    },
+    {
+      label: 'Total Sales',
+      value: '₦847,500',
+      change: '+18.4% vs last mo',
+      icon: ShoppingBag,
+      color: 'bg-emerald-50 text-emerald-600',
+    },
+    {
+      label: 'Store Revenue',
+      value: '₦2.4M',
+      change: '+24.1% annualized',
+      icon: TrendingUp,
+      color: 'bg-purple-50 text-purple-600',
+    },
+    {
+      label: 'Orders Processed',
+      value: '156',
+      change: '+12 dispatched today',
+      icon: Sparkles,
+      color: 'bg-amber-50 text-amber-600',
+    },
+  ];
+
   return (
     <div className="container-custom py-6 sm:py-10">
       {/* Welcome Banner */}
@@ -186,7 +231,7 @@ export default function SellerDashboardPage() {
 
       {/* Stats Cards */}
       <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => {
+        {dynamicStats.map((stat) => {
           const Icon = stat.icon;
           return (
             <div 
@@ -216,7 +261,7 @@ export default function SellerDashboardPage() {
         <section className="lg:col-span-2">
           <div className="rounded-[2rem] border border-black/10 bg-white p-6 shadow-sm">
             <div className="mb-5 flex items-center justify-between border-b border-gray-100 pb-4">
-              <h2 className="text-base font-black text-gray-950">Active Inventory</h2>
+              <h2 className="text-base font-black text-gray-950">Active Inventory ({allProducts.length})</h2>
               <Link 
                 href="/products/new" 
                 className="text-xs font-bold text-[#c88d00] hover:underline"
@@ -226,7 +271,7 @@ export default function SellerDashboardPage() {
             </div>
 
             <div className="space-y-3">
-              {recentProducts.map((product) => (
+              {sellerListings.map((product) => (
                 <div
                   key={product.id}
                   className="flex items-center gap-4 rounded-2xl border border-gray-100 bg-[#fbf8f2] p-3.5 transition hover:border-[#FFD700]/30"

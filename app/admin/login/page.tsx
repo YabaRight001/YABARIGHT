@@ -112,10 +112,22 @@ export default function AdminLoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-2 inline-flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-xs font-black uppercase tracking-wider text-black transition hover:bg-gray-200 active:scale-[0.98] disabled:opacity-50"
+              className="w-full mt-2 inline-flex items-center justify-center gap-2 rounded-xl bg-[#FFD700] px-5 py-3 text-xs font-black uppercase tracking-wider text-black transition hover:bg-[#ffcc00] active:scale-[0.98] disabled:opacity-50 shadow-md shadow-[#FFD700]/20"
             >
               <span>{loading ? 'Verifying Credentials...' : 'Sign In to Portal'}</span>
               <ArrowRight className="h-4 w-4" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setEmail('yabarightofficial@gmail.com');
+                setPassword('admin1234');
+              }}
+              className="w-full inline-flex items-center justify-center gap-1.5 rounded-xl border border-[#FFD700]/30 bg-[#FFD700]/10 hover:bg-[#FFD700]/20 px-4 py-2 text-[11px] font-bold text-[#FFD700] transition"
+            >
+              <KeyRound className="h-3.5 w-3.5" />
+              <span>Use Test Admin Credentials</span>
             </button>
           </form>
 

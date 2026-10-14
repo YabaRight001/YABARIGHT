@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAdminStore } from '@/store/adminStore';
 import { useToastStore } from '@/store/toastStore';
 import { Product, ProductCondition } from '@/types';
@@ -34,6 +34,7 @@ const COMMON_WAIST_SIZES = ['28"', '30"', '32"', '34"', '36"', '38"', '40"', '42
 export default function AdminProductsPage() {
   const {
     products,
+    fetchProducts,
     addProduct,
     updateProduct,
     deleteProduct,
@@ -45,6 +46,10 @@ export default function AdminProductsPage() {
     deleteImagePreset,
   } = useAdminStore();
   const showToast = useToastStore((s) => s.showToast);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
   // Fallback defaults if store is initializing
   const categories =
@@ -257,7 +262,9 @@ export default function AdminProductsPage() {
     }
   };
 
-  const handleUpload = (e: React.FormEvent) => {
+  const [isPublishing, setIsPublishing] = useState(false);
+
+  const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name || !form.price || !form.description) {
       showToast('Please fill in all required fields.', 'error');
@@ -268,58 +275,65 @@ export default function AdminProductsPage() {
     const origPriceNum = form.originalPrice ? Number(form.originalPrice) : Math.round(priceNum * 1.5);
     const qtyNum = Number(form.quantity) || 1;
 
-    if (editingProductId) {
-      updateProduct(editingProductId, {
-        name: form.name,
-        description: form.description,
-        category: form.category,
-        price: priceNum,
-        originalPrice: origPriceNum,
-        condition: form.condition,
-        images: [form.imageUrl],
-        size: form.selectedSizes.join(', ') || 'Standard',
-        sizes: form.selectedSizes,
-        gender: form.gender,
-        neckSize: form.neckSize,
-        waistSize: form.waistSize,
-        bodyTypeFit: form.bodyTypeFit,
-        brand: form.brand || 'YabaRight Official',
-        material: form.material,
-        quantity: qtyNum,
-      });
+    setIsPublishing(true);
+    try {
+      if (editingProductId) {
+        await updateProduct(editingProductId, {
+          name: form.name,
+          description: form.description,
+          category: form.category,
+          price: priceNum,
+          originalPrice: origPriceNum,
+          condition: form.condition,
+          images: [form.imageUrl],
+          size: form.selectedSizes.join(', ') || 'Standard',
+          sizes: form.selectedSizes,
+          gender: form.gender,
+          neckSize: form.neckSize,
+          waistSize: form.waistSize,
+          bodyTypeFit: form.bodyTypeFit,
+          brand: form.brand || 'YabaRight Official',
+          material: form.material,
+          quantity: qtyNum,
+        });
 
-      showToast(`Product "${form.name}" updated successfully! 🎉`, 'success');
-    } else {
-      addProduct({
-        sellerId: 'admin-official',
-        name: form.name,
-        description: form.description,
-        category: form.category,
-        price: priceNum,
-        originalPrice: origPriceNum,
-        condition: form.condition,
-        images: [form.imageUrl],
-        size: form.selectedSizes.join(', ') || 'Standard',
-        sizes: form.selectedSizes,
-        gender: form.gender,
-        neckSize: form.neckSize,
-        waistSize: form.waistSize,
-        bodyTypeFit: form.bodyTypeFit,
-        brand: form.brand || 'YabaRight Official',
-        material: form.material,
-        quantity: qtyNum,
-      });
+        showToast(`Product "${form.name}" updated successfully across all devices! 🎉`, 'success');
+      } else {
+        await addProduct({
+          sellerId: 'admin-official',
+          name: form.name,
+          description: form.description,
+          category: form.category,
+          price: priceNum,
+          originalPrice: origPriceNum,
+          condition: form.condition,
+          images: [form.imageUrl],
+          size: form.selectedSizes.join(', ') || 'Standard',
+          sizes: form.selectedSizes,
+          gender: form.gender,
+          neckSize: form.neckSize,
+          waistSize: form.waistSize,
+          bodyTypeFit: form.bodyTypeFit,
+          brand: form.brand || 'YabaRight Official',
+          material: form.material,
+          quantity: qtyNum,
+        });
 
-      showToast(`Product "${form.name}" uploaded successfully! 🎉`, 'success');
+        showToast(`Product "${form.name}" published live to the marketplace! 🎉`, 'success');
+      }
+
+      setModalOpen(false);
+      resetForm();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to publish product. Please try again.', 'error');
+    } finally {
+      setIsPublishing(false);
     }
-
-    setModalOpen(false);
-    resetForm();
   };
 
-  const handleDelete = (id: string, name: string) => {
+  const handleDelete = async (id: string, name: string) => {
     if (confirm(`Are you sure you want to delete "${name}"? It will be removed from the catalog.`)) {
-      deleteProduct(id);
+      await deleteProduct(id);
       showToast(`Product "${name}" deleted from marketplace.`, 'info');
     }
   };
@@ -932,9 +946,17 @@ export default function AdminProductsPage() {
               <div className="flex gap-3 pt-4 border-t border-white/10">
                 <button
                   type="submit"
-                  className="flex-1 rounded-full bg-[#FFD700] py-3.5 text-xs font-black uppercase tracking-wider text-black hover:bg-[#ffcc00] transition shadow-lg shadow-[#FFD700]/15"
+                  disabled={isPublishing}
+                  className="flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-[#FFD700] py-3.5 text-xs font-black uppercase tracking-wider text-black hover:bg-[#ffcc00] transition shadow-lg shadow-[#FFD700]/15 disabled:opacity-50"
                 >
-                  {editingProductId ? 'Save & Update Product' : 'Confirm & Publish to Catalog'}
+                  {isPublishing ? (
+                    <>
+                      <span className="h-3.5 w-3.5 rounded-full border-2 border-black border-t-transparent animate-spin" />
+                      <span>Syncing with Marketplace...</span>
+                    </>
+                  ) : (
+                    <span>{editingProductId ? 'Save & Update Product' : 'Confirm & Publish to Catalog'}</span>
+                  )}
                 </button>
                 <button
                   type="button"

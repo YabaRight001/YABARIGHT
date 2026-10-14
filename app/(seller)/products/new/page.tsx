@@ -36,10 +36,41 @@ export default function NewProductPage() {
 
   const [form, setForm] = useState(initialState);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const addProduct = useAdminStore((state) => state.addProduct);
 
-  const handleDeviceUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleDeviceUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    try {
+      setUploadingImage(true);
+      showToast('Uploading photo to marketplace server... ⏳', 'info');
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.url) {
+          setForm((prev) => ({ ...prev, image: data.url }));
+          showToast('Photo uploaded successfully! Visible to all buyers 📸', 'success');
+          setUploadingImage(false);
+          e.target.value = '';
+          return;
+        }
+      }
+    } catch (uploadErr) {
+      console.warn('Direct upload error, falling back to local preview:', uploadErr);
+    } finally {
+      setUploadingImage(false);
+    }
+
     const reader = new FileReader();
     reader.onloadend = () => {
       setForm((prev) => ({ ...prev, image: reader.result as string }));
@@ -54,36 +85,42 @@ export default function NewProductPage() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (!form.name || !form.price || !form.description) {
+      showToast('Please fill in all required fields.', 'error');
+      return;
+    }
+
     setIsSubmitting(true);
+    try {
+      const priceNum = Number(form.price);
+      const newProduct = await addProduct({
+        sellerId: 'seller-current',
+        name: form.name,
+        description: form.description,
+        category: form.category,
+        price: priceNum,
+        originalPrice: priceNum + 6000,
+        images: [form.image],
+        size: form.size,
+        sizes: [form.size],
+        condition: form.condition,
+        material: 'Premium fabric',
+        color: 'Neutral',
+        brand: form.brand || 'Verified Thrift Seller',
+        quantity: 5,
+        rating: 5.0,
+      });
 
-    const newProduct: Product = {
-      id: `prod-${Date.now()}`,
-      sellerId: 'seller-current',
-      name: form.name,
-      description: form.description,
-      category: form.category,
-      price: Number(form.price),
-      originalPrice: Number(form.price) + 6000,
-      images: [form.image],
-      size: form.size,
-      condition: form.condition,
-      material: 'Premium fabric',
-      color: 'Neutral',
-      brand: form.brand || 'Verified Thrift Seller',
-      quantity: 5,
-      sold: 0,
-      rating: 4.8,
-      trending: false,
-      published: true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    setProducts([...products, newProduct]);
-    showToast(`"${form.name}" has been published to the marketplace!`, 'success');
-    router.push('/dashboard');
+      setProducts([...products, newProduct]);
+      showToast(`"${form.name}" has been published live to the marketplace! 🎉`, 'success');
+      router.push('/dashboard');
+    } catch (err: any) {
+      showToast(err.message || 'Failed to publish listing. Please try again.', 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

@@ -38,9 +38,9 @@ interface AdminState {
 
   // Product Actions
   fetchProducts: () => Promise<void>;
-  addProduct: (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'sold' | 'rating' | 'trending' | 'published' | 'sellerId'> & { sellerId?: string; rating?: number; trending?: boolean; published?: boolean }) => Product;
-  deleteProduct: (productId: string) => void;
-  updateProduct: (productId: string, updates: Partial<Product>) => void;
+  addProduct: (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'sold' | 'rating' | 'trending' | 'published' | 'sellerId'> & { sellerId?: string; rating?: number; trending?: boolean; published?: boolean }) => Promise<Product>;
+  deleteProduct: (productId: string) => Promise<void>;
+  updateProduct: (productId: string, updates: Partial<Product>) => Promise<void>;
 
   // Vendor Verification Actions (Jiji style)
   verifyVendor: (vendorId: string) => void;
@@ -402,7 +402,7 @@ export const useAdminStore = create<AdminState>()(
       // Global Server API Sync
       fetchProducts: async () => {
         try {
-          const res = await fetch('/api/products');
+          const res = await fetch(`/api/products?t=${Date.now()}`);
           if (res.ok) {
             const data = await res.json();
             if (Array.isArray(data.products)) {
@@ -414,8 +414,8 @@ export const useAdminStore = create<AdminState>()(
         }
       },
 
-      // Product Management
-      addProduct: (data) => {
+      // Product Management with Reliable Server API Sync
+      addProduct: async (data) => {
         const newProduct: Product = {
           id: `prod-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
           rating: 5.0,
@@ -427,41 +427,64 @@ export const useAdminStore = create<AdminState>()(
           ...data,
           sellerId: data.sellerId || 'admin-official',
         };
-        // Optimistic local update
-        set((state) => ({ products: [newProduct, ...state.products] }));
 
-        // Persist globally via API so all devices see it
-        fetch('/api/products', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newProduct),
-        }).catch((err) => console.error('Global product sync error:', err));
+        // Optimistic local update
+        set((state) => ({ products: [newProduct, ...state.products.filter(p => p.id !== newProduct.id)] }));
+
+        try {
+          const res = await fetch('/api/products', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newProduct),
+          });
+          if (res.ok) {
+            const resData = await res.json();
+            const confirmed = resData.product || newProduct;
+            set((state) => ({
+              products: [confirmed, ...state.products.filter((p) => p.id !== confirmed.id && p.id !== newProduct.id)],
+            }));
+            return confirmed;
+          } else {
+            const errJson = await res.json().catch(() => ({}));
+            console.error('API product save error:', errJson);
+          }
+        } catch (err) {
+          console.error('Global product sync network error:', err);
+        }
 
         return newProduct;
       },
 
-      deleteProduct: (productId: string) => {
+      deleteProduct: async (productId: string) => {
         set((state) => ({
           products: state.products.filter((p) => p.id !== productId),
         }));
 
-        fetch(`/api/products?id=${productId}`, {
-          method: 'DELETE',
-        }).catch((err) => console.error('Global product delete error:', err));
+        try {
+          await fetch(`/api/products?id=${productId}`, {
+            method: 'DELETE',
+          });
+        } catch (err) {
+          console.error('Global product delete error:', err);
+        }
       },
 
-      updateProduct: (productId, updates) => {
+      updateProduct: async (productId, updates) => {
         set((state) => ({
           products: state.products.map((p) =>
             p.id === productId ? { ...p, ...updates, updatedAt: new Date() } : p
           ),
         }));
 
-        fetch('/api/products', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: productId, ...updates }),
-        }).catch((err) => console.error('Global product update error:', err));
+        try {
+          await fetch('/api/products', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: productId, ...updates }),
+          });
+        } catch (err) {
+          console.error('Global product update error:', err);
+        }
       },
 
       // Vendor Verification (Jiji style)
@@ -634,12 +657,6 @@ export const useAdminStore = create<AdminState>()(
             }
           }
 
-          // Filter out legacy dummy mock products from local storage cache
-          if (state.products && state.products.length > 0) {
-            state.products = state.products.filter(
-              (p) => !p.id.match(/^prod-[0-9]{1,2}$/) && !p.id.startsWith('prod-phone-')
-            );
-          }
           // Fetch real global products from server API
           state.fetchProducts();
         }
