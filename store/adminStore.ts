@@ -405,8 +405,19 @@ export const useAdminStore = create<AdminState>()(
           const res = await fetch(`/api/products?t=${Date.now()}`);
           if (res.ok) {
             const data = await res.json();
-            if (Array.isArray(data.products)) {
-              set({ products: data.products });
+            if (Array.isArray(data.products) && data.products.length > 0) {
+              set((state) => {
+                const serverProducts: Product[] = data.products;
+                const serverIds = new Set(serverProducts.map((p) => p.id));
+                // Preserve recently created local products that are pending sync
+                const recentLocal = (state.products || []).filter(
+                  (p) =>
+                    !serverIds.has(p.id) &&
+                    p.createdAt &&
+                    Date.now() - new Date(p.createdAt).getTime() < 300000
+                );
+                return { products: [...recentLocal, ...serverProducts] };
+              });
             }
           }
         } catch (err) {
@@ -447,12 +458,12 @@ export const useAdminStore = create<AdminState>()(
           } else {
             const errJson = await res.json().catch(() => ({}));
             console.error('API product save error:', errJson);
+            throw new Error(errJson.message || 'Server rejected product upload');
           }
         } catch (err) {
           console.error('Global product sync network error:', err);
+          throw err;
         }
-
-        return newProduct;
       },
 
       deleteProduct: async (productId: string) => {

@@ -74,18 +74,20 @@ export const useProductStore = create<ProductState>((set, get) => ({
     }
 
     // Category filter
-    if (filters.category) {
-      filtered = filtered.filter((p) => p.category === filters.category);
+    if (filters.category && filters.category.toLowerCase() !== 'all') {
+      const targetCat = filters.category.toLowerCase().trim();
+      filtered = filtered.filter((p) => p.category?.toLowerCase().trim() === targetCat);
     }
 
     // Price filter
     filtered = filtered.filter(
-      (p) => p.price >= filters.minPrice && p.price <= filters.maxPrice
+      (p) => p.price >= filters.minPrice && p.price <= (filters.maxPrice || 10000000)
     );
 
     // Condition filter
-    if (filters.condition) {
-      filtered = filtered.filter((p) => p.condition === filters.condition);
+    if (filters.condition && filters.condition.trim()) {
+      const targetCond = filters.condition.toLowerCase().trim();
+      filtered = filtered.filter((p) => p.condition?.toLowerCase().trim() === targetCond);
     }
 
     // Sort

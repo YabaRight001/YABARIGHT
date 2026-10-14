@@ -5,6 +5,7 @@ import { Product } from '@/types';
 import defaultProducts from '@/data/products.json';
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 const dataFilePath = path.join(process.cwd(), 'data', 'products.json');
 
