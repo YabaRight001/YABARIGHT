@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAdminStore } from '@/store/adminStore';
 import { useToastStore } from '@/store/toastStore';
 import {
@@ -18,8 +18,12 @@ import {
 } from 'lucide-react';
 
 export default function AdminUsersPage() {
-  const { users, deleteUser, setUserStatus } = useAdminStore();
+  const { users, deleteUser, setUserStatus, fetchUsers } = useAdminStore();
   const showToast = useToastStore((s) => s.showToast);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<'ALL' | 'BUYER' | 'SELLER' | 'ADMIN'>('ALL');

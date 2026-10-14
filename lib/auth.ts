@@ -1,8 +1,14 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 
-const JWT_SECRET: jwt.Secret = process.env.JWT_SECRET || 'your-secret-key';
+const JWT_SECRET: jwt.Secret = process.env.JWT_SECRET || 'yabaright-production-jwt-secret-key-2026';
 const JWT_EXPIRY = (process.env.JWT_EXPIRY || '7d') as jwt.SignOptions['expiresIn'];
+
+export interface TokenPayload {
+  userId: string;
+  email: string;
+  role: string;
+}
 
 /**
  * Hash a password
@@ -23,10 +29,10 @@ export async function comparePassword(
 }
 
 /**
- * Generate JWT token
+ * Generate JWT token with role
  */
-export function generateToken(userId: string, email: string): string {
-  return jwt.sign({ userId, email }, JWT_SECRET, {
+export function generateToken(userId: string, email: string, role: string = 'BUYER'): string {
+  return jwt.sign({ userId, email, role }, JWT_SECRET, {
     expiresIn: JWT_EXPIRY,
   });
 }
@@ -34,12 +40,9 @@ export function generateToken(userId: string, email: string): string {
 /**
  * Verify JWT token
  */
-export function verifyToken(token: string): { userId: string; email: string } | null {
+export function verifyToken(token: string): TokenPayload | null {
   try {
-    return jwt.verify(token, JWT_SECRET) as {
-      userId: string;
-      email: string;
-    };
+    return jwt.verify(token, JWT_SECRET) as TokenPayload;
   } catch (error) {
     return null;
   }

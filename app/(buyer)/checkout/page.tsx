@@ -82,30 +82,63 @@ export default function CheckoutPage() {
   const affiliate = affiliateCode ? getAffiliateByCode(affiliateCode) : null;
   const commissionAmount = affiliate ? Math.round(finalTotal * 0.1) : 0;
 
-  const confirmOrder = (ref: string, method: string) => {
-    // Save user profile
-    saveProfile(formData);
+  const confirmOrder = async (ref: string, method: string) => {
+    try {
+      setProcessing(true);
+      // Persist real order to SQLite server database via /api/orders
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: items.map((i) => ({
+            productId: i.product?.id || i.productId,
+            name: i.product?.name,
+            quantity: i.quantity,
+            size: i.selectedSize || i.product?.size,
+            color: i.product?.color,
+          })),
+          customer: formData,
+          paymentMethod: method,
+          affiliateRef: affiliateCode || undefined,
+        }),
+      });
 
-    // Save order record
-    addOrder({
-      orderId: ref,
-      items: items.map((i) => ({ name: i.product?.name || '', qty: i.quantity, price: i.product?.price || 0 })),
-      total: finalTotal,
-      paymentMethod: method,
-      affiliateRef: affiliateCode || undefined,
-      createdAt: new Date().toISOString(),
-    });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || 'Failed to place order.');
+      }
 
-    // Record affiliate commission
-    if (affiliateCode && affiliate) {
-      recordCommission(affiliateCode, ref, finalTotal, formData.fullName);
-      clearActiveRef();
-      if (typeof window !== 'undefined') localStorage.removeItem('yabaright_ref');
+      const confirmedOrder = data.order;
+      const orderNumber = confirmedOrder.orderNumber || ref;
+
+      // Save user profile & client order record
+      saveProfile(formData);
+      addOrder({
+        orderId: orderNumber,
+        items: items.map((i) => ({ name: i.product?.name || '', qty: i.quantity, price: i.product?.price || 0 })),
+        total: confirmedOrder.total || finalTotal,
+        paymentMethod: method,
+        affiliateRef: affiliateCode || undefined,
+        createdAt: new Date().toISOString(),
+      });
+
+      // Record affiliate commission
+      if (affiliateCode && affiliate) {
+        recordCommission(affiliateCode, orderNumber, confirmedOrder.total || finalTotal, formData.fullName);
+        clearActiveRef();
+        if (typeof window !== 'undefined') localStorage.removeItem('yabaright_ref');
+      }
+
+      clearCart();
+      setOrderRef(orderNumber);
+      setSubmitted(true);
+      showToast(`Order ${orderNumber} placed successfully! 🎉`, 'success');
+    } catch (err: any) {
+      console.error('Order placement error:', err);
+      showToast(err.message || 'Could not place order. Please try again.', 'error');
+    } finally {
+      setProcessing(false);
     }
-
-    clearCart();
-    setOrderRef(ref);
-    setSubmitted(true);
   };
 
   // 1. Monnify Payment Handler (app.monnify.com)

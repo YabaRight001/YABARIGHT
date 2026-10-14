@@ -20,6 +20,7 @@ import {
   KeyRound,
   Lock,
   Gift,
+  ShoppingBag,
 } from 'lucide-react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -92,6 +93,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       href: '/admin',
       icon: LayoutDashboard,
       exact: true,
+    },
+    {
+      name: 'Platform Orders',
+      href: '/admin/orders',
+      icon: ShoppingBag,
+      badge: 'Live',
+      badgeColor: 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30',
     },
     {
       name: 'Product Catalog',

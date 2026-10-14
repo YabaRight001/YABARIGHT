@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateToken } from '@/lib/auth';
-import { createNewUser, findUserByEmail } from '@/lib/mockUsers';
+import { prisma } from '@/lib/prisma';
+import { hashPassword, generateToken } from '@/lib/auth';
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, email, password, role } = body;
+    const { name, email, password, role, shopName, phone } = body;
 
     // Validation
     if (!name || !email || !password) {
@@ -15,15 +18,20 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (password.length < 4) {
+    if (password.length < 6) {
       return NextResponse.json(
-        { message: 'Password must be at least 4 characters long' },
+        { message: 'Password must be at least 6 characters long' },
         { status: 400 }
       );
     }
 
-    // Check if user exists
-    const userExists = findUserByEmail(email);
+    const cleanEmail = email.trim().toLowerCase();
+
+    // Check if user exists in SQLite DB
+    const userExists = await prisma.user.findUnique({
+      where: { email: cleanEmail },
+    });
+
     if (userExists) {
       return NextResponse.json(
         { message: 'This email is already registered. Please log in.' },
@@ -31,19 +39,44 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Determine normalized role (BUYER, SELLER, ADMIN, or AFFILIATE)
-    const normalizedRole = String(role || 'BUYER').toUpperCase();
-    const validRole = ['BUYER', 'SELLER', 'ADMIN', 'AFFILIATE'].includes(normalizedRole)
-      ? (normalizedRole as 'BUYER' | 'SELLER' | 'ADMIN' | 'AFFILIATE')
-      : 'BUYER';
+    // Role protection: Disallow registering as ADMIN from public API
+    let assignedRole = 'BUYER';
+    const requestedRole = String(role || '').toUpperCase();
+    if (requestedRole === 'SELLER') {
+      assignedRole = 'SELLER';
+    } else if (requestedRole === 'AFFILIATE') {
+      assignedRole = 'AFFILIATE';
+    }
 
-    // Create user
-    const newUser = await createNewUser(name, email, password, validRole);
+    const hashedPassword = await hashPassword(password);
+
+    // Create user in database
+    const newUser = await prisma.user.create({
+      data: {
+        name: name.trim(),
+        email: cleanEmail,
+        passwordHash: hashedPassword,
+        role: assignedRole,
+        phone: phone || null,
+        avatar: '/logo.png',
+      },
+    });
+
+    // If seller, create a vendor profile
+    if (assignedRole === 'SELLER') {
+      await prisma.vendor.create({
+        data: {
+          userId: newUser.id,
+          shopName: shopName || `${name}'s Thrift Shop`,
+          isVerified: false,
+        },
+      });
+    }
 
     // Generate token
-    const token = generateToken(newUser.id, newUser.email);
+    const token = generateToken(newUser.id, newUser.email, newUser.role);
 
-    return NextResponse.json(
+    const response = NextResponse.json(
       {
         success: true,
         message: 'Account created successfully',
@@ -57,6 +90,16 @@ export async function POST(req: NextRequest) {
       },
       { status: 201 }
     );
+
+    response.cookies.set('yabaright_user_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7,
+    });
+
+    return response;
   } catch (error: any) {
     console.error('Registration error:', error);
     return NextResponse.json(

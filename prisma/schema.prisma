@@ -1,210 +1,141 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
 
 generator client {
   provider = "prisma-client-js"
 }
 
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  name          String
-  password      String
-  phone         String?
-  avatar        String?
-  bio           String?
-  role          Role      @default(BUYER)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  // Buyer relations
-  cart          CartItem[]
-  orders        Order[]
-  reviews       Review[]
-  wishlist      Wishlist[]
-
-  // Seller relations
-  products      Product[]
-  shop          Shop?
-  transactions  Transaction[]
-
-  @@index([email])
+  id           String      @id @default(cuid())
+  name         String
+  email        String      @unique
+  passwordHash String
+  role         String      @default("BUYER") // BUYER, SELLER, ADMIN, AFFILIATE
+  phone        String?
+  avatar       String?
+  status       String      @default("active") // active, flagged, banned
+  orders       Order[]
+  vendor       Vendor?
+  affiliate    Affiliate?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
 }
 
-enum Role {
-  BUYER
-  SELLER
-  ADMIN
-}
-
-model Shop {
-  id            String    @id @default(cuid())
-  userId        String    @unique
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  name          String
-  description   String?
-  logo          String?
-  banner        String?
-  rating        Float     @default(0)
-  verified      Boolean   @default(false)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  @@index([userId])
+model Vendor {
+  id           String      @id @default(cuid())
+  userId       String      @unique
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shopName     String
+  address      String?
+  idType       String?     // CAC Certificate, National ID, etc.
+  idNumber     String?
+  isVerified   Boolean     @default(false)
+  verifiedAt   DateTime?
+  rating       Float       @default(5.0)
+  totalSales   Int         @default(0)
+  products     Product[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
 }
 
 model Product {
-  id            String    @id @default(cuid())
-  sellerId      String
-  seller        User      @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  id            String      @id @default(cuid())
+  sellerId      String?     @default("admin-official")
+  vendor        Vendor?     @relation(fields: [sellerId], references: [id], onDelete: SetNull)
   name          String
   description   String
   category      String
   price         Float
   originalPrice Float?
-  images        String[]
-  size          String?
-  condition     Condition @default(GOOD)
-  material      String?
+  condition     String      @default("NEW")
+  size          String?     @default("Standard")
+  sizes         String?     // JSON array string e.g. ["Medium", "Large"]
+  gender        String?     @default("Unisex")
+  neckSize      String?
+  waistSize     String?
+  bodyTypeFit   String?     // JSON array string
+  brand         String?     @default("YabaRight Official")
+  material      String?     @default("Premium Quality")
   color         String?
-  brand         String?
-  quantity      Int
-  sold          Int       @default(0)
-  rating        Float     @default(0)
-  trending      Boolean   @default(false)
-  published     Boolean   @default(true)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  cartItems     CartItem[]
-  orders        OrderItem[]
-  reviews       Review[]
-  wishlist      Wishlist[]
-
-  @@index([sellerId])
-  @@index([category])
-  @@index([published])
-}
-
-enum Condition {
-  NEW
-  LIKE_NEW
-  GOOD
-  FAIR
-  POOR
-}
-
-model CartItem {
-  id            String    @id @default(cuid())
-  userId        String
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  productId     String
-  product       Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
-  quantity      Int
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  @@unique([userId, productId])
-  @@index([userId])
+  quantity      Int         @default(10)
+  sold          Int         @default(0)
+  rating        Float       @default(5.0)
+  trending      Boolean     @default(true)
+  published     Boolean     @default(true)
+  images        String      // JSON array string of image URLs
+  orderItems    OrderItem[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 }
 
 model Order {
-  id            String    @id @default(cuid())
-  userId        String
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  status        OrderStatus @default(PENDING)
-  total         Float
-  shippingAddress String
-  shippingCity  String
-  shippingState String
-  trackingNumber String?
-  items         OrderItem[]
-  transactions  Transaction[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  @@index([userId])
-  @@index([status])
-}
-
-enum OrderStatus {
-  PENDING
-  CONFIRMED
-  SHIPPED
-  DELIVERED
-  CANCELLED
-  RETURNED
+  id             String       @id @default(cuid())
+  orderNumber    String       @unique
+  userId         String?
+  user           User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  customerName   String
+  customerEmail  String
+  customerPhone  String
+  address        String
+  city           String
+  state          String
+  subtotal       Float
+  shippingCost   Float        @default(0)
+  tax            Float        @default(0)
+  total          Float
+  paymentMethod  String       @default("monnify") // monnify, card, bank_transfer
+  paymentStatus  String       @default("PENDING") // PENDING, PAID, FAILED
+  orderStatus    String       @default("PENDING") // PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED
+  paymentRef     String?
+  affiliateRef   String?
+  items          OrderItem[]
+  commissions    Commission[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 }
 
 model OrderItem {
-  id            String    @id @default(cuid())
-  orderId       String
-  order         Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  productId     String
-  product       Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
-  quantity      Int
-  price         Float
-  createdAt     DateTime  @default(now())
-
-  @@index([orderId])
-  @@index([productId])
+  id          String   @id @default(cuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId   String?
+  product     Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  name        String
+  price       Float
+  quantity    Int      @default(1)
+  size        String?
+  color       String?
+  image       String?
 }
 
-model Review {
-  id            String    @id @default(cuid())
-  userId        String
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  productId     String
-  product       Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
-  rating        Int
-  comment       String
-  images        String[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  @@index([userId])
-  @@index([productId])
+model Affiliate {
+  id              String       @id @default(cuid())
+  userId          String?      @unique
+  user            User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  code            String       @unique
+  fullName        String
+  email           String       @unique
+  phone           String
+  totalEarnings   Float        @default(0)
+  pendingEarnings Float        @default(0)
+  paidEarnings    Float        @default(0)
+  commissions     Commission[]
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 }
 
-model Wishlist {
-  id            String    @id @default(cuid())
-  userId        String
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  productId     String
-  product       Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
-  createdAt     DateTime  @default(now())
-
-  @@unique([userId, productId])
-  @@index([userId])
-}
-
-model Transaction {
-  id            String    @id @default(cuid())
-  userId        String
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  orderId       String
-  order         Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  amount        Float
-  currency      String    @default("NGN")
-  status        TransactionStatus @default(PENDING)
-  stripeId      String?
-  reference     String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  @@index([userId])
-  @@index([orderId])
-  @@index([status])
-}
-
-enum TransactionStatus {
-  PENDING
-  COMPLETED
-  FAILED
-  REFUNDED
+model Commission {
+  id               String    @id @default(cuid())
+  affiliateId      String
+  affiliate        Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  orderId          String
+  order            Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderTotal       Float
+  commissionAmount Float
+  customerName     String
+  status           String    @default("PENDING") // PENDING, PAID
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 }

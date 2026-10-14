@@ -1,15 +1,9 @@
 import { NextResponse } from 'next/server';
-import { findUserByEmail, verifyUserCredentials } from '@/lib/mockUsers';
+import { prisma } from '@/lib/prisma';
+import { comparePassword, generateToken } from '@/lib/auth';
 
-// Official primary system admin credentials
-const OFFICIAL_ADMIN = {
-  id: 'adm-001',
-  name: 'Chief Admin',
-  email: 'yabarightofficial@gmail.com',
-  password: 'admin1234',
-  role: 'SUPER_ADMIN',
-  avatar: '/logo.png',
-};
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export async function POST(request: Request) {
   try {
@@ -25,57 +19,54 @@ export async function POST(request: Request) {
 
     const cleanEmail = email.trim().toLowerCase();
 
-    // 1. Check if user is registered with role 'ADMIN'
-    const registeredUser = await verifyUserCredentials(cleanEmail, password);
-    let authenticatedAdmin = null;
+    // Query user from Prisma SQLite database
+    const user = await prisma.user.findUnique({
+      where: { email: cleanEmail },
+    });
 
-    if (registeredUser && registeredUser.role === 'ADMIN') {
-      authenticatedAdmin = {
-        id: registeredUser.id,
-        name: registeredUser.name,
-        email: registeredUser.email,
-        role: 'ADMIN',
-        avatar: '/logo.png',
-        loginTime: new Date().toISOString(),
-      };
-    } else if (cleanEmail === OFFICIAL_ADMIN.email.toLowerCase() && password === OFFICIAL_ADMIN.password) {
-      authenticatedAdmin = {
-        id: OFFICIAL_ADMIN.id,
-        name: OFFICIAL_ADMIN.name,
-        email: OFFICIAL_ADMIN.email,
-        role: 'SUPER_ADMIN',
-        avatar: OFFICIAL_ADMIN.avatar,
-        loginTime: new Date().toISOString(),
-      };
-    } else if (
-      (cleanEmail === 'admin@yabaright.ng' && password === 'admin123') ||
-      (cleanEmail === 'superadmin@yabaright.ng' && password === 'yaba2026')
-    ) {
-      authenticatedAdmin = {
-        id: `adm-${Date.now()}`,
-        name: 'YabaRight Administrator',
-        email: cleanEmail,
-        role: 'ADMIN',
-        avatar: '/logo.png',
-        loginTime: new Date().toISOString(),
-      };
-    }
-
-    if (!authenticatedAdmin) {
+    if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
       return NextResponse.json(
-        { error: 'Invalid admin credentials or account is not registered as an administrator.' },
+        { error: 'Invalid admin credentials or account is not an administrator.' },
         { status: 401 }
       );
     }
 
-    const token = `adm_tok_${Buffer.from(`${authenticatedAdmin.id}:${Date.now()}`).toString('base64')}`;
+    const isMatch = await comparePassword(password, user.passwordHash);
+    if (!isMatch) {
+      return NextResponse.json(
+        { error: 'Invalid credentials. Please verify your password.' },
+        { status: 401 }
+      );
+    }
 
-    return NextResponse.json({
+    const token = generateToken(user.id, user.email, user.role);
+
+    const safeUser = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      avatar: user.avatar || '/logo.png',
+      loginTime: new Date().toISOString(),
+    };
+
+    const response = NextResponse.json({
       success: true,
       message: 'Admin authenticated successfully',
       token,
-      user: authenticatedAdmin,
+      user: safeUser,
     });
+
+    // Set secure HTTP-only cookie for server-side middleware protection
+    response.cookies.set('yabaright_admin_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+    });
+
+    return response;
   } catch (error) {
     console.error('Admin auth error:', error);
     return NextResponse.json(

@@ -43,14 +43,16 @@ interface AdminState {
   updateProduct: (productId: string, updates: Partial<Product>) => Promise<void>;
 
   // Vendor Verification Actions (Jiji style)
-  verifyVendor: (vendorId: string) => void;
-  revokeVendor: (vendorId: string) => void;
-  deleteVendor: (vendorId: string) => void;
+  fetchVendors: () => Promise<void>;
+  verifyVendor: (vendorId: string) => Promise<void>;
+  revokeVendor: (vendorId: string) => Promise<void>;
+  deleteVendor: (vendorId: string) => Promise<void>;
 
   // User Moderation Actions
+  fetchUsers: () => Promise<void>;
   addUser: (user: Partial<PlatformUser> & { id: string; name: string; email: string; role: 'BUYER' | 'SELLER' | 'ADMIN' | 'AFFILIATE' }) => void;
-  deleteUser: (userId: string) => void;
-  setUserStatus: (userId: string, status: 'active' | 'flagged' | 'banned') => void;
+  deleteUser: (userId: string) => Promise<void>;
+  setUserStatus: (userId: string, status: 'active' | 'flagged' | 'banned') => Promise<void>;
 
   // Category Actions
   categories: string[];
@@ -499,7 +501,21 @@ export const useAdminStore = create<AdminState>()(
       },
 
       // Vendor Verification (Jiji style)
-      verifyVendor: (vendorId: string) => {
+      fetchVendors: async () => {
+        try {
+          const res = await fetch(`/api/admin/vendors?t=${Date.now()}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data.vendors)) {
+              set({ vendors: data.vendors });
+            }
+          }
+        } catch (err) {
+          console.error('Failed to fetch vendors:', err);
+        }
+      },
+
+      verifyVendor: async (vendorId: string) => {
         set((state) => ({
           vendors: state.vendors.map((v) =>
             v.id === vendorId
@@ -507,9 +523,19 @@ export const useAdminStore = create<AdminState>()(
               : v
           ),
         }));
+
+        try {
+          await fetch('/api/admin/vendors', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: vendorId, isVerified: true }),
+          });
+        } catch (err) {
+          console.error('Failed to verify vendor via API:', err);
+        }
       },
 
-      revokeVendor: (vendorId: string) => {
+      revokeVendor: async (vendorId: string) => {
         set((state) => ({
           vendors: state.vendors.map((v) =>
             v.id === vendorId
@@ -517,16 +543,48 @@ export const useAdminStore = create<AdminState>()(
               : v
           ),
         }));
+
+        try {
+          await fetch('/api/admin/vendors', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: vendorId, isVerified: false }),
+          });
+        } catch (err) {
+          console.error('Failed to revoke vendor via API:', err);
+        }
       },
 
-      deleteVendor: (vendorId: string) => {
+      deleteVendor: async (vendorId: string) => {
         set((state) => ({
           vendors: state.vendors.filter((v) => v.id !== vendorId),
           products: state.products.filter((p) => p.sellerId !== vendorId),
         }));
+
+        try {
+          await fetch(`/api/admin/vendors?id=${vendorId}`, {
+            method: 'DELETE',
+          });
+        } catch (err) {
+          console.error('Failed to delete vendor via API:', err);
+        }
       },
 
       // User Moderation
+      fetchUsers: async () => {
+        try {
+          const res = await fetch(`/api/admin/users?t=${Date.now()}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data.users)) {
+              set({ users: data.users });
+            }
+          }
+        } catch (err) {
+          console.error('Failed to fetch users:', err);
+        }
+      },
+
       addUser: (userData) => {
         set((state) => {
           const existing = state.users.find((u) => u.email.toLowerCase() === userData.email.toLowerCase());
@@ -551,16 +609,34 @@ export const useAdminStore = create<AdminState>()(
         });
       },
 
-      deleteUser: (userId: string) => {
+      deleteUser: async (userId: string) => {
         set((state) => ({
           users: state.users.filter((u) => u.id !== userId),
         }));
+
+        try {
+          await fetch(`/api/admin/users?id=${userId}`, {
+            method: 'DELETE',
+          });
+        } catch (err) {
+          console.error('Failed to delete user via API:', err);
+        }
       },
 
-      setUserStatus: (userId, status) => {
+      setUserStatus: async (userId, status) => {
         set((state) => ({
           users: state.users.map((u) => (u.id === userId ? { ...u, status } : u)),
         }));
+
+        try {
+          await fetch('/api/admin/users', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: userId, status }),
+          });
+        } catch (err) {
+          console.error('Failed to update user status via API:', err);
+        }
       },
 
       // Category Management

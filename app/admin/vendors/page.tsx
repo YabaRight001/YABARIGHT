@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAdminStore } from '@/store/adminStore';
 import { useToastStore } from '@/store/toastStore';
 import {
@@ -21,8 +21,12 @@ import {
 } from 'lucide-react';
 
 export default function AdminVendorsPage() {
-  const { vendors, verifyVendor, revokeVendor, deleteVendor } = useAdminStore();
+  const { vendors, verifyVendor, revokeVendor, deleteVendor, fetchVendors } = useAdminStore();
   const showToast = useToastStore((s) => s.showToast);
+
+  useEffect(() => {
+    fetchVendors();
+  }, [fetchVendors]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'verified' | 'pending'>('all');

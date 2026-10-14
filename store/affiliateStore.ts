@@ -70,6 +70,18 @@ export const useAffiliateStore = create<AffiliateState>()(
           paidEarnings: 0,
         };
         set((state) => ({ affiliates: [...state.affiliates, affiliate] }));
+
+        // Persist to SQLite backend
+        fetch('/api/affiliate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fullName: data.fullName,
+            email: data.email,
+            phone: data.phone,
+          }),
+        }).catch((e) => console.error('Affiliate DB sync error:', e));
+
         return affiliate;
       },
 

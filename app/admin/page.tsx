@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAdminStore } from '@/store/adminStore';
 import {
@@ -8,25 +8,56 @@ import {
   ShieldCheck,
   ShieldAlert,
   Users,
+  ShoppingBag,
+  DollarSign,
   TrendingUp,
   PlusCircle,
   ArrowRight,
   Sparkles,
   CheckCircle2,
   Trash2,
-  Store,
+  Clock,
 } from 'lucide-react';
 
+interface RecentOrder {
+  id: string;
+  orderNumber: string;
+  customerName: string;
+  customerPhone: string;
+  total: number;
+  paymentStatus: string;
+  orderStatus: string;
+  createdAt: string;
+  items: Array<{ id: string; name: string; quantity: number }>;
+}
+
 export default function AdminOverviewPage() {
-  const { products, vendors, users, verifyVendor, deleteProduct, fetchProducts } = useAdminStore();
+  const { products, vendors, users, verifyVendor, deleteProduct, fetchProducts, fetchVendors, fetchUsers } = useAdminStore();
+  const [orders, setOrders] = useState<RecentOrder[]>([]);
+  const [loadingOrders, setLoadingOrders] = useState(true);
 
   useEffect(() => {
     fetchProducts();
-  }, [fetchProducts]);
+    fetchVendors();
+    fetchUsers();
+
+    // Fetch live orders
+    fetch(`/api/orders?t=${Date.now()}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && Array.isArray(data.orders)) {
+          setOrders(data.orders);
+        }
+      })
+      .catch((err) => console.error('Failed to load overview orders:', err))
+      .finally(() => setLoadingOrders(false));
+  }, [fetchProducts, fetchVendors, fetchUsers]);
 
   const verifiedVendors = vendors.filter((v) => v.isVerified);
   const pendingVendors = vendors.filter((v) => !v.isVerified);
-  const totalInventoryValue = products.reduce((acc, p) => acc + p.price * p.quantity, 0);
+  const totalRevenue = orders
+    .filter((o) => o.paymentStatus === 'PAID')
+    .reduce((sum, o) => sum + o.total, 0);
 
   const stats = [
     {
@@ -38,7 +69,7 @@ export default function AdminOverviewPage() {
       bg: 'bg-[#FFD700]/10',
     },
     {
-      title: 'Verified Vendors (Jiji-Badge)',
+      title: 'Verified Vendors',
       value: verifiedVendors.length,
       desc: `${vendors.length} Total Registered Vendors`,
       icon: ShieldCheck,
@@ -46,12 +77,12 @@ export default function AdminOverviewPage() {
       bg: 'bg-emerald-500/10',
     },
     {
-      title: 'Pending Verification',
-      value: pendingVendors.length,
-      desc: 'Vendors awaiting badge review',
-      icon: ShieldAlert,
-      color: 'text-amber-400',
-      bg: 'bg-amber-500/10',
+      title: 'Platform Customer Orders',
+      value: orders.length,
+      desc: `₦${totalRevenue.toLocaleString()} Paid Volume`,
+      icon: ShoppingBag,
+      color: 'text-purple-400',
+      bg: 'bg-purple-500/10',
     },
     {
       title: 'Platform Users & Buyers',
@@ -76,7 +107,7 @@ export default function AdminOverviewPage() {
             Welcome to Admin Hub
           </h1>
           <p className="mt-1 text-xs sm:text-sm text-gray-400 max-w-xl">
-            Upload official brand products, moderate substandard listings/users, and manage Jiji-style vendor verification.
+            Live SQLite synced control center: upload official products, process customer orders, and manage vendor verification.
           </p>
         </div>
 
@@ -89,11 +120,11 @@ export default function AdminOverviewPage() {
             <span>Upload Product</span>
           </Link>
           <Link
-            href="/admin/vendors"
-            className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white hover:bg-white/10 transition"
+            href="/admin/orders"
+            className="inline-flex items-center gap-2 rounded-full border border-[#FFD700]/40 bg-[#FFD700]/10 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-[#FFD700] hover:bg-[#FFD700]/20 transition"
           >
-            <ShieldCheck className="h-4 w-4 text-[#FFD700]" />
-            <span>Verify Vendors</span>
+            <ShoppingBag className="h-4 w-4" />
+            <span>Fulfill Orders</span>
           </Link>
         </div>
       </div>
@@ -164,12 +195,109 @@ export default function AdminOverviewPage() {
         </div>
       )}
 
+      {/* Recent Live Orders Section */}
+      <div className="rounded-[2.5rem] border border-white/10 bg-[#141414] p-6 sm:p-8">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+              <h2 className="text-lg font-black text-white">Recent Customer Orders</h2>
+            </div>
+            <p className="text-xs text-gray-400">Live checkouts placed by buyers across Nigeria.</p>
+          </div>
+          <Link
+            href="/admin/orders"
+            className="text-xs font-bold text-[#FFD700] hover:underline flex items-center gap-1"
+          >
+            <span>View All Orders ({orders.length})</span>
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+
+        {loadingOrders ? (
+          <p className="text-xs text-gray-400">Loading orders...</p>
+        ) : orders.length === 0 ? (
+          <div className="rounded-2xl bg-white/[0.02] border border-white/5 p-8 text-center">
+            <ShoppingBag className="h-8 w-8 text-gray-600 mx-auto mb-2" />
+            <p className="text-sm font-bold text-gray-300">No customer orders placed yet</p>
+            <p className="text-xs text-gray-500 mt-1">Test orders placed through the store checkout will appear here.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs text-left">
+              <thead>
+                <tr className="border-b border-white/10 text-[10px] font-black uppercase tracking-wider text-gray-400">
+                  <th className="pb-3">Order #</th>
+                  <th className="pb-3">Customer</th>
+                  <th className="pb-3">Items</th>
+                  <th className="pb-3">Total</th>
+                  <th className="pb-3">Payment</th>
+                  <th className="pb-3">Status</th>
+                  <th className="pb-3 text-right">Details</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {orders.slice(0, 5).map((order) => (
+                  <tr key={order.id} className="hover:bg-white/[0.02]">
+                    <td className="py-3.5 font-mono font-bold text-[#FFD700]">
+                      #{order.orderNumber}
+                    </td>
+                    <td className="py-3.5">
+                      <p className="font-bold text-white">{order.customerName}</p>
+                      <p className="text-[10px] text-gray-400">{order.customerPhone}</p>
+                    </td>
+                    <td className="py-3.5 text-gray-300">
+                      {order.items?.length || 1} item(s)
+                    </td>
+                    <td className="py-3.5 font-black text-white">
+                      ₦{order.total?.toLocaleString()}
+                    </td>
+                    <td className="py-3.5">
+                      <span
+                        className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase ${
+                          order.paymentStatus === 'PAID'
+                            ? 'bg-emerald-500/20 text-emerald-400'
+                            : 'bg-amber-500/20 text-amber-400'
+                        }`}
+                      >
+                        {order.paymentStatus}
+                      </span>
+                    </td>
+                    <td className="py-3.5">
+                      <span
+                        className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase ${
+                          order.orderStatus === 'DELIVERED'
+                            ? 'bg-purple-500/20 text-purple-400'
+                            : order.orderStatus === 'SHIPPED'
+                            ? 'bg-blue-500/20 text-blue-400'
+                            : 'bg-emerald-500/20 text-emerald-300'
+                        }`}
+                      >
+                        {order.orderStatus}
+                      </span>
+                    </td>
+                    <td className="py-3.5 text-right">
+                      <Link
+                        href="/admin/orders"
+                        className="text-[#FFD700] hover:underline font-bold text-[11px]"
+                      >
+                        Manage
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
       {/* Recent Products Overview */}
       <div className="rounded-[2.5rem] border border-white/10 bg-[#141414] p-6 sm:p-8">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-lg font-black text-white">Recent Catalog Products</h2>
-            <p className="text-xs text-gray-400">Manage and delete products not up to platform standard.</p>
+            <p className="text-xs text-gray-400">Database products actively served to buyers.</p>
           </div>
           <Link
             href="/admin/products"
@@ -193,41 +321,44 @@ export default function AdminOverviewPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
-              {products.slice(0, 5).map((product) => (
-                <tr key={product.id} className="hover:bg-white/[0.02]">
-                  <td className="py-3.5">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={product.images[0] || '/casual-shirts-colorful.jpg'}
-                        alt={product.name}
-                        className="h-10 w-10 rounded-xl object-cover bg-white/5 flex-shrink-0"
-                      />
-                      <div>
-                        <p className="font-bold text-white line-clamp-1">{product.name}</p>
-                        <p className="text-[10px] text-gray-400">ID: {product.id}</p>
+              {products.slice(0, 5).map((product) => {
+                const img = Array.isArray(product.images) && product.images.length > 0 ? product.images[0] : '/logo.png';
+                return (
+                  <tr key={product.id} className="hover:bg-white/[0.02]">
+                    <td className="py-3.5">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={img}
+                          alt={product.name}
+                          className="h-10 w-10 rounded-xl object-cover bg-white/5 flex-shrink-0"
+                        />
+                        <div>
+                          <p className="font-bold text-white line-clamp-1">{product.name}</p>
+                          <p className="text-[10px] text-gray-400">ID: {product.id}</p>
+                        </div>
                       </div>
-                    </div>
-                  </td>
-                  <td className="py-3.5 text-gray-300 font-medium">{product.category}</td>
-                  <td className="py-3.5">
-                    <span className="rounded-full bg-white/10 px-2.5 py-0.5 text-[10px] font-bold text-gray-300 uppercase">
-                      {product.condition}
-                    </span>
-                  </td>
-                  <td className="py-3.5 font-black text-[#FFD700]">₦{product.price.toLocaleString()}</td>
-                  <td className="py-3.5 text-gray-300">{product.quantity} units</td>
-                  <td className="py-3.5 text-right">
-                    <button
-                      type="button"
-                      onClick={() => deleteProduct(product.id)}
-                      className="text-red-400 hover:text-red-300 transition p-1"
-                      title="Delete product"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="py-3.5 text-gray-300 font-medium">{product.category}</td>
+                    <td className="py-3.5">
+                      <span className="rounded-full bg-white/10 px-2.5 py-0.5 text-[10px] font-bold text-gray-300 uppercase">
+                        {product.condition}
+                      </span>
+                    </td>
+                    <td className="py-3.5 font-black text-[#FFD700]">₦{product.price.toLocaleString()}</td>
+                    <td className="py-3.5 text-gray-300">{product.quantity} units</td>
+                    <td className="py-3.5 text-right">
+                      <button
+                        type="button"
+                        onClick={() => deleteProduct(product.id)}
+                        className="text-red-400 hover:text-red-300 transition p-1"
+                        title="Delete product"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
