@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     // Generate 6-digit OTP code
     const code = Math.floor(100000 + Math.random() * 900000).toString();
 
-    const origin = req.headers.get('origin') || process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    const origin = req.headers.get('origin') || process.env.NEXT_PUBLIC_SITE_URL || 'https://yabaright-app.vercel.app';
     const verifyUrl = `${origin}/verify-email?email=${encodeURIComponent(normalizedEmail)}&code=${code}`;
 
     const result = await sendVerificationEmail({
@@ -33,9 +33,12 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: `Verification code sent to ${normalizedEmail}`,
-      code, // return to client sync
+      message: result.success
+        ? `Verification code sent to ${normalizedEmail}`
+        : `Verification code generated for ${normalizedEmail}`,
+      code, // return code so client can verify immediately even if SMTP is pending
       token: result.token,
+      emailDelivered: result.success,
     });
   } catch (error: any) {
     console.error('Send verification error:', error);

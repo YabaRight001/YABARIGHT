@@ -5,18 +5,21 @@ import Link from 'next/link';
 import { useAdminStore } from '@/store/adminStore';
 import {
   Package,
-  ShieldCheck,
-  ShieldAlert,
   Users,
   ShoppingBag,
   DollarSign,
+  ShieldCheck,
   TrendingUp,
   PlusCircle,
+  Plus,
   ArrowRight,
-  Sparkles,
-  CheckCircle2,
+  ExternalLink,
+  Eye,
   Trash2,
   Clock,
+  CheckCircle2,
+  ShieldAlert,
+  Sparkles,
 } from 'lucide-react';
 
 interface RecentOrder {
@@ -38,8 +41,8 @@ export default function AdminOverviewPage() {
 
   useEffect(() => {
     fetchProducts();
-    fetchVendors();
-    fetchUsers();
+    if (typeof fetchVendors === 'function') fetchVendors();
+    if (typeof fetchUsers === 'function') fetchUsers();
 
     // Fetch live orders
     fetch(`/api/orders?t=${Date.now()}`)
@@ -53,24 +56,26 @@ export default function AdminOverviewPage() {
       .finally(() => setLoadingOrders(false));
   }, [fetchProducts, fetchVendors, fetchUsers]);
 
-  const verifiedVendors = vendors.filter((v) => v.isVerified);
   const pendingVendors = vendors.filter((v) => !v.isVerified);
+  const verifiedVendors = vendors.filter((v) => v.isVerified);
+  const activeUsersCount = users.filter((u) => u.status === 'active').length;
+
   const totalRevenue = orders
     .filter((o) => o.paymentStatus === 'PAID')
     .reduce((sum, o) => sum + o.total, 0);
 
   const stats = [
     {
-      title: 'Total Active Products',
-      value: products.length,
-      desc: `${products.filter((p) => p.sellerId === 'admin-official').length} YabaRight Official`,
+      title: 'Total Products in Shop',
+      value: products.length.toString(),
+      desc: 'Active catalogue listings',
       icon: Package,
       color: 'text-[#FFD700]',
       bg: 'bg-[#FFD700]/10',
     },
     {
       title: 'Verified Vendors',
-      value: verifiedVendors.length,
+      value: verifiedVendors.length.toString(),
       desc: `${vendors.length} Total Registered Vendors`,
       icon: ShieldCheck,
       color: 'text-emerald-400',
@@ -78,16 +83,16 @@ export default function AdminOverviewPage() {
     },
     {
       title: 'Platform Customer Orders',
-      value: orders.length,
+      value: orders.length.toString(),
       desc: `₦${totalRevenue.toLocaleString()} Paid Volume`,
       icon: ShoppingBag,
       color: 'text-purple-400',
       bg: 'bg-purple-500/10',
     },
     {
-      title: 'Platform Users & Buyers',
-      value: users.length,
-      desc: 'Active registered accounts',
+      title: 'Active Platform Users',
+      value: activeUsersCount.toString(),
+      desc: 'Buyers & vendors',
       icon: Users,
       color: 'text-blue-400',
       bg: 'bg-blue-500/10',
@@ -107,24 +112,33 @@ export default function AdminOverviewPage() {
             Welcome to Admin Hub
           </h1>
           <p className="mt-1 text-xs sm:text-sm text-gray-400 max-w-xl">
-            Live SQLite synced control center: upload official products, process customer orders, and manage vendor verification.
+            Upload official brand products, view real-time shop listings, and manage customer orders and vendor verifications.
           </p>
         </div>
 
+        {/* Action Buttons: Add Product (+) & View Shop Catalogue */}
         <div className="flex flex-wrap items-center gap-3">
           <Link
-            href="/admin/products"
-            className="inline-flex items-center gap-2 rounded-full bg-[#FFD700] px-5 py-2.5 text-xs font-black uppercase tracking-wider text-black hover:bg-[#ffcc00] transition shadow-md"
+            href="/admin/products?new=true"
+            className="inline-flex items-center gap-2 rounded-full bg-[#FFD700] px-5 py-2.5 text-xs font-black uppercase tracking-wider text-black hover:bg-[#ffcc00] transition shadow-lg shadow-[#FFD700]/20"
           >
-            <PlusCircle className="h-4 w-4" />
-            <span>Upload Product</span>
+            <Plus className="h-4 w-4 stroke-[3]" />
+            <span>Add Product</span>
           </Link>
           <Link
-            href="/admin/orders"
-            className="inline-flex items-center gap-2 rounded-full border border-[#FFD700]/40 bg-[#FFD700]/10 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-[#FFD700] hover:bg-[#FFD700]/20 transition"
+            href="/products"
+            target="_blank"
+            className="inline-flex items-center gap-2 rounded-full border border-[#FFD700]/40 bg-[#FFD700]/10 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-[#FFD700] hover:bg-[#FFD700] hover:text-black transition"
           >
-            <ShoppingBag className="h-4 w-4" />
-            <span>Fulfill Orders</span>
+            <Eye className="h-4 w-4" />
+            <span>View Shop Catalogue</span>
+          </Link>
+          <Link
+            href="/admin/vendors"
+            className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white hover:bg-white/10 transition"
+          >
+            <ShieldCheck className="h-4 w-4 text-[#FFD700]" />
+            <span>Verify Vendors</span>
           </Link>
         </div>
       </div>
@@ -195,173 +209,115 @@ export default function AdminOverviewPage() {
         </div>
       )}
 
-      {/* Recent Live Orders Section */}
+      {/* Recent Products Overview */}
       <div className="rounded-[2.5rem] border border-white/10 bg-[#141414] p-6 sm:p-8">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-              <h2 className="text-lg font-black text-white">Recent Customer Orders</h2>
-            </div>
-            <p className="text-xs text-gray-400">Live checkouts placed by buyers across Nigeria.</p>
+            <h2 className="text-lg font-black text-white">Recent Catalog Products</h2>
+            <p className="text-xs text-gray-400">View live products in shop catalogue or add new items.</p>
           </div>
-          <Link
-            href="/admin/orders"
-            className="text-xs font-bold text-[#FFD700] hover:underline flex items-center gap-1"
-          >
-            <span>View All Orders ({orders.length})</span>
-            <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/admin/products?new=true"
+              className="inline-flex items-center gap-1.5 rounded-full bg-[#FFD700] px-4 py-2 text-xs font-black uppercase tracking-wider text-black hover:bg-[#ffcc00] transition shadow-sm"
+            >
+              <Plus className="h-3.5 w-3.5 stroke-[3]" />
+              <span>Add Product</span>
+            </Link>
+            <Link
+              href="/products"
+              target="_blank"
+              className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/5 hover:bg-white/10 px-4 py-2 text-xs font-bold text-gray-200 transition"
+            >
+              <ShoppingBag className="h-3.5 w-3.5 text-[#FFD700]" />
+              <span>Shop Catalogue ({products.length})</span>
+              <ExternalLink className="h-3 w-3 text-gray-400" />
+            </Link>
+          </div>
         </div>
 
-        {loadingOrders ? (
-          <p className="text-xs text-gray-400">Loading orders...</p>
-        ) : orders.length === 0 ? (
-          <div className="rounded-2xl bg-white/[0.02] border border-white/5 p-8 text-center">
-            <ShoppingBag className="h-8 w-8 text-gray-600 mx-auto mb-2" />
-            <p className="text-sm font-bold text-gray-300">No customer orders placed yet</p>
-            <p className="text-xs text-gray-500 mt-1">Test orders placed through the store checkout will appear here.</p>
+        {products.length === 0 ? (
+          <div className="text-center py-12 border border-dashed border-white/10 rounded-2xl bg-white/[0.01]">
+            <Package className="h-12 w-12 text-gray-600 mx-auto mb-3" />
+            <h3 className="text-sm font-bold text-white">No Products Uploaded Yet</h3>
+            <p className="text-xs text-gray-400 mt-1 max-w-sm mx-auto">
+              Your shop catalogue is currently empty. Click below to add your first product.
+            </p>
+            <Link
+              href="/admin/products?new=true"
+              className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#FFD700] px-5 py-2.5 text-xs font-black uppercase text-black hover:bg-[#ffcc00] transition"
+            >
+              <Plus className="h-4 w-4 stroke-[3]" />
+              <span>Add Your First Product</span>
+            </Link>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-xs text-left">
               <thead>
                 <tr className="border-b border-white/10 text-[10px] font-black uppercase tracking-wider text-gray-400">
-                  <th className="pb-3">Order #</th>
-                  <th className="pb-3">Customer</th>
-                  <th className="pb-3">Items</th>
-                  <th className="pb-3">Total</th>
-                  <th className="pb-3">Payment</th>
-                  <th className="pb-3">Status</th>
-                  <th className="pb-3 text-right">Details</th>
+                  <th className="pb-3">Product</th>
+                  <th className="pb-3">Category</th>
+                  <th className="pb-3">Condition</th>
+                  <th className="pb-3">Price</th>
+                  <th className="pb-3">Stock</th>
+                  <th className="pb-3 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {orders.slice(0, 5).map((order) => (
-                  <tr key={order.id} className="hover:bg-white/[0.02]">
-                    <td className="py-3.5 font-mono font-bold text-[#FFD700]">
-                      #{order.orderNumber}
-                    </td>
-                    <td className="py-3.5">
-                      <p className="font-bold text-white">{order.customerName}</p>
-                      <p className="text-[10px] text-gray-400">{order.customerPhone}</p>
-                    </td>
-                    <td className="py-3.5 text-gray-300">
-                      {order.items?.length || 1} item(s)
-                    </td>
-                    <td className="py-3.5 font-black text-white">
-                      ₦{order.total?.toLocaleString()}
-                    </td>
-                    <td className="py-3.5">
-                      <span
-                        className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase ${
-                          order.paymentStatus === 'PAID'
-                            ? 'bg-emerald-500/20 text-emerald-400'
-                            : 'bg-amber-500/20 text-amber-400'
-                        }`}
-                      >
-                        {order.paymentStatus}
-                      </span>
-                    </td>
-                    <td className="py-3.5">
-                      <span
-                        className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase ${
-                          order.orderStatus === 'DELIVERED'
-                            ? 'bg-purple-500/20 text-purple-400'
-                            : order.orderStatus === 'SHIPPED'
-                            ? 'bg-blue-500/20 text-blue-400'
-                            : 'bg-emerald-500/20 text-emerald-300'
-                        }`}
-                      >
-                        {order.orderStatus}
-                      </span>
-                    </td>
-                    <td className="py-3.5 text-right">
-                      <Link
-                        href="/admin/orders"
-                        className="text-[#FFD700] hover:underline font-bold text-[11px]"
-                      >
-                        Manage
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
+                {products.slice(0, 10).map((product) => {
+                  const img = Array.isArray(product.images) && product.images.length > 0 ? product.images[0] : '/casual-shirts-colorful.jpg';
+                  return (
+                    <tr key={product.id} className="hover:bg-white/[0.02]">
+                      <td className="py-3.5">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={img}
+                            alt={product.name}
+                            className="h-10 w-10 rounded-xl object-cover bg-white/5 flex-shrink-0 border border-white/10"
+                          />
+                          <div>
+                            <p className="font-bold text-white line-clamp-1">{product.name}</p>
+                            <p className="text-[10px] text-gray-400">ID: {product.id}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-3.5 text-gray-300 font-medium">{product.category}</td>
+                      <td className="py-3.5">
+                        <span className="rounded-full bg-white/10 px-2.5 py-0.5 text-[10px] font-bold text-gray-300 uppercase">
+                          {product.condition}
+                        </span>
+                      </td>
+                      <td className="py-3.5 font-black text-[#FFD700]">₦{product.price.toLocaleString()}</td>
+                      <td className="py-3.5 text-gray-300">{product.quantity} units</td>
+                      <td className="py-3.5 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <Link
+                            href={`/products/${product.id}`}
+                            target="_blank"
+                            className="inline-flex items-center gap-1 rounded-lg bg-white/5 hover:bg-white/15 px-2.5 py-1 text-[11px] font-bold text-[#FFD700] transition"
+                            title="View product in shop catalogue"
+                          >
+                            <Eye className="h-3 w-3" />
+                            <span>View in Shop</span>
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={() => deleteProduct(product.id)}
+                            className="text-red-400 hover:text-red-300 transition p-1"
+                            title="Delete product"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         )}
-      </div>
-
-      {/* Recent Products Overview */}
-      <div className="rounded-[2.5rem] border border-white/10 bg-[#141414] p-6 sm:p-8">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-lg font-black text-white">Recent Catalog Products</h2>
-            <p className="text-xs text-gray-400">Database products actively served to buyers.</p>
-          </div>
-          <Link
-            href="/admin/products"
-            className="text-xs font-bold text-[#FFD700] hover:underline flex items-center gap-1"
-          >
-            <span>View All ({products.length})</span>
-            <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs text-left">
-            <thead>
-              <tr className="border-b border-white/10 text-[10px] font-black uppercase tracking-wider text-gray-400">
-                <th className="pb-3">Product</th>
-                <th className="pb-3">Category</th>
-                <th className="pb-3">Condition</th>
-                <th className="pb-3">Price</th>
-                <th className="pb-3">Stock</th>
-                <th className="pb-3 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {products.slice(0, 5).map((product) => {
-                const img = Array.isArray(product.images) && product.images.length > 0 ? product.images[0] : '/logo.png';
-                return (
-                  <tr key={product.id} className="hover:bg-white/[0.02]">
-                    <td className="py-3.5">
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={img}
-                          alt={product.name}
-                          className="h-10 w-10 rounded-xl object-cover bg-white/5 flex-shrink-0"
-                        />
-                        <div>
-                          <p className="font-bold text-white line-clamp-1">{product.name}</p>
-                          <p className="text-[10px] text-gray-400">ID: {product.id}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-3.5 text-gray-300 font-medium">{product.category}</td>
-                    <td className="py-3.5">
-                      <span className="rounded-full bg-white/10 px-2.5 py-0.5 text-[10px] font-bold text-gray-300 uppercase">
-                        {product.condition}
-                      </span>
-                    </td>
-                    <td className="py-3.5 font-black text-[#FFD700]">₦{product.price.toLocaleString()}</td>
-                    <td className="py-3.5 text-gray-300">{product.quantity} units</td>
-                    <td className="py-3.5 text-right">
-                      <button
-                        type="button"
-                        onClick={() => deleteProduct(product.id)}
-                        className="text-red-400 hover:text-red-300 transition p-1"
-                        title="Delete product"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
       </div>
     </div>
   );

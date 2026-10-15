@@ -21,6 +21,9 @@ import {
   Lock,
   Gift,
   ShoppingBag,
+  Plus,
+  Eye,
+  ExternalLink,
 } from 'lucide-react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -250,6 +253,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
 
           <div className="flex items-center gap-3">
+            <Link
+              href="/admin/products?new=true"
+              className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-[#FFD700] px-3.5 py-1.5 text-xs font-black uppercase tracking-wider text-black hover:bg-[#ffcc00] transition shadow-sm"
+            >
+              <Plus className="h-3.5 w-3.5 stroke-[3]" />
+              <span>Add Product</span>
+            </Link>
+            <Link
+              href="/products"
+              target="_blank"
+              className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/5 hover:bg-white/10 px-3.5 py-1.5 text-xs font-bold text-gray-200 transition"
+              title="View live shop catalogue"
+            >
+              <Eye className="h-3.5 w-3.5 text-[#FFD700]" />
+              <span>Shop Catalogue</span>
+              <ExternalLink className="h-3 w-3 text-gray-400" />
+            </Link>
             <div className="flex items-center gap-2 bg-[#1c1c1c] border border-white/10 px-3 py-1.5 rounded-full text-xs">
               <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-gray-300 font-bold">System Live</span>

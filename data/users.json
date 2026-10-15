@@ -1,0 +1,47 @@
+[
+  {
+    "id": "usr-admin-01",
+    "name": "YabaRight Administrator",
+    "email": "yabarightofficial@gmail.com",
+    "plainPassword": "admin1234",
+    "role": "ADMIN",
+    "phone": "0806 308 1972",
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "usr-admin-02",
+    "name": "Chief Admin",
+    "email": "admin@yabaright.ng",
+    "plainPassword": "admin123",
+    "role": "ADMIN",
+    "phone": "0801 000 0001",
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "usr-seller-01",
+    "name": "Lagos Fashion Hub",
+    "email": "seller@yabaright.ng",
+    "plainPassword": "seller123",
+    "role": "SELLER",
+    "phone": "0802 000 0002",
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "usr-buyer-01",
+    "name": "Chidi Okafor",
+    "email": "buyer@yabaright.ng",
+    "plainPassword": "buyer123",
+    "role": "BUYER",
+    "phone": "0803 000 0003",
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "usr-affiliate-01",
+    "name": "Tunde Afolabi",
+    "email": "affiliate@yabaright.ng",
+    "plainPassword": "affiliate123",
+    "role": "AFFILIATE",
+    "phone": "0804 000 0004",
+    "createdAt": "2026-01-01T00:00:00.000Z"
+  }
+]
