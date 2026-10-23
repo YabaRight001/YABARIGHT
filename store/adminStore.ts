@@ -407,19 +407,8 @@ export const useAdminStore = create<AdminState>()(
           const res = await fetch(`/api/products?t=${Date.now()}`);
           if (res.ok) {
             const data = await res.json();
-            if (Array.isArray(data.products) && data.products.length > 0) {
-              set((state) => {
-                const serverProducts: Product[] = data.products;
-                const serverIds = new Set(serverProducts.map((p) => p.id));
-                // Preserve recently created local products that are pending sync
-                const recentLocal = (state.products || []).filter(
-                  (p) =>
-                    !serverIds.has(p.id) &&
-                    p.createdAt &&
-                    Date.now() - new Date(p.createdAt).getTime() < 300000
-                );
-                return { products: [...recentLocal, ...serverProducts] };
-              });
+            if (Array.isArray(data.products)) {
+              set({ products: data.products });
             }
           }
         } catch (err) {
@@ -450,6 +439,7 @@ export const useAdminStore = create<AdminState>()(
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(newProduct),
           });
+
           if (res.ok) {
             const resData = await res.json();
             const confirmed = resData.product || newProduct;
@@ -459,10 +449,18 @@ export const useAdminStore = create<AdminState>()(
             return confirmed;
           } else {
             const errJson = await res.json().catch(() => ({}));
+            // Roll back local optimistic state on rejection
+            set((state) => ({
+              products: state.products.filter((p) => p.id !== newProduct.id),
+            }));
             console.error('API product save error:', errJson);
             throw new Error(errJson.message || 'Server rejected product upload');
           }
         } catch (err) {
+          // Roll back local optimistic state on network error
+          set((state) => ({
+            products: state.products.filter((p) => p.id !== newProduct.id),
+          }));
           console.error('Global product sync network error:', err);
           throw err;
         }

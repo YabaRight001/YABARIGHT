@@ -5,6 +5,7 @@ import { useAdminStore } from '@/store/adminStore';
 import { useToastStore } from '@/store/toastStore';
 import { Product, ProductCondition } from '@/types';
 import { BodyTypeVisualizer } from '@/components/BodyTypeVisualizer';
+import { compressImage } from '@/lib/imageUtils';
 import {
   Package,
   PlusCircle,
@@ -102,12 +103,15 @@ export default function AdminProductsPage() {
   const [uploadingImage, setUploadingImage] = useState(false);
 
   const handleDeviceFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const rawFile = e.target.files?.[0];
+    if (!rawFile) return;
 
     try {
       setUploadingImage(true);
-      showToast('Uploading image to server... ⏳', 'info');
+      showToast('Compressing and uploading image... ⏳', 'info');
+
+      // Compress client-side so 10MB phone camera photos become lightweight ~100KB JPEG
+      const file = await compressImage(rawFile);
 
       const formData = new FormData();
       formData.append('file', file);
@@ -121,38 +125,25 @@ export default function AdminProductsPage() {
         const data = await res.json();
         if (data.url) {
           setForm((prev) => ({ ...prev, imageUrl: data.url }));
-          const cleanLabel = file.name.replace(/\.[^/.]+$/, '').slice(0, 16);
+          const cleanLabel = rawFile.name.replace(/\.[^/.]+$/, '').slice(0, 16);
           addImagePreset({
             label: cleanLabel || 'Device Upload',
             url: data.url,
           });
           showToast('Image uploaded successfully! Visible on all devices 📸', 'success');
-          setUploadingImage(false);
-          e.target.value = '';
           return;
         }
       }
-    } catch (uploadErr) {
-      console.warn('Direct upload error, falling back to data URL:', uploadErr);
+
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.message || 'Server upload failed');
+    } catch (uploadErr: any) {
+      console.error('Direct upload error:', uploadErr);
+      showToast(`Upload failed: ${uploadErr.message || 'Could not upload image'}. Please try again.`, 'error');
     } finally {
       setUploadingImage(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64Url = reader.result as string;
-      const cleanLabel = file.name.replace(/\.[^/.]+$/, '').slice(0, 16);
-      setForm((prev) => ({ ...prev, imageUrl: base64Url }));
-
-      addImagePreset({
-        label: cleanLabel || 'Device Upload',
-        url: base64Url,
-      });
-
-      showToast(`Image loaded from device! 📸`, 'success');
-    };
-    reader.readAsDataURL(file);
-    e.target.value = '';
   };
 
   const handleSaveCurrentAsPreset = () => {

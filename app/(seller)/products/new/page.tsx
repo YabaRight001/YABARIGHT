@@ -8,6 +8,7 @@ import { useAdminStore } from '@/store/adminStore';
 import { useToastStore } from '@/store/toastStore';
 import { ProductCondition, type Product } from '@/types';
 import { ArrowLeft, Upload, CheckCircle2, Sparkles, Camera } from 'lucide-react';
+import { compressImage } from '@/lib/imageUtils';
 
 const initialState = {
   name: '',
@@ -40,12 +41,14 @@ export default function NewProductPage() {
   const addProduct = useAdminStore((state) => state.addProduct);
 
   const handleDeviceUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const rawFile = e.target.files?.[0];
+    if (!rawFile) return;
 
     try {
       setUploadingImage(true);
-      showToast('Uploading photo to marketplace server... ⏳', 'info');
+      showToast('Compressing and uploading photo... ⏳', 'info');
+
+      const file = await compressImage(rawFile);
 
       const formData = new FormData();
       formData.append('file', file);
@@ -60,24 +63,19 @@ export default function NewProductPage() {
         if (data.url) {
           setForm((prev) => ({ ...prev, image: data.url }));
           showToast('Photo uploaded successfully! Visible to all buyers 📸', 'success');
-          setUploadingImage(false);
-          e.target.value = '';
           return;
         }
       }
-    } catch (uploadErr) {
-      console.warn('Direct upload error, falling back to local preview:', uploadErr);
+
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.message || 'Server upload failed');
+    } catch (uploadErr: any) {
+      console.error('Direct upload error:', uploadErr);
+      showToast(`Upload failed: ${uploadErr.message || 'Could not upload photo'}. Please try again.`, 'error');
     } finally {
       setUploadingImage(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setForm((prev) => ({ ...prev, image: reader.result as string }));
-      showToast('Photo loaded from your device! 📸', 'success');
-    };
-    reader.readAsDataURL(file);
-    e.target.value = '';
   };
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -96,7 +94,7 @@ export default function NewProductPage() {
     try {
       const priceNum = Number(form.price);
       const newProduct = await addProduct({
-        sellerId: 'seller-current',
+        sellerId: 'admin-official',
         name: form.name,
         description: form.description,
         category: form.category,
@@ -113,7 +111,7 @@ export default function NewProductPage() {
         rating: 5.0,
       });
 
-      setProducts([...products, newProduct]);
+      setProducts([newProduct, ...products.filter(p => p.id !== newProduct.id)]);
       showToast(`"${form.name}" has been published live to the marketplace! 🎉`, 'success');
       router.push('/dashboard');
     } catch (err: any) {

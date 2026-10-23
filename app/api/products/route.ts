@@ -92,16 +92,67 @@ export async function GET() {
   }
 }
 
+function persistBase64Image(urlOrData: string): string {
+  if (!urlOrData || typeof urlOrData !== 'string' || !urlOrData.startsWith('data:image/')) {
+    return urlOrData;
+  }
+  const matches = urlOrData.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+  if (!matches || matches.length !== 3) return urlOrData;
+
+  try {
+    const mimeType = matches[1];
+    const base64Data = matches[2];
+    const ext = mimeType.split('/')[1] === 'jpeg' ? 'jpg' : (mimeType.split('/')[1] || 'jpg');
+    const filename = `product-${Date.now()}-${Math.random().toString(36).substring(2, 6)}.${ext}`;
+    const buffer = Buffer.from(base64Data, 'base64');
+
+    const dirs = [
+      path.join(process.cwd(), 'public', 'uploads'),
+      path.join(process.platform === 'win32' ? path.join(process.cwd(), 'public', 'uploads') : '/tmp', 'uploads'),
+    ];
+
+    for (const dir of dirs) {
+      try {
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+        fs.writeFileSync(path.join(dir, filename), buffer);
+        return `/uploads/${filename}`;
+      } catch (e) {}
+    }
+  } catch (err) {
+    console.warn('Failed to extract base64 to file:', err);
+  }
+  return urlOrData;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
     const productId = body.id || `prod-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
-    const sellerId = body.sellerId === 'seller-1' ? 'seller-1' : 'admin-official';
+    
+    // Safely resolve seller/vendor ID to prevent foreign key errors
+    let validSellerId: string | null = null;
+    if (body.sellerId) {
+      const existingVendor = await prisma.vendor.findUnique({ where: { id: body.sellerId } });
+      if (existingVendor) {
+        validSellerId = existingVendor.id;
+      }
+    }
+    if (!validSellerId) {
+      const defaultAdmin = await prisma.vendor.findUnique({ where: { id: 'admin-official' } });
+      if (defaultAdmin) {
+        validSellerId = defaultAdmin.id;
+      } else {
+        const anyVendor = await prisma.vendor.findFirst();
+        if (anyVendor) validSellerId = anyVendor.id;
+      }
+    }
 
-    const imagesArray = Array.isArray(body.images) && body.images.length > 0 
+    let rawImages = Array.isArray(body.images) && body.images.length > 0 
       ? body.images 
       : [body.imageUrl || '/logo.png'];
+
+    const imagesArray = rawImages.map(persistBase64Image);
 
     const sizesArray = Array.isArray(body.sizes) && body.sizes.length > 0
       ? body.sizes
@@ -110,7 +161,7 @@ export async function POST(req: NextRequest) {
     const newDbProduct = await prisma.product.create({
       data: {
         id: productId,
-        sellerId,
+        sellerId: validSellerId,
         name: body.name,
         description: body.description || '',
         category: body.category || 'Clothing',
@@ -204,8 +255,10 @@ export async function PUT(req: NextRequest) {
     if (body.brand !== undefined) updateData.brand = body.brand;
     if (body.material !== undefined) updateData.material = body.material;
     if (body.quantity !== undefined) updateData.quantity = Number(body.quantity);
-    if (body.published !== undefined) updateData.published = Boolean(body.published);
-    if (body.images) updateData.images = JSON.stringify(body.images);
+    if (body.images) {
+      const imgList = Array.isArray(body.images) ? body.images : [body.images];
+      updateData.images = JSON.stringify(imgList.map(persistBase64Image));
+    }
     if (body.sizes) updateData.sizes = JSON.stringify(body.sizes);
     if (body.bodyTypeFit) updateData.bodyTypeFit = JSON.stringify(body.bodyTypeFit);
 
