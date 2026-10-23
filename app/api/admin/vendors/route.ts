@@ -32,7 +32,7 @@ export async function GET() {
     });
 
     // Format for client-side consumption
-    const formatted = vendors.map((v) => ({
+    const formatted = vendors.map((v: any) => ({
       id: v.id,
       name: v.user?.name || v.shopName,
       shopName: v.shopName,

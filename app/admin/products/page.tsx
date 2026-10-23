@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, Suspense } from 'react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useAdminStore } from '@/store/adminStore';
 import { useToastStore } from '@/store/toastStore';
 import { Product, ProductCondition } from '@/types';
@@ -25,6 +27,9 @@ import {
   FolderPlus,
   Camera,
   Image as ImageIcon,
+  Eye,
+  ShoppingBag,
+  ExternalLink,
 } from 'lucide-react';
 
 const ALL_SIZES = ['Small', 'Medium', 'Large', 'XL', 'XXL', 'XXXL'] as const;
@@ -32,7 +37,8 @@ const GENDERS = ['Male', 'Female', 'Unisex'] as const;
 const COMMON_NECK_SIZES = ['14.5"', '15.0"', '15.5"', '16.0"', '16.5"', '17.0"', '17.5"', '18.0"'];
 const COMMON_WAIST_SIZES = ['28"', '30"', '32"', '34"', '36"', '38"', '40"', '42"', '44"'];
 
-export default function AdminProductsPage() {
+function AdminProductsContent() {
+  const searchParams = useSearchParams();
   const {
     products,
     fetchProducts,
@@ -218,6 +224,13 @@ export default function AdminProductsPage() {
     });
   };
 
+  useEffect(() => {
+    if (searchParams.get('new') === 'true') {
+      resetForm();
+      setModalOpen(true);
+    }
+  }, [searchParams]);
+
   const handleEdit = (p: Product) => {
     setEditingProductId(p.id);
     setForm({
@@ -351,17 +364,27 @@ export default function AdminProductsPage() {
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => {
-            resetForm();
-            setModalOpen(true);
-          }}
-          className="inline-flex items-center gap-2 rounded-full bg-[#FFD700] px-6 py-3 text-xs font-black uppercase tracking-wider text-black hover:bg-[#ffcc00] transition shadow-lg shadow-[#FFD700]/20"
-        >
-          <PlusCircle className="h-4 w-4" />
-          <span>Upload New Product</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={() => {
+              resetForm();
+              setModalOpen(true);
+            }}
+            className="inline-flex items-center gap-2 rounded-full bg-[#FFD700] px-6 py-3 text-xs font-black uppercase tracking-wider text-black hover:bg-[#ffcc00] transition shadow-lg shadow-[#FFD700]/20"
+          >
+            <Plus className="h-4 w-4 stroke-[3]" />
+            <span>Upload New Product</span>
+          </button>
+          <Link
+            href="/products"
+            target="_blank"
+            className="inline-flex items-center gap-2 rounded-full border border-[#FFD700]/40 bg-[#FFD700]/10 px-5 py-3 text-xs font-bold uppercase tracking-wider text-[#FFD700] hover:bg-[#FFD700] hover:text-black transition"
+          >
+            <Eye className="h-4 w-4" />
+            <span>View Shop Catalogue</span>
+          </Link>
+        </div>
       </div>
 
       {/* Filter & Search Bar */}
@@ -485,6 +508,15 @@ export default function AdminProductsPage() {
                     <td className="py-3.5 text-gray-300">{p.quantity} in stock</td>
                     <td className="py-3.5 text-right">
                       <div className="flex items-center justify-end gap-1.5">
+                        <Link
+                          href={`/products/${p.id}`}
+                          target="_blank"
+                          className="rounded-xl bg-white/5 border border-white/10 px-2.5 py-1.5 text-gray-300 hover:text-[#FFD700] hover:bg-white/15 transition flex items-center gap-1 text-[11px] font-bold"
+                          title="View product in live shop catalogue"
+                        >
+                          <Eye className="h-3.5 w-3.5 text-[#FFD700]" />
+                          <span className="hidden xl:inline">View in Shop</span>
+                        </Link>
                         <button
                           type="button"
                           onClick={() => handleEdit(p)}
@@ -933,12 +965,20 @@ export default function AdminProductsPage() {
                 />
               </div>
 
+              {/* Image Ready Indicator */}
+              {form.imageUrl && (
+                <div className="flex items-center gap-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 px-3.5 py-2.5 text-xs text-emerald-400 font-bold">
+                  <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
+                  <span>Image uploaded & ready — click below to publish directly to live shop catalogue</span>
+                </div>
+              )}
+
               {/* Form Actions */}
               <div className="flex gap-3 pt-4 border-t border-white/10">
                 <button
                   type="submit"
                   disabled={isPublishing}
-                  className="flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-[#FFD700] py-3.5 text-xs font-black uppercase tracking-wider text-black hover:bg-[#ffcc00] transition shadow-lg shadow-[#FFD700]/15 disabled:opacity-50"
+                  className="flex-1 rounded-full bg-[#FFD700] py-3.5 text-xs font-black uppercase tracking-wider text-black hover:bg-[#ffcc00] transition shadow-lg shadow-[#FFD700]/15 flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {isPublishing ? (
                     <>
@@ -946,7 +986,10 @@ export default function AdminProductsPage() {
                       <span>Syncing with Marketplace...</span>
                     </>
                   ) : (
-                    <span>{editingProductId ? 'Save & Update Product' : 'Confirm & Publish to Catalog'}</span>
+                    <>
+                      <Plus className="h-4 w-4 stroke-[3]" />
+                      <span>{editingProductId ? 'Save & Update Product' : 'Add & Publish to Shop Catalogue'}</span>
+                    </>
                   )}
                 </button>
                 <button
@@ -1043,5 +1086,19 @@ export default function AdminProductsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function AdminProductsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="rounded-[2.5rem] bg-[#141414] border border-white/10 p-12 text-center text-xs font-bold text-gray-400">
+          Loading product catalog...
+        </div>
+      }
+    >
+      <AdminProductsContent />
+    </Suspense>
   );
 }
