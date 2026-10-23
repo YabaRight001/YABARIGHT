@@ -69,9 +69,85 @@ function syncFileBackup(products: Product[]) {
 
 export async function GET() {
   try {
-    const dbProducts = await prisma.product.findMany({
+    let dbProducts = await prisma.product.findMany({
       orderBy: { createdAt: 'desc' },
     });
+
+    // Auto-seed if database is brand new and empty
+    if (dbProducts.length === 0 && fs.existsSync(dataFilePath)) {
+      try {
+        const fileData = fs.readFileSync(dataFilePath, 'utf8');
+        const seedList: any[] = JSON.parse(fileData);
+
+        if (Array.isArray(seedList) && seedList.length > 0) {
+          // Ensure default admin user and vendor exist
+          let defaultVendorId: string | null = null;
+          try {
+            const adminUser = await prisma.user.upsert({
+              where: { email: 'yabarightofficial@gmail.com' },
+              update: {},
+              create: {
+                id: 'usr-admin-01',
+                name: 'Chief Admin',
+                email: 'yabarightofficial@gmail.com',
+                passwordHash: '$2a$10$wKq9lOQy5vVjA7sC5tS6fO8c7.N5e4F3g2h1i0j9k8l7m6n5o4p3q',
+                role: 'ADMIN',
+                status: 'active',
+              },
+            });
+
+            const defaultVendor = await prisma.vendor.upsert({
+              where: { userId: adminUser.id },
+              update: {},
+              create: {
+                id: 'admin-official',
+                userId: adminUser.id,
+                shopName: 'YabaRight Official',
+                isVerified: true,
+                rating: 5.0,
+                totalSales: 850,
+              },
+            });
+            defaultVendorId = defaultVendor.id;
+          } catch (vErr) {
+            console.warn('Vendor upsert warning:', vErr);
+          }
+
+          for (const p of seedList) {
+            await prisma.product.create({
+              data: {
+                id: p.id,
+                sellerId: defaultVendorId,
+                name: p.name,
+                description: p.description || '',
+                category: p.category || 'Clothing',
+                price: Number(p.price) || 0,
+                originalPrice: p.originalPrice ? Number(p.originalPrice) : null,
+                images: JSON.stringify(Array.isArray(p.images) ? p.images : [p.images || '/logo.png']),
+                condition: p.condition || 'NEW',
+                size: p.size || 'Standard',
+                sizes: JSON.stringify(Array.isArray(p.sizes) ? p.sizes : ['Medium', 'Large']),
+                gender: p.gender || 'Unisex',
+                neckSize: p.neckSize || null,
+                waistSize: p.waistSize || null,
+                bodyTypeFit: Array.isArray(p.bodyTypeFit) ? JSON.stringify(p.bodyTypeFit) : null,
+                brand: p.brand || 'YabaRight Official',
+                material: p.material || 'Premium Quality',
+                quantity: Number(p.quantity) || 10,
+                sold: Number(p.sold) || 0,
+                rating: Number(p.rating) || 5.0,
+                trending: Boolean(p.trending),
+                published: p.published !== false,
+              },
+            }).catch(() => {});
+          }
+
+          dbProducts = await prisma.product.findMany({ orderBy: { createdAt: 'desc' } });
+        }
+      } catch (seedErr) {
+        console.warn('Auto-seed products error:', seedErr);
+      }
+    }
 
     const products = dbProducts.map(formatProduct);
     return NextResponse.json({
