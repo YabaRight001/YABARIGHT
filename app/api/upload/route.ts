@@ -6,22 +6,22 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 function saveBufferToUploads(buffer: Buffer, filename: string): string | null {
-  const dirs = [
-    path.join(process.cwd(), 'public', 'uploads'),
-    path.join(process.platform === 'win32' ? path.join(process.cwd(), 'public', 'uploads') : '/tmp', 'uploads'),
-  ];
+  // On Vercel or serverless platforms, ephemeral /tmp is NOT shared across lambdas and wipes on idle.
+  // Returning null allows the endpoint to return the self-contained compressed image URL so it never 404s.
+  if (process.env.VERCEL) {
+    return null;
+  }
 
-  for (const dir of dirs) {
-    try {
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-      }
-      const filePath = path.join(dir, filename);
-      fs.writeFileSync(filePath, buffer);
-      return `/uploads/${filename}`;
-    } catch (err) {
-      console.warn(`Could not save to ${dir}, trying next:`, err);
+  const uploadDir = path.join(process.cwd(), 'public', 'uploads');
+  try {
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
     }
+    const filePath = path.join(uploadDir, filename);
+    fs.writeFileSync(filePath, buffer);
+    return `/uploads/${filename}`;
+  } catch (err) {
+    console.warn(`Could not save locally to ${uploadDir}:`, err);
   }
 
   return null;

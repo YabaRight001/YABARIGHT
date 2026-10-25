@@ -172,6 +172,13 @@ function persistBase64Image(urlOrData: string): string {
   if (!urlOrData || typeof urlOrData !== 'string' || !urlOrData.startsWith('data:image/')) {
     return urlOrData;
   }
+
+  // On Vercel, the local filesystem is read-only and /tmp is not shared across lambda instances.
+  // Storing the compressed data URL directly in Neon PostgreSQL ensures permanent durability without 404 errors.
+  if (process.env.VERCEL) {
+    return urlOrData;
+  }
+
   const matches = urlOrData.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
   if (!matches || matches.length !== 3) return urlOrData;
 
@@ -182,18 +189,12 @@ function persistBase64Image(urlOrData: string): string {
     const filename = `product-${Date.now()}-${Math.random().toString(36).substring(2, 6)}.${ext}`;
     const buffer = Buffer.from(base64Data, 'base64');
 
-    const dirs = [
-      path.join(process.cwd(), 'public', 'uploads'),
-      path.join(process.platform === 'win32' ? path.join(process.cwd(), 'public', 'uploads') : '/tmp', 'uploads'),
-    ];
-
-    for (const dir of dirs) {
-      try {
-        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-        fs.writeFileSync(path.join(dir, filename), buffer);
-        return `/uploads/${filename}`;
-      } catch (e) {}
-    }
+    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
+    try {
+      if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+      fs.writeFileSync(path.join(uploadDir, filename), buffer);
+      return `/uploads/${filename}`;
+    } catch (e) {}
   } catch (err) {
     console.warn('Failed to extract base64 to file:', err);
   }
