@@ -1,27 +1,29 @@
 import { PrismaClient } from '@prisma/client';
 
-function sanitizeDbUrl(url?: string): string | undefined {
-  if (!url) return undefined;
-  return url
-    .replace(/[?&]channel_binding=[^&]+/g, '')
-    .replace(/\?&/, '?')
-    .replace(/\?$/, '');
+function sanitizeDbUrl(rawUrl?: string): string | undefined {
+  if (!rawUrl) return undefined;
+  try {
+    const parsed = new URL(rawUrl);
+    parsed.searchParams.delete('channel_binding');
+    return parsed.toString();
+  } catch (e) {
+    return rawUrl;
+  }
 }
 
-// Ensure Neon / Vercel Postgres environment variables are mapped seamlessly
+// Prefer unpooled direct Neon connection for rock-solid stability with Prisma
 let rawUrl =
-  process.env.DATABASE_URL ||
-  process.env.POSTGRES_PRISMA_URL ||
-  process.env.POSTGRES_URL ||
-  process.env.DATABASE_URL_UNPOOLED;
-
-let rawUnpooled =
   process.env.DATABASE_URL_UNPOOLED ||
   process.env.POSTGRES_URL_NON_POOLING ||
-  rawUrl;
+  process.env.DATABASE_URL ||
+  process.env.POSTGRES_PRISMA_URL ||
+  process.env.POSTGRES_URL;
 
-if (rawUrl) process.env.DATABASE_URL = sanitizeDbUrl(rawUrl);
-if (rawUnpooled) process.env.DATABASE_URL_UNPOOLED = sanitizeDbUrl(rawUnpooled);
+if (rawUrl) {
+  const sanitized = sanitizeDbUrl(rawUrl);
+  process.env.DATABASE_URL = sanitized;
+  process.env.DATABASE_URL_UNPOOLED = sanitized;
+}
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
