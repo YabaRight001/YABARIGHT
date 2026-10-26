@@ -1,16 +1,21 @@
 /**
  * Client-side image utility to compress high-resolution photos before upload.
- * Reduces 5MB-20MB smartphone/camera photos to ~80KB-150KB JPEG while preserving visual fidelity.
+ * Reduces 5MB-20MB smartphone/camera photos and PNG screenshots to ~40KB-90KB JPEG.
  * Prevents 413 Payload Too Large errors and localStorage quota crashes.
  */
 export async function compressImage(
   file: File,
-  maxWidth = 1200,
-  maxHeight = 1200,
-  quality = 0.85
+  maxWidth = 960,
+  maxHeight = 960,
+  quality = 0.75
 ): Promise<File> {
   // If not a standard raster image or running in SSR, return as is
   if (typeof window === 'undefined' || !file.type.startsWith('image/') || file.type === 'image/svg+xml' || file.type === 'image/gif') {
+    return file;
+  }
+
+  // If already a tiny JPEG, skip reprocessing
+  if (file.type === 'image/jpeg' && file.size < 80000) {
     return file;
   }
 
@@ -45,12 +50,15 @@ export async function compressImage(
           return;
         }
 
+        // Draw solid white background so transparent PNGs convert cleanly without black fills
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, width, height);
+
         ctx.drawImage(img, 0, 0, width, height);
 
         canvas.toBlob(
           (blob) => {
-            if (!blob || blob.size >= file.size) {
-              // If compression didn't reduce size, keep original
+            if (!blob) {
               resolve(file);
               return;
             }

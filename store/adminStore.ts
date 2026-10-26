@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { Product, ProductCondition } from '@/types';
 import { sampleProducts } from '@/lib/mockProducts';
 
@@ -392,6 +392,72 @@ const initialUsers: PlatformUser[] = [
   },
 ];
 
+// Resilient localStorage wrapper that auto-prunes legacy bloated base64 data and prevents quota crashes
+const safeAdminStorage = {
+  getItem: (name: string): string | null => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const raw = window.localStorage.getItem(name);
+      if (!raw) return null;
+      // If the stored data is huge (>200KB or has inline base64 images), sanitize immediately
+      if (raw.length > 200000 || raw.includes('data:image/')) {
+        try {
+          const parsed = JSON.parse(raw);
+          if (parsed && parsed.state) {
+            delete parsed.state.products;
+            delete parsed.state.vendors;
+            delete parsed.state.users;
+            if (Array.isArray(parsed.state.imagePresets)) {
+              parsed.state.imagePresets = parsed.state.imagePresets.filter(
+                (p: any) => p && p.url && !p.url.startsWith('data:') && p.url.length < 2048
+              );
+            }
+            const sanitized = JSON.stringify(parsed);
+            window.localStorage.setItem(name, sanitized);
+            return sanitized;
+          }
+        } catch {
+          window.localStorage.removeItem(name);
+          return null;
+        }
+      }
+      return raw;
+    } catch {
+      return null;
+    }
+  },
+  setItem: (name: string, value: string): void => {
+    if (typeof window === 'undefined') return;
+    try {
+      window.localStorage.setItem(name, value);
+    } catch (err) {
+      console.warn(`[adminStore] Storage quota warning for "${name}", auto-cleaning:`, err);
+      try {
+        window.localStorage.removeItem(name);
+        const parsed = JSON.parse(value);
+        if (parsed && parsed.state) {
+          const slim = {
+            state: {
+              categories: parsed.state.categories || [],
+              giftPricings: parsed.state.giftPricings || [],
+            },
+            version: parsed.version,
+          };
+          window.localStorage.setItem(name, JSON.stringify(slim));
+        }
+      } catch {
+        // Silently swallow so quota exception never breaks the UI
+      }
+    }
+  },
+  removeItem: (name: string): void => {
+    if (typeof window === 'undefined') return;
+    try {
+      window.localStorage.removeItem(name);
+    } catch {}
+  },
+};
+
 export const useAdminStore = create<AdminState>()(
   persist(
     (set, get) => ({
@@ -666,8 +732,9 @@ export const useAdminStore = create<AdminState>()(
           label: preset.label.trim(),
           url: preset.url.trim(),
         };
+        // Keep in memory presets list capped at 40
         set((state) => ({
-          imagePresets: [newPreset, ...(state.imagePresets || initialImagePresets)],
+          imagePresets: [newPreset, ...(state.imagePresets || initialImagePresets)].slice(0, 40),
         }));
       },
 
@@ -713,6 +780,15 @@ export const useAdminStore = create<AdminState>()(
     }),
     {
       name: 'yabaright-admin-store',
+      storage: createJSONStorage(() => safeAdminStorage),
+      partialize: (state) => ({
+        categories: state.categories,
+        giftPricings: state.giftPricings,
+        // Only persist clean hosted URL presets to localStorage (never megabyte base64 strings)
+        imagePresets: (state.imagePresets || []).filter(
+          (p) => p && p.url && !p.url.startsWith('data:') && p.url.length < 2048
+        ),
+      }),
       onRehydrateStorage: () => (state) => {
         if (state) {
           const current = state.categories || [];
