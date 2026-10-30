@@ -1,30 +1,60 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getUserRegistrationStats, resolveDateBoundaries } from '@/lib/userStats';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const users = await prisma.user.findMany({
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        role: true,
-        status: true,
-        createdAt: true,
-        _count: {
-          select: {
-            orders: true,
+    const { searchParams } = new URL(req.url);
+    const startDate = searchParams.get('startDate') || undefined;
+    const endDate = searchParams.get('endDate') || undefined;
+    const period = (searchParams.get('period') as any) || undefined;
+    const role = searchParams.get('role') || undefined;
+    const status = searchParams.get('status') || undefined;
+
+    // Resolve date boundaries for where clause
+    const { start, end } = resolveDateBoundaries({ startDate, endDate, period });
+
+    const where: any = {};
+    if (start || end) {
+      where.createdAt = {};
+      if (start) where.createdAt.gte = start;
+      if (end) where.createdAt.lte = end;
+    }
+
+    if (role && role !== 'ALL') {
+      where.role = role.toUpperCase();
+    }
+
+    if (status && status !== 'ALL') {
+      where.status = status.toLowerCase();
+    }
+
+    const [users, stats] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          role: true,
+          status: true,
+          createdAt: true,
+          _count: {
+            select: {
+              orders: true,
+            },
           },
         },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+        orderBy: {
+          createdAt: 'desc',
+        },
+      }),
+      getUserRegistrationStats({ startDate, endDate, period, role, status }),
+    ]);
 
     const formatted = users.map((u: any) => ({
       id: u.id,
@@ -34,12 +64,22 @@ export async function GET() {
       role: u.role,
       status: u.status,
       joinedAt: u.createdAt.toISOString().split('T')[0],
+      createdAt: u.createdAt.toISOString(),
       ordersCount: u._count.orders,
     }));
 
     return NextResponse.json({
       success: true,
       users: formatted,
+      totalCount: formatted.length,
+      stats,
+      filters: {
+        startDate: start ? start.toISOString() : null,
+        endDate: end ? end.toISOString() : null,
+        period: period || 'all',
+        role: role || 'ALL',
+        status: status || 'ALL',
+      },
     });
   } catch (error: any) {
     console.error('Error fetching admin users:', error);

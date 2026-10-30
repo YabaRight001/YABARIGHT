@@ -35,7 +35,7 @@ interface RecentOrder {
 }
 
 export default function AdminOverviewPage() {
-  const { products, vendors, users, verifyVendor, deleteProduct, fetchProducts, fetchVendors, fetchUsers } = useAdminStore();
+  const { products, vendors, users, registrationStats, verifyVendor, deleteProduct, fetchProducts, fetchVendors, fetchUsers } = useAdminStore();
   const [orders, setOrders] = useState<RecentOrder[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
 
@@ -59,6 +59,10 @@ export default function AdminOverviewPage() {
   const pendingVendors = vendors.filter((v) => !v.isVerified);
   const verifiedVendors = vendors.filter((v) => v.isVerified);
   const activeUsersCount = users.filter((u) => u.status === 'active').length;
+  const totalRegisteredCount = registrationStats?.totalRegistered ?? users.length;
+  const weekRegistrationsCount = registrationStats?.weekCount ?? 0;
+  const todayRegistrationsCount = registrationStats?.todayCount ?? 0;
+  const monthRegistrationsCount = registrationStats?.monthCount ?? 0;
 
   const totalRevenue = orders
     .filter((o) => o.paymentStatus === 'PAID')
@@ -72,6 +76,7 @@ export default function AdminOverviewPage() {
       icon: Package,
       color: 'text-[#FFD700]',
       bg: 'bg-[#FFD700]/10',
+      href: '/admin/products',
     },
     {
       title: 'Verified Vendors',
@@ -80,6 +85,7 @@ export default function AdminOverviewPage() {
       icon: ShieldCheck,
       color: 'text-emerald-400',
       bg: 'bg-emerald-500/10',
+      href: '/admin/vendors',
     },
     {
       title: 'Platform Customer Orders',
@@ -88,14 +94,16 @@ export default function AdminOverviewPage() {
       icon: ShoppingBag,
       color: 'text-purple-400',
       bg: 'bg-purple-500/10',
+      href: '/admin/orders',
     },
     {
-      title: 'Active Platform Users',
-      value: activeUsersCount.toString(),
-      desc: 'Buyers & vendors',
+      title: 'Total Registered Users',
+      value: totalRegisteredCount.toString(),
+      desc: `${weekRegistrationsCount > 0 ? `+${weekRegistrationsCount} this week • ` : ''}${activeUsersCount} Active`,
       icon: Users,
       color: 'text-blue-400',
       bg: 'bg-blue-500/10',
+      href: '/admin/users',
     },
   ];
 
@@ -148,21 +156,54 @@ export default function AdminOverviewPage() {
         {stats.map((s) => {
           const Icon = s.icon;
           return (
-            <div
+            <Link
               key={s.title}
-              className="rounded-3xl border border-white/10 bg-[#141414] p-5 shadow-sm hover:border-[#FFD700]/40 transition"
+              href={s.href}
+              className="rounded-3xl border border-white/10 bg-[#141414] p-5 shadow-sm hover:border-[#FFD700]/40 transition group cursor-pointer block"
             >
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-gray-400">{s.title}</span>
+                <span className="text-xs font-bold text-gray-400 group-hover:text-white transition">{s.title}</span>
                 <div className={`flex h-9 w-9 items-center justify-center rounded-2xl ${s.bg} ${s.color}`}>
                   <Icon className="h-4 w-4" />
                 </div>
               </div>
               <p className="mt-3 text-2xl sm:text-3xl font-black text-white">{s.value}</p>
               <p className="mt-1 text-[11px] text-gray-400">{s.desc}</p>
-            </div>
+            </Link>
           );
         })}
+      </div>
+
+      {/* User Registration Velocity Quick Banner */}
+      <div className="rounded-[2rem] border border-blue-500/20 bg-blue-500/[0.03] p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-400 border border-blue-500/20">
+            <TrendingUp className="h-6 w-6" />
+          </div>
+          <div>
+            <h3 className="text-sm font-black text-white flex items-center gap-2">
+              User Registration Velocity
+              {todayRegistrationsCount > 0 && (
+                <span className="rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-black px-2 py-0.5">
+                  +{todayRegistrationsCount} NEW TODAY
+                </span>
+              )}
+            </h3>
+            <p className="text-xs text-gray-400 mt-0.5">
+              <strong className="text-white">{todayRegistrationsCount}</strong> registered today •{' '}
+              <strong className="text-white">{weekRegistrationsCount}</strong> past 7 days •{' '}
+              <strong className="text-white">{monthRegistrationsCount}</strong> past 30 days
+            </p>
+          </div>
+        </div>
+
+        <Link
+          href="/admin/users"
+          className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-xs font-bold text-blue-300 hover:bg-blue-500/20 hover:text-white transition self-start md:self-auto"
+        >
+          <span>View Registration Breakdown</span>
+          <ArrowRight className="h-3.5 w-3.5" />
+        </Link>
       </div>
 
       {/* Pending Vendor Verification Action Center */}

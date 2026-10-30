@@ -28,13 +28,53 @@ export interface PlatformUser {
   role: 'BUYER' | 'SELLER' | 'ADMIN' | 'AFFILIATE';
   status: 'active' | 'flagged' | 'banned';
   joinedAt: string;
+  createdAt?: string;
   ordersCount: number;
+}
+
+export interface UserRegistrationStats {
+  totalRegistered: number;
+  filteredCount: number;
+  todayCount: number;
+  yesterdayCount: number;
+  weekCount: number;
+  monthCount: number;
+  yearCount: number;
+  byRole: {
+    BUYER: number;
+    SELLER: number;
+    AFFILIATE: number;
+    ADMIN: number;
+  };
+  byStatus: {
+    active: number;
+    flagged: number;
+    banned: number;
+  };
+  recentTrend: Array<{
+    date: string;
+    displayDate: string;
+    count: number;
+    buyers: number;
+    sellers: number;
+    affiliates: number;
+    admins: number;
+  }>;
+}
+
+export interface UserFilterParams {
+  startDate?: string;
+  endDate?: string;
+  period?: 'today' | 'yesterday' | 'last_7_days' | 'last_30_days' | 'this_month' | 'this_year' | 'all';
+  role?: string;
+  status?: string;
 }
 
 interface AdminState {
   products: Product[];
   vendors: VendorProfile[];
   users: PlatformUser[];
+  registrationStats: UserRegistrationStats | null;
 
   // Product Actions
   fetchProducts: () => Promise<void>;
@@ -49,7 +89,8 @@ interface AdminState {
   deleteVendor: (vendorId: string) => Promise<void>;
 
   // User Moderation Actions
-  fetchUsers: () => Promise<void>;
+  fetchUsers: (filters?: UserFilterParams) => Promise<void>;
+  fetchRegistrationStats: (filters?: UserFilterParams) => Promise<UserRegistrationStats | null>;
   addUser: (user: Partial<PlatformUser> & { id: string; name: string; email: string; role: 'BUYER' | 'SELLER' | 'ADMIN' | 'AFFILIATE' }) => void;
   deleteUser: (userId: string) => Promise<void>;
   setUserStatus: (userId: string, status: 'active' | 'flagged' | 'banned') => Promise<void>;
@@ -464,6 +505,7 @@ export const useAdminStore = create<AdminState>()(
       products: [],
       vendors: initialVendors,
       users: initialUsers,
+      registrationStats: null,
       categories: initialCategories,
       imagePresets: initialImagePresets,
 
@@ -634,19 +676,54 @@ export const useAdminStore = create<AdminState>()(
         }
       },
 
-      // User Moderation
-      fetchUsers: async () => {
+      // User Moderation & Registration Analytics
+      fetchUsers: async (filters?: UserFilterParams) => {
         try {
-          const res = await fetch(`/api/admin/users?t=${Date.now()}`);
+          const params = new URLSearchParams();
+          params.set('t', Date.now().toString());
+          if (filters?.startDate) params.set('startDate', filters.startDate);
+          if (filters?.endDate) params.set('endDate', filters.endDate);
+          if (filters?.period && filters.period !== 'all') params.set('period', filters.period);
+          if (filters?.role && filters.role !== 'ALL') params.set('role', filters.role);
+          if (filters?.status && filters.status !== 'ALL') params.set('status', filters.status);
+
+          const res = await fetch(`/api/admin/users?${params.toString()}`);
           if (res.ok) {
             const data = await res.json();
             if (Array.isArray(data.users)) {
-              set({ users: data.users });
+              set({
+                users: data.users,
+                registrationStats: data.stats || null,
+              });
             }
           }
         } catch (err) {
           console.error('Failed to fetch users:', err);
         }
+      },
+
+      fetchRegistrationStats: async (filters?: UserFilterParams) => {
+        try {
+          const params = new URLSearchParams();
+          params.set('t', Date.now().toString());
+          if (filters?.startDate) params.set('startDate', filters.startDate);
+          if (filters?.endDate) params.set('endDate', filters.endDate);
+          if (filters?.period && filters.period !== 'all') params.set('period', filters.period);
+          if (filters?.role && filters.role !== 'ALL') params.set('role', filters.role);
+          if (filters?.status && filters.status !== 'ALL') params.set('status', filters.status);
+
+          const res = await fetch(`/api/admin/users/stats?${params.toString()}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.stats) {
+              set({ registrationStats: data.stats });
+              return data.stats;
+            }
+          }
+        } catch (err) {
+          console.error('Failed to fetch registration stats:', err);
+        }
+        return null;
       },
 
       addUser: (userData) => {
