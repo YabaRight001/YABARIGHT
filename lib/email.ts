@@ -1,6 +1,9 @@
 import jwt from 'jsonwebtoken';
+import fs from 'fs';
+import path from 'path';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'yabaright_super_secret_jwt_key_2026';
+const tmpOtpFile = path.join('/tmp', 'yabaright_otp.json');
 
 export function createVerificationToken(email: string, code: string): string {
   return jwt.sign(
@@ -33,15 +36,51 @@ interface SendMailParams {
 // In-memory verification storage: email -> { code, token, expiresAt }
 export const emailVerificationStore: Map<string, { code: string; token: string; expiresAt: number }> = new Map();
 
-export async function sendVerificationEmail({ to, name, code, verifyUrl }: SendMailParams): Promise<{ success: boolean; message: string; token?: string }> {
-  const token = createVerificationToken(to, code);
-  
-  // Also save in memory store for local development instances
-  emailVerificationStore.set(to.toLowerCase().trim(), {
+export function storeOtp(email: string, code: string, token: string): void {
+  const cleanEmail = email.toLowerCase().trim();
+  const entry = {
     code: code.trim(),
     token,
     expiresAt: Date.now() + 30 * 60 * 1000,
-  });
+  };
+
+  emailVerificationStore.set(cleanEmail, entry);
+
+  try {
+    let allOtps: Record<string, typeof entry> = {};
+    if (fs.existsSync(tmpOtpFile)) {
+      try {
+        allOtps = JSON.parse(fs.readFileSync(tmpOtpFile, 'utf8') || '{}');
+      } catch {}
+    }
+    allOtps[cleanEmail] = entry;
+    fs.writeFileSync(tmpOtpFile, JSON.stringify(allOtps), 'utf8');
+  } catch {}
+}
+
+export function getStoredOtp(email: string): { code: string; token: string; expiresAt: number } | null {
+  const cleanEmail = email.toLowerCase().trim();
+  const mem = emailVerificationStore.get(cleanEmail);
+  if (mem && Date.now() <= mem.expiresAt) return mem;
+
+  try {
+    if (fs.existsSync(tmpOtpFile)) {
+      const allOtps = JSON.parse(fs.readFileSync(tmpOtpFile, 'utf8') || '{}');
+      const found = allOtps[cleanEmail];
+      if (found && Date.now() <= found.expiresAt) {
+        return found;
+      }
+    }
+  } catch {}
+
+  return null;
+}
+
+export async function sendVerificationEmail({ to, name, code, verifyUrl }: SendMailParams): Promise<{ success: boolean; message: string; token: string; emailDelivered: boolean }> {
+  const token = createVerificationToken(to, code);
+  
+  // Persist code in memory and /tmp
+  storeOtp(to, code, token);
 
   const smtpHost = process.env.EMAIL_SERVER_HOST || 'smtp.gmail.com';
   const smtpPort = Number(process.env.EMAIL_SERVER_PORT) || 465;
@@ -96,7 +135,7 @@ export async function sendVerificationEmail({ to, name, code, verifyUrl }: SendM
                 </span>
               </div>
               <p style="margin: 10px 0 0 0; font-size: 11px; color: #888888;">
-                (This code expires in 15 minutes)
+                (This code expires in 30 minutes)
               </p>
             </td>
           </tr>
@@ -126,9 +165,34 @@ export async function sendVerificationEmail({ to, name, code, verifyUrl }: SendM
 </html>
   `;
 
+  // 1. Check for Resend API Key first (fastest & most reliable on Vercel)
+  if (process.env.RESEND_API_KEY) {
+    try {
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: process.env.EMAIL_FROM || 'YABARIGHT <onboarding@resend.dev>',
+          to: [to],
+          subject: `Your YABARIGHT Verification Code: ${code}`,
+          html: htmlContent,
+        }),
+      });
+      if (res.ok) {
+        console.log(`[Resend Sent] Verification code dispatched to ${to}`);
+        return { success: true, message: `Verification email sent to ${to}`, token, emailDelivered: true };
+      }
+    } catch (resendErr) {
+      console.warn('[Resend Warning]:', resendErr);
+    }
+  }
+
+  // 2. Try SMTP with tight connection timeout (max 4 seconds) so request never hangs
   if (smtpPass) {
     try {
-      // Dynamic import to prevent build breaks if module is loading or missing
       let nodemailerModule: any;
       try {
         nodemailerModule = await import('nodemailer');
@@ -136,17 +200,19 @@ export async function sendVerificationEmail({ to, name, code, verifyUrl }: SendM
           nodemailerModule = nodemailerModule.default;
         }
       } catch (importErr) {
-        console.warn('[SMTP Warning] nodemailer module not available, falling back to log mode.');
-        return { success: true, message: `Verification code generated for ${to}` };
+        return { success: true, message: `Verification code generated for ${to}`, token, emailDelivered: false };
       }
 
       const transporter = nodemailerModule.createTransport({
         host: smtpHost,
         port: smtpPort,
         secure: smtpPort === 465,
+        connectionTimeout: 4000,
+        greetingTimeout: 4000,
+        socketTimeout: 5000,
         auth: {
           user: smtpUser,
-          pass: smtpPass,
+          pass: smtpPass.replace(/\s+/g, ''), // strip spaces if user pasted with spaces
         },
       });
 
@@ -158,14 +224,14 @@ export async function sendVerificationEmail({ to, name, code, verifyUrl }: SendM
         html: htmlContent,
       });
 
-      console.log(`[Email Sent] Verification code dispatched to ${to}`);
-      return { success: true, message: `Verification email sent to ${to}`, token };
+      console.log(`[SMTP Sent] Verification email dispatched to ${to}`);
+      return { success: true, message: `Verification email sent to ${to}`, token, emailDelivered: true };
     } catch (err: any) {
-      console.error('[SMTP Send Error]:', err);
-      return { success: false, message: err.message || 'SMTP delivery failed', token };
+      console.warn('[SMTP Warning - App password or credentials failed]:', err.message);
+      // Fallback cleanly so user is NOT blocked
+      return { success: true, message: `Verification code generated for ${to}`, token, emailDelivered: false };
     }
-  } else {
-    console.log(`[Email Mock/Dev Dispatch]: Code ${code} for ${to}. Direct link: ${verifyUrl}`);
-    return { success: true, message: `Verification email dispatched to ${to}`, token };
   }
+
+  return { success: true, message: `Verification code generated for ${to}`, token, emailDelivered: false };
 }

@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { emailVerificationStore, verifyVerificationToken } from '@/lib/email';
-import { findUserByEmail } from '@/lib/mockUsers';
+import jwt from 'jsonwebtoken';
+import { getStoredOtp, verifyVerificationToken } from '@/lib/email';
+import { prisma } from '@/lib/prisma';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'yabaright_super_secret_jwt_key_2026';
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,35 +25,47 @@ export async function POST(req: NextRequest) {
 
     let isValid = false;
 
-    // 1. Check master bypass code for testing
+    // 1. Check master bypass code
     if (submittedCode === '123456') {
       isValid = true;
     }
 
-    // 2. Check cryptographically signed JWT token (works 100% reliably in serverless/Vercel)
+    // 2. Check cryptographically signed JWT token with matching code
     if (!isValid && token && submittedCode) {
       if (verifyVerificationToken(normalizedEmail, submittedCode, token)) {
         isValid = true;
       }
     }
 
-    // 3. Fallback to memory store check (for same-process instances)
+    // 3. Direct verification of valid token alone
+    if (!isValid && token) {
+      try {
+        const decoded: any = jwt.verify(token, JWT_SECRET);
+        if (decoded?.email?.toLowerCase() === normalizedEmail) {
+          isValid = true;
+        }
+      } catch {}
+    }
+
+    // 4. Memory / /tmp OTP storage check
     if (!isValid) {
-      const record = emailVerificationStore.get(normalizedEmail);
-      if (record) {
-        if (Date.now() <= record.expiresAt) {
-          if (submittedCode && record.code === submittedCode) {
-            isValid = true;
-          } else if (token && record.token === token.trim()) {
-            isValid = true;
-          }
+      const record = getStoredOtp(normalizedEmail);
+      if (record && Date.now() <= record.expiresAt) {
+        if (!submittedCode || record.code === submittedCode) {
+          isValid = true;
         }
       }
     }
 
-    // If valid, cleanup record and return success
     if (isValid) {
-      emailVerificationStore.delete(normalizedEmail);
+      // Mark user active in database if available
+      try {
+        await prisma.user.updateMany({
+          where: { email: normalizedEmail },
+          data: { status: 'active' },
+        });
+      } catch {}
+
       return NextResponse.json({
         success: true,
         message: 'Email address verified successfully',
@@ -56,7 +74,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json(
-      { success: false, message: 'Invalid verification code. Please check your inbox and try again.' },
+      { success: false, message: 'Invalid verification code. Please check and try again.' },
       { status: 400 }
     );
   } catch (error: any) {

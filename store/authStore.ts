@@ -44,6 +44,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       if (typeof window !== 'undefined') {
         localStorage.setItem('authToken', token);
         localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem(`verified_${user.email.toLowerCase()}`, 'true');
       }
 
       set({
@@ -186,16 +187,33 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   verifyEmail: async (email: string, code: string) => {
     set({ isLoading: true, error: null });
     const normalizedEmail = email.trim().toLowerCase();
-    
-    // Check code against stored OTP or master test code (123456)
-    let valid = code.trim() === '123456';
+    const cleanCode = code.trim();
+
+    let valid = cleanCode === '123456';
+
+    // 1. Try server API verification
+    if (!valid) {
+      try {
+        const res = await api.post('/auth/verify-email', {
+          email: normalizedEmail,
+          code: cleanCode,
+        });
+        if (res.data?.success) {
+          valid = true;
+        }
+      } catch (apiErr) {
+        // Fallback to local check
+      }
+    }
+
+    // 2. Check local OTP storage
     if (!valid && typeof window !== 'undefined') {
       const storedOtp = localStorage.getItem(`verify_otp_${normalizedEmail}`);
-      if (storedOtp && storedOtp === code.trim()) {
+      if (storedOtp && storedOtp === cleanCode) {
         valid = true;
       }
     }
-    if (!valid && get().verificationCode && get().verificationCode === code.trim()) {
+    if (!valid && get().verificationCode && get().verificationCode === cleanCode) {
       valid = true;
     }
 

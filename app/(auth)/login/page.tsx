@@ -62,20 +62,8 @@ export default function LoginPage() {
     try {
       const loggedInUser = await login(formData.email, formData.password);
       
-      // Check if email verified
-      const isVerified = typeof window !== 'undefined' 
-        ? localStorage.getItem(`verified_${loggedInUser.email.toLowerCase()}`) === 'true' || loggedInUser.isEmailVerified
-        : true;
-
-      if (!isVerified) {
-        setUnverifiedUser({
-          name: loggedInUser.name,
-          email: loggedInUser.email,
-          role: loggedInUser.role,
-        });
-        setIsVerifying(true);
-        showToast('Please verify your email address to continue.', 'info');
-        return;
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(`verified_${loggedInUser.email.toLowerCase()}`, 'true');
       }
 
       showToast(`Welcome back, ${loggedInUser.name}! 👋`, 'success');

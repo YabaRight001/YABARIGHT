@@ -61,8 +61,8 @@ function RegisterForm() {
       return;
     }
 
-    if (formData.password.length < 4) {
-      setValidationError('Password must be at least 4 characters');
+    if (formData.password.length < 6) {
+      setValidationError('Password must be at least 6 characters');
       return;
     }
 

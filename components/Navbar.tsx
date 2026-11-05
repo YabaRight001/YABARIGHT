@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
 import { useCartStore } from '@/store/cartStore';
 import { useWishlistStore } from '@/store/wishlistStore';
+import { useAuthStore } from '@/store/authStore';
+import { useToastStore } from '@/store/toastStore';
 import { 
   ShoppingBag, 
   Heart, 
@@ -17,7 +19,8 @@ import {
   Shield,
   Store,
   DollarSign,
-  ChevronDown
+  ChevronDown,
+  LogOut
 } from 'lucide-react';
 
 const primaryNavLinks = [
@@ -54,6 +57,8 @@ export function Navbar() {
   const router = useRouter();
   const itemCount = useCartStore((state) => state.itemCount);
   const wishlistCount = useWishlistStore((state) => state.itemCount);
+  const { user, isAuthenticated, logout } = useAuthStore();
+  const showToast = useToastStore((state) => state.showToast);
   
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -261,44 +266,109 @@ export function Navbar() {
                 aria-label="Account and portals menu"
               >
                 <User className="h-3.5 w-3.5" />
-                <span>Account</span>
+                <span>{isAuthenticated && user ? user.name.split(' ')[0] : 'Account'}</span>
                 <ChevronDown className={`h-3 w-3 transition-transform ${accountMenuOpen ? 'rotate-180 text-[#FFD700]' : ''}`} />
               </button>
 
               {accountMenuOpen && (
                 <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-white/10 bg-[#141414] p-2 text-white shadow-2xl backdrop-blur-xl z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-                  <div className="px-3 py-2 border-b border-white/10">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-[#FFD700]">YabaRight Portals</p>
-                  </div>
+                  {isAuthenticated && user ? (
+                    <>
+                      <div className="px-3 py-2 border-b border-white/10">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-[#FFD700]">Signed In</p>
+                        <p className="text-xs font-bold text-white truncate mt-0.5">{user.name}</p>
+                        <p className="text-[10px] text-gray-400 truncate">{user.email}</p>
+                      </div>
 
-                  <div className="space-y-1 py-1 text-xs">
-                    <Link
-                      href="/login"
-                      onClick={() => setAccountMenuOpen(false)}
-                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 font-bold text-gray-200 hover:bg-white/10 hover:text-[#FFD700] transition"
-                    >
-                      <User className="h-3.5 w-3.5 text-gray-400" />
-                      <span>Buyer Login</span>
-                    </Link>
+                      <div className="space-y-1 py-1 text-xs">
+                        {user.role === 'ADMIN' ? (
+                          <Link
+                            href="/admin"
+                            onClick={() => setAccountMenuOpen(false)}
+                            className="flex items-center gap-2.5 rounded-xl px-3 py-2 font-bold text-gray-200 hover:bg-white/10 hover:text-[#FFD700] transition"
+                          >
+                            <Shield className="h-3.5 w-3.5 text-[#FFD700]" />
+                            <span>Admin Console</span>
+                          </Link>
+                        ) : user.role === 'SELLER' ? (
+                          <Link
+                            href="/dashboard"
+                            onClick={() => setAccountMenuOpen(false)}
+                            className="flex items-center gap-2.5 rounded-xl px-3 py-2 font-bold text-gray-200 hover:bg-white/10 hover:text-[#FFD700] transition"
+                          >
+                            <Store className="h-3.5 w-3.5 text-[#FFD700]" />
+                            <span>Seller Dashboard</span>
+                          </Link>
+                        ) : user.role === 'AFFILIATE' ? (
+                          <Link
+                            href="/affiliate/dashboard"
+                            onClick={() => setAccountMenuOpen(false)}
+                            className="flex items-center gap-2.5 rounded-xl px-3 py-2 font-bold text-gray-200 hover:bg-white/10 hover:text-[#FFD700] transition"
+                          >
+                            <DollarSign className="h-3.5 w-3.5 text-[#FFD700]" />
+                            <span>Affiliate Dashboard</span>
+                          </Link>
+                        ) : (
+                          <Link
+                            href="/products"
+                            onClick={() => setAccountMenuOpen(false)}
+                            className="flex items-center gap-2.5 rounded-xl px-3 py-2 font-bold text-gray-200 hover:bg-white/10 hover:text-[#FFD700] transition"
+                          >
+                            <ShoppingBag className="h-3.5 w-3.5 text-[#FFD700]" />
+                            <span>Shop Catalog</span>
+                          </Link>
+                        )}
 
-                    <Link
-                      href="/register"
-                      onClick={() => setAccountMenuOpen(false)}
-                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 font-bold text-gray-200 hover:bg-white/10 hover:text-[#FFD700] transition"
-                    >
-                      <Store className="h-3.5 w-3.5 text-gray-400" />
-                      <span>Become a Seller</span>
-                    </Link>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            logout();
+                            setAccountMenuOpen(false);
+                            showToast('Logged out successfully', 'info');
+                          }}
+                          className="w-full flex items-center gap-2.5 rounded-xl px-3 py-2 font-bold text-red-400 hover:bg-red-500/10 transition text-left"
+                        >
+                          <LogOut className="h-3.5 w-3.5" />
+                          <span>Sign Out</span>
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="px-3 py-2 border-b border-white/10">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-[#FFD700]">YabaRight Portals</p>
+                      </div>
 
-                    <Link
-                      href="/affiliate"
-                      onClick={() => setAccountMenuOpen(false)}
-                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 font-bold text-gray-200 hover:bg-white/10 hover:text-[#FFD700] transition"
-                    >
-                      <DollarSign className="h-3.5 w-3.5 text-[#FFD700]" />
-                      <span>Affiliate Program</span>
-                    </Link>
-                  </div>
+                      <div className="space-y-1 py-1 text-xs">
+                        <Link
+                          href="/login"
+                          onClick={() => setAccountMenuOpen(false)}
+                          className="flex items-center gap-2.5 rounded-xl px-3 py-2 font-bold text-gray-200 hover:bg-white/10 hover:text-[#FFD700] transition"
+                        >
+                          <User className="h-3.5 w-3.5 text-gray-400" />
+                          <span>Buyer Login</span>
+                        </Link>
+
+                        <Link
+                          href="/register?role=seller"
+                          onClick={() => setAccountMenuOpen(false)}
+                          className="flex items-center gap-2.5 rounded-xl px-3 py-2 font-bold text-gray-200 hover:bg-white/10 hover:text-[#FFD700] transition"
+                        >
+                          <Store className="h-3.5 w-3.5 text-gray-400" />
+                          <span>Become a Seller</span>
+                        </Link>
+
+                        <Link
+                          href="/affiliate"
+                          onClick={() => setAccountMenuOpen(false)}
+                          className="flex items-center gap-2.5 rounded-xl px-3 py-2 font-bold text-gray-200 hover:bg-white/10 hover:text-[#FFD700] transition"
+                        >
+                          <DollarSign className="h-3.5 w-3.5 text-[#FFD700]" />
+                          <span>Affiliate Program</span>
+                        </Link>
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -338,20 +408,39 @@ export function Navbar() {
 
           {/* Minimal Account & Seller Links */}
           <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3 text-xs">
-            <Link
-              href="/login"
-              onClick={() => setMobileMenuOpen(false)}
-              className="font-bold text-gray-300 hover:text-[#FFD700]"
-            >
-              Sign In
-            </Link>
-            <Link
-              href="/register"
-              onClick={() => setMobileMenuOpen(false)}
-              className="font-black text-[#FFD700] hover:underline"
-            >
-              Sell on YabaRight →
-            </Link>
+            {isAuthenticated && user ? (
+              <>
+                <span className="font-bold text-gray-300 truncate max-w-[150px]">{user.name}</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    logout();
+                    setMobileMenuOpen(false);
+                    showToast('Logged out successfully', 'info');
+                  }}
+                  className="font-bold text-red-400 hover:underline"
+                >
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="font-bold text-gray-300 hover:text-[#FFD700]"
+                >
+                  Buyer Login
+                </Link>
+                <Link
+                  href="/register?role=seller"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="font-black text-[#FFD700] hover:underline"
+                >
+                  Become a Seller →
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}
