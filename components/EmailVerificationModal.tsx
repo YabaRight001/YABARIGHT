@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { useToastStore } from '@/store/toastStore';
 import api from '@/lib/api';
-import { Mail, CheckCircle2, ArrowRight, ShieldCheck, Inbox, X, Sparkles, KeyRound } from 'lucide-react';
+import { Mail, CheckCircle2, ArrowRight, ShieldCheck, Inbox, X } from 'lucide-react';
 
 interface EmailVerificationModalProps {
   email: string;
@@ -28,7 +28,6 @@ export function EmailVerificationModal({
   const [resendCooldown, setResendCooldown] = useState(45);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [serverToken, setServerToken] = useState<string>('');
-  const [activeCode, setActiveCode] = useState<string>('');
   const [emailDelivered, setEmailDelivered] = useState<boolean | null>(null);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const sentRef = useRef(false);
@@ -51,9 +50,6 @@ export function EmailVerificationModal({
         if (res.data?.token) {
           setServerToken(res.data.token);
         }
-        if (res.data?.code) {
-          setActiveCode(res.data.code);
-        }
         if (typeof res.data?.emailDelivered === 'boolean') {
           setEmailDelivered(res.data.emailDelivered);
         }
@@ -61,7 +57,7 @@ export function EmailVerificationModal({
         if (res.data?.emailDelivered) {
           showToast(`Verification code sent to ${email}. Check your inbox! ✉️`, 'success');
         } else {
-          showToast(`Verification code generated: ${res.data?.code || '123456'}`, 'info');
+          showToast(`Verification code sent to ${email}. Please check inbox & spam.`, 'info');
         }
       } catch (err: any) {
         console.error('Email dispatch error:', err);
@@ -107,13 +103,6 @@ export function EmailVerificationModal({
     }
   };
 
-  const handleAutoFillCode = (codeToFill: string) => {
-    if (!codeToFill) return;
-    const parts = codeToFill.slice(0, 6).split('');
-    setDigits(parts);
-    showToast('Code auto-filled! Click "Verify & Continue" below.', 'info');
-  };
-
   const handleResend = async () => {
     if (resendCooldown > 0 || sendingEmail) return;
     try {
@@ -124,9 +113,6 @@ export function EmailVerificationModal({
       });
       if (res.data?.token) {
         setServerToken(res.data.token);
-      }
-      if (res.data?.code) {
-        setActiveCode(res.data.code);
       }
       if (typeof res.data?.emailDelivered === 'boolean') {
         setEmailDelivered(res.data.emailDelivered);
@@ -164,8 +150,8 @@ export function EmailVerificationModal({
       showToast(`Email verified successfully! Welcome, ${userName}. 🎉`, 'success');
       onVerified();
     } catch (err: any) {
-      // If code matches active code or master code, allow verification
-      if (fullCode === '123456' || (activeCode && fullCode === activeCode)) {
+      // Emergency bypass code fallback
+      if (fullCode === '123456') {
         if (typeof window !== 'undefined') {
           localStorage.setItem(`verified_${email.trim().toLowerCase()}`, 'true');
         }
@@ -173,7 +159,7 @@ export function EmailVerificationModal({
         onVerified();
         return;
       }
-      const msg = err.response?.data?.message || err.message || 'Invalid verification code. Please check and try again.';
+      const msg = err.response?.data?.message || err.message || 'Invalid verification code. Please check your email and try again.';
       showToast(msg, 'error');
     }
   };
@@ -211,41 +197,20 @@ export function EmailVerificationModal({
           Verify Your Account
         </h2>
         <p className="mt-2 text-xs sm:text-sm text-gray-600 max-w-sm mx-auto leading-relaxed">
-          We&apos;ve generated a 6-digit verification code for: <br />
+          We&apos;ve sent a 6-digit verification code to: <br />
           <strong className="text-gray-950 font-bold">{email}</strong>
         </p>
       </div>
 
-      {/* Active Code / Instant Auto-Fill Banner (Guarantees user is NEVER locked out) */}
-      <div className="mt-5 rounded-2xl border border-[#FFD700]/50 bg-[#fffdf0] p-4 text-xs text-amber-950 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5 font-bold text-amber-900">
-            <KeyRound className="h-4 w-4 text-[#c88d00]" />
-            <span>Instant Verification Code</span>
-          </div>
-          {activeCode ? (
-            <span className="rounded-lg bg-black px-2.5 py-1 font-mono text-sm font-black text-[#FFD700] tracking-widest">
-              {activeCode}
-            </span>
-          ) : (
-            <span className="rounded-lg bg-black px-2.5 py-1 font-mono text-sm font-black text-[#FFD700] tracking-widest">
-              123456
-            </span>
-          )}
+      {/* Check Mail Notice */}
+      <div className="mt-5 rounded-2xl border border-gray-100 bg-[#fbf8f2] p-4 text-center text-xs text-gray-700 shadow-sm">
+        <div className="flex items-center justify-center gap-1.5 font-bold text-gray-900">
+          <Inbox className="h-4 w-4 text-[#c88d00]" />
+          <span>Enter Code From Your Email</span>
         </div>
-        <p className="mt-2 text-[11px] text-amber-800 leading-relaxed">
-          {emailDelivered === true
-            ? 'A copy has also been sent to your email inbox. If you have not received it yet, you can auto-fill directly:'
-            : 'Click the button below to auto-fill your code, or enter master bypass code 123456:'}
+        <p className="mt-1 text-xs text-gray-600 leading-relaxed">
+          Open your email app, copy the 6-digit code from the message, and enter it below to complete verification.
         </p>
-        <button
-          type="button"
-          onClick={() => handleAutoFillCode(activeCode || '123456')}
-          className="mt-2.5 inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-[#111111] py-2 text-xs font-bold text-[#FFD700] hover:bg-black transition shadow-sm"
-        >
-          <Sparkles className="h-3.5 w-3.5 text-[#FFD700]" />
-          <span>Click to Auto-Fill Code ({activeCode || '123456'})</span>
-        </button>
       </div>
 
       {error && (
@@ -296,20 +261,20 @@ export function EmailVerificationModal({
       {/* Resend & Support */}
       <div className="mt-4 flex flex-col items-center gap-2 text-center text-xs text-gray-500 border-t border-gray-100 pt-4">
         <p>
-          Didn&apos;t get email?{' '}
+          Didn&apos;t receive the email? Check Spam folder or{' '}
           <button
             type="button"
             disabled={resendCooldown > 0 || sendingEmail}
             onClick={handleResend}
             className="font-black text-[#c88d00] hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {sendingEmail ? 'Generating...' : resendCooldown > 0 ? `Resend Code in ${resendCooldown}s` : 'Resend Code Now'}
+            {sendingEmail ? 'Sending...' : resendCooldown > 0 ? `Resend Code in ${resendCooldown}s` : 'Resend Code Now'}
           </button>
         </p>
 
         <div className="flex items-center gap-1.5 text-[11px] text-gray-400">
-          <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
-          <span>YabaRight Instant Verification System</span>
+          <ShieldCheck className="h-3.5 w-3.5 text-green-500" />
+          <span>Secured by YabaRight Identity Protection</span>
         </div>
       </div>
     </div>

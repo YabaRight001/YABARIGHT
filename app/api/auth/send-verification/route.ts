@@ -39,7 +39,6 @@ export async function POST(req: NextRequest) {
       message: result.emailDelivered
         ? `Verification code sent to ${normalizedEmail}`
         : `Verification code generated for ${normalizedEmail}`,
-      code, // return code so client can auto-fill or display
       token: result.token,
       emailDelivered: result.emailDelivered,
     });
